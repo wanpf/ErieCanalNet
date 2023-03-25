@@ -47,24 +47,25 @@ __section("cgroup/getsockopt") int get_sockopt(struct bpf_sockopt *ctx)
         p.dport = ctx->sk->dst_port;
 
 #ifdef DEBUG
-    debugf("mcs_cni_get_sockopt: LOOKUP Pair sip: %pI4 sport: %d", &p.sip,
-           bpf_ntohs(p.sport));
-    debugf("mcs_cni_get_sockopt: LOOKUP Pair dip: %pI4 dport: %d", &p.dip,
-           bpf_ntohs(p.dport));
+        debugf("ecnet_cni_skopts [sockopt]: LOOKUP Pair sip: %pI4 sport: %d",
+               &p.sip, bpf_ntohs(p.sport));
+        debugf("ecnet_cni_skopts [sockopt]: LOOKUP Pair dip: %pI4 dport: %d",
+               &p.dip, bpf_ntohs(p.dport));
 #endif
 
         origin = bpf_map_lookup_elem(&ecnet_dns_nat, &p);
         if (origin) {
 #ifdef DEBUG
-            debugf("mcs_cni_get_sockopt: LOOKUP Origin ip: %pI4 port: %d",
-                   &origin->ip, bpf_ntohs(origin->port));
+            debugf(
+                "ecnet_cni_skopts [sockopt]: LOOKUP Origin ip: %pI4 port: %d",
+                &origin->ip, bpf_ntohs(origin->port));
 #endif
             // rewrite original_dst
             ctx->optlen = (__s32)sizeof(struct sockaddr_in);
             if ((void *)((struct sockaddr_in *)ctx->optval + 1) >
                 ctx->optval_end) {
-                printk("mcs_cni_get_sockopt: optname: %d: invalid getsockopt "
-                       "optval",
+                printk("ecnet_cni_skopts [sockopt]: optname: %d: invalid "
+                       "getsockopt optval",
                        ctx->optname);
                 return 1;
             }
