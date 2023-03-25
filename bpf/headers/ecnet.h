@@ -25,6 +25,6 @@ limitations under the License.
 #endif
 
 #ifndef BRIDGE_IP
-// 169.254.168.252
-#define BRIDGE_IP 3232268084
+// 10.244.2.0
+#define BRIDGE_IP 183763456
 #endif

@@ -9,7 +9,7 @@ PROG_MOUNT_PATH=/sys/fs/bpf
 
 MACROS:=
 DEBUG ?= 1
-BRIDGE_IP ?= 3232268084
+BRIDGE_IP ?= 183763456
 
 # see https://stackoverflow.com/questions/15063298/how-to-check-kernel-version-in-makefile
 KVER = $(shell uname -r)
@@ -77,7 +77,7 @@ clean-maps:
 		$(PIN_TC_GLOBAL_NS_PATH)/ecnet_dns_nat \
 		$(PIN_TC_GLOBAL_NS_PATH)/ecnet_svc_nat
 
-load-get_sockopts: load-map-ecnet_dns_nat load-map-ecnet_svc_nat
+load-get_sockopts: load-map-ecnet_svc_nat load-map-ecnet_dns_nat
 	sudo bpftool -m prog load ecnet_cni_opts.o $(PROG_MOUNT_PATH)/get_sockopts \
 		map name ecnet_svc_nat pinned $(PIN_TC_GLOBAL_NS_PATH)/ecnet_svc_nat
 
@@ -88,13 +88,13 @@ clean-get_sockopts:
 	sudo bpftool cgroup detach $(CGROUP2_PATH) getsockopt pinned $(PROG_MOUNT_PATH)/get_sockopts
 	sudo rm $(PROG_MOUNT_PATH)/get_sockopts
 
-load: compile init-bpffs load-map-ecnet_dns_nat load-map-ecnet_svc_nat load-get_sockopts
+load: compile init-bpffs load-get_sockopts
 
 attach: attach-get_sockopts
 
 clean: clean-get_sockopts clean-maps compile-clean
 
-PROG_TC ?= /home/benne/CLionProjects/osm-edge/bpf/ecnet_cni_tc.o
+PROG_TC ?= /home/benne/CLionProjects/ErieCanalNet/bpf/ecnet_cni_tc.o
 
 test-init:
 	sudo ip netns add demo
@@ -115,7 +115,7 @@ test-run:
 	sudo ip netns exec demo bash -c "tc filter add dev veth0 egress bpf direct-action obj $(PROG_TC) sec classifier_egress;tc filter add dev veth0 ingress bpf direct-action obj $(PROG_TC) sec classifier_ingress"
 
 curl:
-	sudo ip netns exec demo curl http://www.baidu.com
+	sudo ip netns exec demo curl -I pipy-ok.pipy:8080
 
 dns:
 	sudo ip netns exec demo nslookup pipy-ok.pipy
@@ -129,7 +129,7 @@ test-log:
 	cat /sys/kernel/debug/tracing/trace_pipe|grep bpf_trace_printk
 
 
-CRACK_NS ?= cni-95830327-4330-5464-e2d4-ea07d634aa6a
+CRACK_NS ?= demo
 
 crack-clean:
 	sudo ip netns exec $(CRACK_NS) tc filter delete dev eth0 egress
