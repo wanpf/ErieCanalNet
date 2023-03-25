@@ -23,6 +23,6 @@ const (
 
 	// ECNetDNSNatEbpfMap is the mount point of ecnet_dns_nat map
 	ECNetDNSNatEbpfMap = "/sys/fs/bpf/tc/globals/ecnet_dns_nat"
-	// ECNetSVCNatEbpfMap is the mount point of ecnet_ssvc_nat map
-	ECNetSVCNatEbpfMap = "/sys/fs/bpf/tc/globals/ecnet_ssvc_nat"
+	// ECNetSVCNatEbpfMap is the mount point of ecnet_svc_nat map
+	ECNetSVCNatEbpfMap = "/sys/fs/bpf/tc/globals/ecnet_svc_nat"
 )

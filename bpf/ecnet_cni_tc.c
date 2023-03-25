@@ -84,14 +84,14 @@ static inline int process_tcp_ingress_packet(struct __sk_buff *skb,
            &p.dip, bpf_htons(p.dport));
 #endif
 
-    struct origin_info *origin = bpf_map_lookup_elem(&ecnet_ssvc_nat, &p);
+    struct origin_info *origin = bpf_map_lookup_elem(&ecnet_svc_nat, &p);
     if (!origin) {
         // debugf("ecnet_cni_tcp_tc [ingress]: original not found");
         return TC_ACT_OK;
     }
     if (tcph->fin && tcph->ack) {
         // debugf("ecnet_cni_tcp_tc [ingress]: original deleted");
-        bpf_map_delete_elem(&ecnet_ssvc_nat, &p);
+        bpf_map_delete_elem(&ecnet_svc_nat, &p);
     }
 
     __u32 tcp_csum_off = TCP_CSUM_OFF;
@@ -280,7 +280,7 @@ static inline int process_tcp_egress_packet(struct __sk_buff *skb,
                &p.dip, bpf_ntohs(p.dport));
 #endif
 
-        bpf_map_update_elem(&ecnet_ssvc_nat, &p, &origin, BPF_NOEXIST);
+        bpf_map_update_elem(&ecnet_svc_nat, &p, &origin, BPF_NOEXIST);
     }
 
     __u32 tcp_csum_off = TCP_CSUM_OFF;

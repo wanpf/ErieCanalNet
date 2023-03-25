@@ -42,7 +42,7 @@ struct bpf_elf_map __section("maps") ecnet_dns_nat = {
     .pinning = PIN_GLOBAL_NS,
 };
 
-struct bpf_elf_map __section("maps") ecnet_ssvc_nat = {
+struct bpf_elf_map __section("maps") ecnet_svc_nat = {
     .type = BPF_MAP_TYPE_LRU_HASH,
     .size_key = sizeof(struct pair),
     .size_value = sizeof(struct origin_info),

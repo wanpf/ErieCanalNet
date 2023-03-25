@@ -143,7 +143,7 @@ func initTrafficControlProgs() error {
 	err = coll.LoadAndAssign(&ps, &ebpf.CollectionOptions{
 		MapReplacements: map[string]*ebpf.Map{
 			"ecnet_dns_nat":  GetMcsDNSNatMap(),
-			"ecnet_ssvc_nat": GetMcsSvcNatMap(),
+			"ecnet_svc_nat": GetMcsSvcNatMap(),
 		},
 	})
 	if err != nil {

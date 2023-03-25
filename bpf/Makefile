@@ -5,6 +5,7 @@ CFLAGS=-O2 -g  -Wall -target bpf -I/usr/include/$(shell uname -m)-linux-gnu
 BPF_FS=/sys/fs/bpf
 PIN_OBJECT_NS_PATH=/sys/fs/bpf
 PIN_TC_GLOBAL_NS_PATH=/sys/fs/bpf/tc/globals
+PROG_MOUNT_PATH=/sys/fs/bpf
 
 MACROS:=
 DEBUG ?= 1
@@ -44,7 +45,7 @@ ifeq ($(CGROUP2_PATH),)
 $(error It looks like your system does not have cgroupv2 enabled, or the automatic recognition fails. Please enable cgroupv2, or specify the path of cgroupv2 manually via CGROUP2_PATH parameter.)
 endif
 
-TARGETS=ecnet_cni_tc.o
+TARGETS=ecnet_cni_tc.o ecnet_cni_opts.o
 
 $(BPF_FS):
 	mountpoint -q $@ || mount -t bpf bpf $@
@@ -68,19 +69,30 @@ compile-clean:
 load-map-ecnet_dns_nat:
 	[ -f $(PIN_TC_GLOBAL_NS_PATH)/ecnet_dns_nat ] || sudo bpftool map create $(PIN_TC_GLOBAL_NS_PATH)/ecnet_dns_nat type lru_hash key 12 value 8 entries 1024 name ecnet_dns_nat
 
-load-map-ecnet_ssvc_nat:
-	[ -f $(PIN_TC_GLOBAL_NS_PATH)/ecnet_ssvc_nat ] || sudo bpftool map create $(PIN_TC_GLOBAL_NS_PATH)/ecnet_ssvc_nat type lru_hash key 12 value 8 entries 65535 name ecnet_ssvc_nat
+load-map-ecnet_svc_nat:
+	[ -f $(PIN_TC_GLOBAL_NS_PATH)/ecnet_svc_nat ] || sudo bpftool map create $(PIN_TC_GLOBAL_NS_PATH)/ecnet_svc_nat type lru_hash key 12 value 8 entries 65535 name ecnet_svc_nat
 
 clean-maps:
 	sudo rm -f \
 		$(PIN_TC_GLOBAL_NS_PATH)/ecnet_dns_nat \
-		$(PIN_TC_GLOBAL_NS_PATH)/ecnet_ssvc_nat
+		$(PIN_TC_GLOBAL_NS_PATH)/ecnet_svc_nat
 
-load: compile init-bpffs load-map-ecnet_dns_nat load-map-ecnet_ssvc_nat
+load-get_sockopts: load-map-ecnet_dns_nat load-map-ecnet_svc_nat
+	sudo bpftool -m prog load ecnet_cni_opts.o $(PROG_MOUNT_PATH)/get_sockopts \
+		map name ecnet_svc_nat pinned $(PIN_TC_GLOBAL_NS_PATH)/ecnet_svc_nat
 
-attach:
+attach-get_sockopts:
+	sudo bpftool cgroup attach $(CGROUP2_PATH) getsockopt pinned $(PROG_MOUNT_PATH)/get_sockopts
 
-clean: clean-maps compile-clean
+clean-get_sockopts:
+	sudo bpftool cgroup detach $(CGROUP2_PATH) getsockopt pinned $(PROG_MOUNT_PATH)/get_sockopts
+	sudo rm $(PROG_MOUNT_PATH)/get_sockopts
+
+load: compile init-bpffs load-map-ecnet_dns_nat load-map-ecnet_svc_nat load-get_sockopts
+
+attach: attach-get_sockopts
+
+clean: clean-get_sockopts clean-maps compile-clean
 
 PROG_TC ?= /home/benne/CLionProjects/osm-edge/bpf/ecnet_cni_tc.o
 
