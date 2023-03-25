@@ -94,6 +94,8 @@ attach: attach-get_sockopts
 
 clean: clean-get_sockopts clean-maps compile-clean
 
+all: compile
+
 PROG_TC ?= /home/benne/CLionProjects/ErieCanalNet/bpf/ecnet_cni_tc.o
 
 test-init:

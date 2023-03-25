@@ -53,7 +53,7 @@ __section("cgroup/getsockopt") int get_sockopt(struct bpf_sockopt *ctx)
                &p.dip, bpf_ntohs(p.dport));
 #endif
 
-        origin = bpf_map_lookup_elem(&ecnet_dns_nat, &p);
+        origin = bpf_map_lookup_elem(&ecnet_svc_nat, &p);
         if (origin) {
 #ifdef DEBUG
             debugf(
