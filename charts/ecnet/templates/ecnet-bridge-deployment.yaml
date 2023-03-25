@@ -1,0 +1,166 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ecnet-bridge
+  namespace: {{ include "ecnet.namespace" . }}
+  labels:
+    {{- include "ecnet.labels" . | nindent 4 }}
+    app: ecnet-bridge
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: ecnet-bridge
+  labels:
+    {{- include "ecnet.labels" . | nindent 4 }}
+    app: ecnet-bridge
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - list
+      - get
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: ecnet-bridge
+  labels:
+    {{- include "ecnet.labels" . | nindent 4 }}
+    app: ecnet-bridge
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: ecnet-bridge
+subjects:
+  - kind: ServiceAccount
+    name: ecnet-bridge
+    namespace: {{ include "ecnet.namespace" . }}
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: ecnet-bridge
+  namespace: {{ include "ecnet.namespace" . }}
+  labels:
+    {{- include "ecnet.labels" . | nindent 4 }}
+    app: ecnet-bridge
+    meshName: {{ .Values.ecnet.meshName }}
+spec:
+  selector:
+    matchLabels:
+      app: ecnet-bridge
+  template:
+    metadata:
+      labels:
+        {{- include "ecnet.labels" . | nindent 8 }}
+        app: ecnet-bridge
+  {{- if .Values.ecnet.ecnetController.podLabels }}
+  {{- toYaml .Values.ecnet.ecnetController.podLabels | nindent 8 }}
+  {{- end }}
+    spec:
+      {{- if .Values.ecnet.ecnetController.affinity }}
+      affinity:
+      {{- toYaml .Values.ecnet.ecnetController.affinity | nindent 8 }}
+      {{- end }}
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      restartPolicy: Always
+      priorityClassName: system-node-critical
+      serviceAccountName: ecnet-bridge
+      containers:
+        #- name: test
+        #  image: local.registry/flomesh/dnsserver:latest
+        #  command: ["sleep", "3600s"]
+        #  ports:
+        #    - containerPort: 15053
+        #      name: proxy-dns-port
+        #      protocol: UDP
+        #  securityContext:
+        #    privileged: true
+        #- name: proxy
+        #  image: {{ $.Values.ecnet.sidecarImage }}
+        #  imagePullPolicy: {{ $.Values.ecnet.image.pullPolicy }}
+        #  #ports:
+        #  #  - containerPort: 15053
+        #  #    name: proxy-dns-port
+        #  #    protocol: UDP
+        #  command: [ 'pipy' ]
+        #  args: [
+        #    "--log-level=debug",
+        #    "http://ecnet-controller.{{ include "ecnet.namespace" . }}:{{ .Values.ecnet.proxyServerPort }}/repo/ecnet/proxy.ecnet.ecnet-system/",
+        #  ]
+        #  securityContext:
+        #    privileged: true
+        - name: bridge
+          image: "{{ include "ecnetBridge.image" . }}"
+          imagePullPolicy: {{ .Values.ecnet.image.pullPolicy }}
+          args: [
+            "/ec/ecnet-bridge",
+            "--cni-mode=true",
+            "--kind=false",
+            "--debug={{ .Values.ecnet.ecnetBridge.debug }}",
+          ]
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - make
+                  - -k
+                  - clean
+          resources:
+            limits:
+              cpu: "{{.Values.ecnet.ecnetBridge.resource.limits.cpu}}"
+              memory: "{{.Values.ecnet.ecnetBridge.resource.limits.memory}}"
+            requests:
+              cpu: "{{.Values.ecnet.ecnetBridge.resource.requests.cpu}}"
+              memory: "{{.Values.ecnet.ecnetBridge.resource.requests.memory}}"
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - mountPath: /sys/fs/cgroup
+              name: sys-fs-cgroup
+            - mountPath: /host/opt/cni/bin
+              name: cni-bin-dir
+            - mountPath: /host/etc/cni/net.d
+              name: cni-config-dir
+            - mountPath: /host/proc
+              name: host-proc
+            - mountPath: /host/var/run
+              name: host-var-run
+              mountPropagation: Bidirectional
+      tolerations:
+        - key: CriticalAddonsOnly
+          operator: Exists
+        - operator: Exists
+      volumes:
+        - hostPath:
+            path: /sys/fs/cgroup
+          name: sys-fs-cgroup
+        - hostPath:
+            path: /proc
+          name: host-proc
+        - hostPath:
+            path: /opt/cni/bin
+          name: cni-bin-dir
+        - hostPath:
+            path: /etc/cni/net.d
+          name: cni-config-dir
+        - hostPath:
+            path: /var/run
+          name: host-var-run
+    {{- if .Values.ecnet.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.ecnet.imagePullSecrets | indent 8 }}
+    {{- end }}
+      {{- if .Values.ecnet.ecnetController.nodeSelector }}
+      nodeSelector:
+      {{- toYaml .Values.ecnet.ecnetController.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.ecnet.ecnetController.tolerations }}
+      tolerations:
+      {{- toYaml .Values.ecnet.ecnetController.tolerations | nindent 8 }}
+      {{- end }}

@@ -1,0 +1,346 @@
+# Default values for ecnet.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+ecnet:
+
+  #
+  # -- ECNET control plane image parameters
+  image:
+    # -- Container image registry for control plane images
+    registry: flomesh
+    # -- Container image pull policy for control plane containers
+    pullPolicy: IfNotPresent
+    # -- Container image tag for control plane images
+    tag: "1.3.3"
+    # -- Image name defaults
+    name:
+      # -- ecnet-controller's image name
+      ecnetController: ecnet-controller
+      # -- ecnet-bootstrap's image name
+      ecnetBootstrap: ecnet-bootstrap
+      # -- ecnet-crds' image name
+      ecnetCRDs: ecnet-crds
+      # -- ecnet-preinstall's image name
+      ecnetPreinstall: ecnet-preinstall
+      # -- ecnet-interceptor's image name
+      ecnetBridge: ecnet-bridge
+
+  # -- `ecnet-controller` image pull secret
+  imagePullSecrets: [ ]
+  # -- The class of the ECNET Sidecar Driver
+  sidecarClass: pipy
+  # -- Sidecar image for Linux workloads
+  sidecarImage: local.registry/flomesh/pipy:0.90.0-54
+  # -- Remote destination port on which the Discovery Service listens for new connections from Sidecars.
+  proxyServerPort: 6060
+  # -- Curl image for control plane init container
+  curlImage: local.registry/curlimages/curl
+
+  # -- Pipy RepoServer
+  repoServer:
+    # -- Image used for Pipy RepoServer
+    image: local.registry/flomesh/pipy-repo:0.90.0-54
+    # -- if false , Pipy RepoServer is installed within ecnetController pod.
+    standalone: false
+    # -- ipaddr of host/service where Pipy RepoServer is installed
+    ipaddr: "127.0.0.1"
+    # -- codebase is the folder used by ecnetController.
+    codebase: ""
+
+  #
+  # -- ECNET controller parameters
+  ecnetController:
+    # -- ECNET controller's replica count (ignored when autoscale.enable is true)
+    replicaCount: 1
+    # -- ECNET controller's container resource parameters. See https://docs.openservicemesh.io/docs/guides/ha_scale/scale/ for more details.
+    resource:
+      limits:
+        cpu: "1.5"
+        memory: "1G"
+      requests:
+        cpu: "0.5"
+        memory: "128M"
+    # -- ECNET controller's pod labels
+    podLabels: { }
+
+    # -- Auto scale configuration
+    autoScale:
+      # -- Enable Autoscale
+      enable: false
+      # -- Minimum replicas for autoscale
+      minReplicas: 1
+      # -- Maximum replicas for autoscale
+      maxReplicas: 5
+      cpu:
+        # -- Average target CPU utilization (%)
+        targetAverageUtilization: 80
+      memory:
+        # -- Average target memory utilization (%)
+        targetAverageUtilization: 80
+
+    ## Affinity settings for pod assignment
+    ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: kubernetes.io/os
+                  operator: In
+                  values:
+                    - linux
+                - key: kubernetes.io/arch
+                  operator: In
+                  values:
+                    - amd64
+                    - arm64
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - ecnet-controller
+              topologyKey: kubernetes.io/hostname
+            weight: 100
+
+    # -- Node tolerations applied to control plane pods.
+    # The specified tolerations allow pods to schedule onto nodes with matching taints.
+    tolerations: [ ]
+
+  #
+  # -- ECNET bridge parameters
+  ecnetBridge:
+    debug: false
+    resource:
+      limits:
+        cpu: "1.5"
+        memory: "1G"
+      requests:
+        cpu: "0.5"
+        memory: "256M"
+    ## Affinity settings for pod assignment
+    ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: kubernetes.io/os
+                  operator: In
+                  values:
+                    - linux
+                - key: kubernetes.io/arch
+                  operator: In
+                  values:
+                    - amd64
+                    - arm64
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - ecnet-controller
+              topologyKey: kubernetes.io/hostname
+            weight: 100
+
+    # -- Node tolerations applied to control plane pods.
+    # The specified tolerations allow pods to schedule onto nodes with matching taints.
+    tolerations: [ ]
+
+  # -- The trust domain to use as part of the common name when requesting new certificates.
+  trustDomain: cluster.local
+
+  # -- Identifier for the instance of a service mesh within a cluster
+  meshName: ecnet
+
+  # -- Log level for the proxy sidecar. Non developers should generally never set this value. In production environments the LogLevel should be set to `error`
+  sidecarLogLevel: error
+
+  # -- Local DNS Proxy improves the performance of your computer by caching the responses coming from your DNS servers
+  localDNSProxy:
+    enable: true
+
+  # -- Sets the resync interval for regular proxy broadcast updates, set to 0s to not enforce any resync
+  configResyncInterval: "90s"
+
+  # -- Controller log verbosity
+  controllerLogLevel: info
+
+  # -- Enforce only deploying one mesh in the cluster
+  enforceSingleMesh: true
+
+  # -- Namespace to deploy ECNET in. If not specified, the Helm release namespace is used.
+  ecnetNamespace: ""
+
+  # -- Node tolerations applied to control plane pods.
+  # The specified tolerations allow pods to schedule onto nodes with matching taints.
+  controlPlaneTolerations: [ ]
+
+  #
+  # -- ECNET bootstrap parameters
+  ecnetBootstrap:
+    # -- ECNET bootstrap's replica count
+    replicaCount: 1
+    # -- ECNET bootstrap's container resource parameters
+    resource:
+      limits:
+        cpu: "0.5"
+        memory: "128M"
+      requests:
+        cpu: "0.3"
+        memory: "128M"
+    # -- ECNET bootstrap's pod labels
+    podLabels: { }
+
+    ## Affinity settings for pod assignment
+    ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: kubernetes.io/os
+                  operator: In
+                  values:
+                    - linux
+                - key: kubernetes.io/arch
+                  operator: In
+                  values:
+                    - amd64
+                    - arm64
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - ecnet-bootstrap
+              topologyKey: kubernetes.io/hostname
+            weight: 100
+
+    ## Node labels for pod assignment
+    ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
+    nodeSelector: { }
+
+    # -- Node tolerations applied to control plane pods.
+    # The specified tolerations allow pods to schedule onto nodes with matching taints.
+    tolerations: [ ]
+
+  #
+  # -- ECNET's preinstall hook parameters
+
+  preinstall:
+    ## Affinity settings for pod assignment
+    ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: kubernetes.io/os
+                  operator: In
+                  values:
+                    - linux
+                - key: kubernetes.io/arch
+                  operator: In
+                  values:
+                    - amd64
+                    - arm64
+    ## Node labels for pod assignment
+    ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
+    nodeSelector: { }
+
+    # -- Node tolerations applied to control plane pods.
+    # The specified tolerations allow pods to schedule onto nodes with matching taints.
+    tolerations: [ ]
+
+  cleanup:
+    ## Node labels for pod assignment
+    ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
+    nodeSelector: { }
+
+    ## Affinity settings for pod assignment
+    ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: kubernetes.io/os
+                  operator: In
+                  values:
+                    - linux
+                - key: kubernetes.io/arch
+                  operator: In
+                  values:
+                    - amd64
+                    - arm64
+
+    # -- Node tolerations applied to control plane pods.
+    # The specified tolerations allow pods to schedule onto nodes with matching taints.
+    tolerations: [ ]
+
+  pluginChains:
+    inbound-tcp:
+      - plugin: modules/inbound-tls-termination
+        priority: 130
+        disable: false
+      - plugin: modules/inbound-tcp-routing
+        priority: 120
+        disable: false
+      - plugin: modules/inbound-tcp-load-balancing
+        priority: 110
+        disable: false
+      - plugin: modules/inbound-tcp-default
+        priority: 100
+        disable: false
+    inbound-http:
+      - plugin: modules/inbound-tls-termination
+        priority: 180
+      - plugin: modules/inbound-http-routing
+        priority: 170
+      - plugin: modules/inbound-metrics-http
+        priority: 160
+      - plugin: modules/inbound-tracing-http
+        priority: 150
+      - plugin: modules/inbound-logging-http
+        priority: 140
+      - plugin: modules/inbound-throttle-service
+        priority: 130
+      - plugin: modules/inbound-throttle-route
+        priority: 120
+      - plugin: modules/inbound-http-load-balancing
+        priority: 110
+      - plugin: modules/inbound-http-default
+        priority: 100
+    outbound-tcp:
+      - plugin: modules/outbound-tcp-routing
+        priority: 120
+      - plugin: modules/outbound-tcp-load-balancing
+        priority: 110
+      - plugin: modules/outbound-tcp-default
+        priority: 100
+    outbound-http:
+      - plugin: modules/outbound-http-routing
+        priority: 160
+      - plugin: modules/outbound-metrics-http
+        priority: 150
+      - plugin: modules/outbound-tracing-http
+        priority: 140
+      - plugin: modules/outbound-logging-http
+        priority: 130
+      - plugin: modules/outbound-circuit-breaker
+        priority: 120
+      - plugin: modules/outbound-http-load-balancing
+        priority: 110
+      - plugin: modules/outbound-http-default
+        priority: 100

@@ -1,0 +1,32 @@
+ARG GO_VERSION
+
+FROM local.registry/library/golang:$GO_VERSION as gobuild
+
+WORKDIR /ec
+
+ADD go.mod .
+ADD go.sum .
+
+RUN --mount=type=cache,target=/root/.cache/go-build \
+    --mount=type=cache,target=/go/pkg \
+    go mod download
+
+ADD . .
+
+RUN --mount=type=cache,target=/root/.cache/go-build \
+    --mount=type=cache,target=/go/pkg \
+    go build -v -ldflags "-s -w" -o ./dist/ecnet-bridge ./cmd/ecnet/ecnet-bridge/ecnet-bridge.go
+RUN --mount=type=cache,target=/root/.cache/go-build \
+    --mount=type=cache,target=/go/pkg \
+    go build -v -ldflags "-s -w" -o ./dist/ecnet-cni ./cmd/ecnet/ecnet-bridge/ecnet-cni/ecnet-cni.go
+
+FROM local.registry/flomesh/osm-edge-interceptor:base20.04
+
+WORKDIR /ec
+
+COPY bpf bpf
+COPY Makefile.CNI Makefile
+COPY --from=gobuild /ec/dist/ecnet-bridge ecnet-bridge
+COPY --from=gobuild /ec/dist/ecnet-cni ecnet-cni
+
+CMD /ec/ecnet-bridge

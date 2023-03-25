@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ecnet-bootstrap
+  namespace: {{ include "ecnet.namespace" . }}
+  labels:
+    {{- include "ecnet.labels" . | nindent 4 }}
+    app: ecnet-bootstrap
+    meshName: {{ .Values.ecnet.meshName }}
+spec:
+  replicas: {{ .Values.ecnet.ecnetBootstrap.replicaCount }}
+  selector:
+    matchLabels:
+      app: ecnet-bootstrap
+  template:
+    metadata:
+      labels:
+        {{- include "ecnet.labels" . | nindent 8 }}
+        app: ecnet-bootstrap
+  {{- if .Values.ecnet.ecnetBootstrap.podLabels }}
+  {{- toYaml .Values.ecnet.ecnetBootstrap.podLabels | nindent 8 }}
+  {{- end }}
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '9091'
+    spec:
+      {{- if .Values.ecnet.ecnetBootstrap.affinity }}
+      affinity:
+      {{- toYaml .Values.ecnet.ecnetBootstrap.affinity | nindent 8 }}
+      {{- end }}
+      priorityClassName: system-node-critical
+      serviceAccountName: {{ .Release.Name }}
+      {{- if not (.Capabilities.APIVersions.Has "security.openshift.io/v1") }}
+      {{- include "restricted.securityContext" . | nindent 6 }}
+      {{- end }}
+      containers:
+        - name: bootstrap
+          image: "{{ include "ecnetBootstrap.image" . }}"
+          imagePullPolicy: {{ .Values.ecnet.image.pullPolicy }}
+          ports:
+            - name: "crdconversion"
+              containerPort: 9443
+            - name: "metrics"
+              containerPort: 9091
+          command: ['/ecnet-bootstrap']
+          args: [
+            "--verbosity", "{{.Values.ecnet.controllerLogLevel}}",
+            "--ecnet-namespace", "{{ include "ecnet.namespace" . }}",
+            "--ecnet-version", "{{ .Chart.AppVersion }}",
+            "--trust-domain", "{{.Values.ecnet.trustDomain}}",
+          ]
+          resources:
+            limits:
+              cpu: "{{.Values.ecnet.ecnetBootstrap.resource.limits.cpu}}"
+              memory: "{{.Values.ecnet.ecnetBootstrap.resource.limits.memory}}"
+            requests:
+              cpu: "{{.Values.ecnet.ecnetBootstrap.resource.requests.cpu}}"
+              memory: "{{.Values.ecnet.ecnetBootstrap.resource.requests.memory}}"
+          readinessProbe:
+            initialDelaySeconds: 5
+            timeoutSeconds: 5
+            httpGet:
+              scheme: HTTP
+              path: /healthz
+              port: 9091
+          livenessProbe:
+            initialDelaySeconds: 5
+            timeoutSeconds: 5
+            httpGet:
+              scheme: HTTP
+              path: /healthz
+              port: 9091
+          env:
+            # The BOOTSTRAP_POD_NAME env variable sets pod name dynamically, used by ecnet-bootstrap to register events
+            - name: BOOTSTRAP_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+    {{- if .Values.ecnet.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.ecnet.imagePullSecrets | indent 8 }}
+    {{- end }}
+      {{- if .Values.ecnet.ecnetBootstrap.nodeSelector }}
+      nodeSelector:
+      {{- toYaml .Values.ecnet.ecnetBootstrap.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.ecnet.ecnetBootstrap.tolerations }}
+      tolerations:
+      {{- toYaml .Values.ecnet.ecnetBootstrap.tolerations | nindent 8 }}
+      {{- end }}

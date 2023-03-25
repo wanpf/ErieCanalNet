@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ecnet-controller
+  namespace: {{ include "ecnet.namespace" . }}
+  labels:
+    {{- include "ecnet.labels" . | nindent 4 }}
+    app: ecnet-controller
+spec:
+  ports:
+    - name: repo
+      port: 6060
+      targetPort: 6060
+    - name: healthz
+      port: 9091
+      targetPort: 9091
+  selector:
+    app: ecnet-controller

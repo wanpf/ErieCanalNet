@@ -1,0 +1,164 @@
+# Custom Resource Definition (CRD) for ECNET's configuration specification.
+#
+# Copyright Open Service Mesh authors.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License");
+#    you may not use this file except in compliance with the License.
+#    You may obtain a copy of the License at
+#
+#        http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: meshconfigs.config.openservicemesh.io
+  labels:
+    app.kubernetes.io/name : "openservicemesh.io"
+spec:
+  group: config.openservicemesh.io
+  scope: Namespaced
+  names:
+    kind: MeshConfig
+    listKind: MeshConfigList
+    shortNames:
+      - meshconfig
+    singular: meshconfig
+    plural: meshconfigs
+  conversion:
+    strategy: None
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                sidecar:
+                  description: Configuration for sidecar
+                  type: object
+                  properties:
+                    logLevel:
+                      description: Sets the logging verbosity of proxy sidecar, only applicable to newly created pods joining the mesh.
+                      type: string
+                      enum:
+                        - trace
+                        - debug
+                        - info
+                        - warning
+                        - warn
+                        - error
+                        - critical
+                        - off
+                    sidecarClass:
+                      description: Class of the sidecar
+                      type: string
+                      enum:
+                        - pipy
+                        - envoy
+                    sidecarImage:
+                      description: Image for the sidecar
+                      type: string
+                    proxyServerPort:
+                      description: Remote destination port on which the Discovery Service listens for new connections from Sidecars.
+                      type: integer
+                      minimum: 1
+                      maximum: 65535
+                    configResyncInterval:
+                      description: Resync interval for regular proxy broadcast updates
+                      type: string
+                    localDNSProxy:
+                      description: LocalDNSProxy improves the performance of your computer by caching the responses coming from your DNS servers
+                      type: object
+                      properties:
+                        enable:
+                          description: Enables local DNS proxy for the mesh.
+                          type: boolean
+                        primaryUpstreamDNSServerIPAddr:
+                          description: Primary upstream DNS server for local DNS Proxy.
+                          type: string
+                        secondaryUpstreamDNSServerIPAddr:
+                          description: Secondary upstream DNS server for local DNS Proxy.
+                          type: string
+                repoServer:
+                  description: Configuration for RepoServer
+                  type: object
+                  required:
+                    - ipaddr
+                    - codebase
+                  properties:
+                    ipaddr:
+                      description: IPAddr of the RepoServer.
+                      type: string
+                    codebase:
+                      description: Codebase is the folder used by ecnetController.
+                      type: string
+                pluginChains:
+                  description: Plugin Chains
+                  type: object
+                  properties:
+                    inbound-tcp:
+                      type: array
+                      items:
+                        type: object
+                        required:
+                          - plugin
+                          - priority
+                        properties:
+                          plugin:
+                            type: string
+                          priority:
+                            type: number
+                          disable:
+                            type: boolean
+                    inbound-http:
+                      type: array
+                      items:
+                        type: object
+                        required:
+                          - plugin
+                          - priority
+                        properties:
+                          plugin:
+                            type: string
+                          priority:
+                            type: number
+                          disable:
+                            type: boolean
+                    outbound-tcp:
+                      type: array
+                      items:
+                        type: object
+                        required:
+                          - plugin
+                          - priority
+                        properties:
+                          plugin:
+                            type: string
+                          priority:
+                            type: number
+                          disable:
+                            type: boolean
+                    outbound-http:
+                      type: array
+                      items:
+                        type: object
+                        required:
+                          - plugin
+                          - priority
+                        properties:
+                          plugin:
+                            type: string
+                          priority:
+                            type: number
+                          disable:
+                            type: boolean

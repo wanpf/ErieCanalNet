@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: preset-mesh-config
+  namespace: {{ include "ecnet.namespace" . }}
+data:
+  preset-mesh-config.json: |
+    {
+      "sidecar": {
+        "logLevel": {{.Values.ecnet.sidecarLogLevel | mustToJson}},
+        "configResyncInterval": {{.Values.ecnet.configResyncInterval | mustToJson}},
+        "sidecarClass": {{.Values.ecnet.sidecarClass | mustToJson }},
+        "sidecarImage": {{.Values.ecnet.sidecarImage | mustToJson }},
+        "proxyServerPort": {{.Values.ecnet.proxyServerPort | mustToJson}},
+        "localDNSProxy": {{.Values.ecnet.localDNSProxy | mustToJson}}
+      },
+      "repoServer": {
+        "ipaddr": {{.Values.ecnet.repoServer.ipaddr | mustToJson}},
+        "codebase": {{.Values.ecnet.repoServer.codebase | mustToJson}}
+      },
+      "pluginChains": {{.Values.ecnet.pluginChains | mustToJson }}
+    }
