@@ -1,4 +1,4 @@
-name: Bridge-release
+name: ecnet-release
 on:
   push:
     tags:
