@@ -7,7 +7,6 @@ package catalog
 import (
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/configurator"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/endpoint"
-	"github.com/flomesh-io/ErieCanal/pkg/ecnet/identity"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/k8s"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/logger"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/multicluster"
@@ -37,19 +36,16 @@ type MeshCatalog struct {
 
 // MeshCataloger is the mechanism by which the Service Mesh controller discovers all sidecar proxies connected to the catalog.
 type MeshCataloger interface {
-	// ListOutboundServicesForIdentity list the services the given service identity is allowed to initiate outbound connections to
-	ListOutboundServicesForIdentity(identity.ServiceIdentity) []service.MeshService
+	// ListOutboundServices list the services the given service identity is allowed to initiate outbound connections to
+	ListOutboundServices() []service.MeshService
 
-	// ListServiceIdentitiesForService lists the service identities associated with the given service
-	ListServiceIdentitiesForService(service.MeshService) []identity.ServiceIdentity
-
-	// ListAllowedUpstreamEndpointsForService returns the list of endpoints over which the downstream client identity
+	// ListUpstreamEndpointsForService returns the list of endpoints over which the downstream client identity
 	// is allowed access the upstream service
-	ListAllowedUpstreamEndpointsForService(identity.ServiceIdentity, service.MeshService) []endpoint.Endpoint
+	ListUpstreamEndpointsForService(service.MeshService) []endpoint.Endpoint
 
 	// GetKubeController returns the kube controller instance handling the current cluster
 	GetKubeController() k8s.Controller
 
 	// GetOutboundMeshTrafficPolicy returns the outbound mesh traffic policy for the given downstream identity
-	GetOutboundMeshTrafficPolicy(identity.ServiceIdentity) *trafficpolicy.OutboundMeshTrafficPolicy
+	GetOutboundMeshTrafficPolicy() *trafficpolicy.OutboundMeshTrafficPolicy
 }

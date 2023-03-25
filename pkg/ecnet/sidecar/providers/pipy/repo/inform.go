@@ -4,7 +4,6 @@ import (
 	"sync"
 
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/announcements"
-	"github.com/flomesh-io/ErieCanal/pkg/ecnet/errcode"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/identity"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/messaging"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/sidecar/providers/pipy"
@@ -104,13 +103,6 @@ func (s *Server) recordPodMetadata(p *pipy.Proxy) error {
 		if len(pod.Status.PodIP) > 0 {
 			p.Addr = pipy.NewNetAddress(pod.Status.PodIP)
 		}
-	}
-
-	// Verify Service account matches (cert to pod Service Account)
-	if p.Identity.ToK8sServiceAccount() != p.PodMetadata.ServiceAccount {
-		log.Error().Str(errcode.Kind, errcode.GetErrCodeWithMetric(errcode.ErrMismatchedServiceAccount)).Str("proxy", p.String()).
-			Msgf("Service Account referenced in NodeID (%s) does not match Service Account in Certificate (%s). This proxy is not allowed to join the mesh.", p.PodMetadata.ServiceAccount, p.Identity.ToK8sServiceAccount())
-		return errServiceAccountMismatch
 	}
 
 	return nil

@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/catalog"
-	"github.com/flomesh-io/ErieCanal/pkg/ecnet/identity"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/sidecar/providers/pipy"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/sidecar/providers/pipy/client"
 )
@@ -45,7 +44,7 @@ func (job *PipyConfGeneratorJob) Run() {
 	probes(proxy, pipyConf)
 	features(s, proxy, pipyConf)
 	pluginSetV := plugin(s, pipyConf)
-	outbound(cataloger, proxy.Identity, s, pipyConf, proxy)
+	outbound(cataloger, s, pipyConf, proxy)
 	balance(pipyConf)
 	reorder(pipyConf)
 	job.publishSidecarConf(s.repoClient, proxy, pipyConf, pluginSetV)
@@ -67,19 +66,17 @@ func reorder(pipyConf *PipyConf) {
 	}
 }
 
-func outbound(cataloger catalog.MeshCataloger, serviceIdentity identity.ServiceIdentity, s *Server, pipyConf *PipyConf, proxy *pipy.Proxy) bool {
-	outboundTrafficPolicy := cataloger.GetOutboundMeshTrafficPolicy(serviceIdentity)
+func outbound(cataloger catalog.MeshCataloger, s *Server, pipyConf *PipyConf, proxy *pipy.Proxy) bool {
+	outboundTrafficPolicy := cataloger.GetOutboundMeshTrafficPolicy()
 	if len(outboundTrafficPolicy.ServicesResolvableSet) > 0 {
 		pipyConf.DNSResolveDB = make(map[string][]string)
 		for k := range outboundTrafficPolicy.ServicesResolvableSet {
 			pipyConf.DNSResolveDB[k] = []string{"10.244.2.1"}
 		}
 	}
-	outboundDependClusters := generatePipyOutboundTrafficRoutePolicy(cataloger, serviceIdentity, pipyConf,
-		outboundTrafficPolicy)
+	outboundDependClusters := generatePipyOutboundTrafficRoutePolicy(pipyConf, outboundTrafficPolicy)
 	if len(outboundDependClusters) > 0 {
-		if ready := generatePipyOutboundTrafficBalancePolicy(cataloger, proxy, serviceIdentity, pipyConf,
-			outboundTrafficPolicy, outboundDependClusters); !ready {
+		if ready := generatePipyOutboundTrafficBalancePolicy(cataloger, pipyConf, outboundTrafficPolicy, outboundDependClusters); !ready {
 			if s.retryProxiesJob != nil {
 				s.retryProxiesJob()
 			}

@@ -12,14 +12,12 @@ import (
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/catalog"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/constants"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/endpoint"
-	"github.com/flomesh-io/ErieCanal/pkg/ecnet/identity"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/k8s"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/service"
-	"github.com/flomesh-io/ErieCanal/pkg/ecnet/sidecar/providers/pipy"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/trafficpolicy"
 )
 
-func generatePipyOutboundTrafficRoutePolicy(_ catalog.MeshCataloger, proxyIdentity identity.ServiceIdentity, pipyConf *PipyConf, outboundPolicy *trafficpolicy.OutboundMeshTrafficPolicy) map[service.ClusterName]*WeightedCluster {
+func generatePipyOutboundTrafficRoutePolicy(pipyConf *PipyConf, outboundPolicy *trafficpolicy.OutboundMeshTrafficPolicy) map[service.ClusterName]*WeightedCluster {
 	if len(outboundPolicy.TrafficMatches) == 0 {
 		return nil
 	}
@@ -131,8 +129,7 @@ func generatePipyOutboundTrafficRoutePolicy(_ catalog.MeshCataloger, proxyIdenti
 	return dependClusters
 }
 
-func generatePipyOutboundTrafficBalancePolicy(meshCatalog catalog.MeshCataloger, _ *pipy.Proxy,
-	proxyIdentity identity.ServiceIdentity,
+func generatePipyOutboundTrafficBalancePolicy(meshCatalog catalog.MeshCataloger,
 	pipyConf *PipyConf, outboundPolicy *trafficpolicy.OutboundMeshTrafficPolicy,
 	dependClusters map[service.ClusterName]*WeightedCluster) bool {
 	ready := true
@@ -144,7 +141,7 @@ func generatePipyOutboundTrafficBalancePolicy(meshCatalog catalog.MeshCataloger,
 			continue
 		}
 		clusterConfigs := otp.newClusterConfigs(ClusterName(cluster.ClusterName.String()))
-		upstreamEndpoints := getUpstreamEndpoints(meshCatalog, proxyIdentity, cluster.ClusterName)
+		upstreamEndpoints := getUpstreamEndpoints(meshCatalog, cluster.ClusterName)
 		if len(upstreamEndpoints) == 0 {
 			ready = false
 			continue
@@ -222,10 +219,9 @@ func getMeshClusterConfigs(clustersConfigs []*trafficpolicy.MeshClusterConfig,
 	return nil
 }
 
-func getUpstreamEndpoints(meshCatalog catalog.MeshCataloger, proxyIdentity identity.ServiceIdentity,
-	clusterName service.ClusterName) []endpoint.Endpoint {
+func getUpstreamEndpoints(meshCatalog catalog.MeshCataloger, clusterName service.ClusterName) []endpoint.Endpoint {
 	if dstSvc, err := clusterToMeshSvc(clusterName.String()); err == nil {
-		return meshCatalog.ListAllowedUpstreamEndpointsForService(proxyIdentity, dstSvc)
+		return meshCatalog.ListUpstreamEndpointsForService(dstSvc)
 	}
 	return nil
 }

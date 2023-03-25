@@ -5,7 +5,6 @@ import (
 
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/constants"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/errcode"
-	"github.com/flomesh-io/ErieCanal/pkg/ecnet/identity"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/k8s"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/service"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/trafficpolicy"
@@ -24,16 +23,15 @@ import (
 // The route configurations are consolidated per port, such that upstream services using the same port are a part
 // of the same route configuration. This is required to avoid route conflicts that can occur when the same hostname
 // needs to be routed differently based on the port used.
-func (mc *MeshCatalog) GetOutboundMeshTrafficPolicy(downstreamIdentity identity.ServiceIdentity) *trafficpolicy.OutboundMeshTrafficPolicy {
+func (mc *MeshCatalog) GetOutboundMeshTrafficPolicy() *trafficpolicy.OutboundMeshTrafficPolicy {
 	var trafficMatches []*trafficpolicy.TrafficMatch
 	var clusterConfigs []*trafficpolicy.MeshClusterConfig
 	routeConfigPerPort := make(map[int][]*trafficpolicy.OutboundTrafficPolicy)
-	downstreamSvcAccount := downstreamIdentity.ToK8sServiceAccount()
 	servicesResolvableSet := make(map[string][]interface{})
 
 	// For each service, build the traffic policies required to access it.
 	// It is important to aggregate HTTP route configs by the service's port.
-	for _, meshSvc := range mc.ListOutboundServicesForIdentity(downstreamIdentity) {
+	for _, meshSvc := range mc.ListOutboundServices() {
 		meshSvc := meshSvc // To prevent loop variable memory aliasing in for loop
 		existMcsEndpoints := false
 
@@ -86,7 +84,6 @@ func (mc *MeshCatalog) GetOutboundMeshTrafficPolicy(downstreamIdentity identity.
 				WeightedClusters:    routeMatch.UpstreamClusters,
 			}
 			trafficMatches = append(trafficMatches, trafficMatchForServicePort)
-			log.Trace().Msgf("Built traffic match %s for downstream %s", trafficMatchForServicePort.Name, downstreamIdentity)
 		}
 
 		// Build the HTTP route configs for this service and port combination.
@@ -96,7 +93,7 @@ func (mc *MeshCatalog) GetOutboundMeshTrafficPolicy(downstreamIdentity identity.
 		}
 
 		// Create a route to access the upstream service via it's hostnames and upstream weighted clusters
-		httpHostNamesForServicePort := k8s.GetHostnamesForService(meshSvc, downstreamSvcAccount.Namespace == meshSvc.Namespace)
+		httpHostNamesForServicePort := k8s.GetHostnamesForService(meshSvc, false)
 		outboundTrafficPolicy := trafficpolicy.NewOutboundTrafficPolicy(meshSvc.FQDN(), httpHostNamesForServicePort)
 
 		hasWildCardRoute := false
@@ -185,8 +182,8 @@ func (mc *MeshCatalog) mergeUpstreamClusters(meshSvc service.MeshService, upstre
 	return upstreamClusters
 }
 
-// ListOutboundServicesForIdentity list the services the given service account is allowed to initiate outbound connections to
+// ListOutboundServices list the services the given service account is allowed to initiate outbound connections to
 // Note: ServiceIdentity must be in the format "name.namespace" [https://github.com/flomesh-io/ErieCanal/issues/3188]
-func (mc *MeshCatalog) ListOutboundServicesForIdentity(serviceIdentity identity.ServiceIdentity) []service.MeshService {
+func (mc *MeshCatalog) ListOutboundServices() []service.MeshService {
 	return mc.listMeshServices()
 }

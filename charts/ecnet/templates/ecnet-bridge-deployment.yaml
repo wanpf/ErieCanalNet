@@ -72,29 +72,14 @@ spec:
       priorityClassName: system-node-critical
       serviceAccountName: ecnet-bridge
       containers:
-        #- name: test
-        #  image: local.registry/flomesh/dnsserver:latest
-        #  command: ["sleep", "3600s"]
-        #  ports:
-        #    - containerPort: 15053
-        #      name: proxy-dns-port
-        #      protocol: UDP
-        #  securityContext:
-        #    privileged: true
-        #- name: proxy
-        #  image: {{ $.Values.ecnet.sidecarImage }}
-        #  imagePullPolicy: {{ $.Values.ecnet.image.pullPolicy }}
-        #  #ports:
-        #  #  - containerPort: 15053
-        #  #    name: proxy-dns-port
-        #  #    protocol: UDP
-        #  command: [ 'pipy' ]
-        #  args: [
-        #    "--log-level=debug",
-        #    "http://ecnet-controller.{{ include "ecnet.namespace" . }}:{{ .Values.ecnet.proxyServerPort }}/repo/ecnet/proxy.ecnet.ecnet-system/",
-        #  ]
-        #  securityContext:
-        #    privileged: true
+        - name: proxy
+          image: {{ $.Values.ecnet.sidecarImage }}
+          imagePullPolicy: {{ $.Values.ecnet.image.pullPolicy }}
+          command: [ 'pipy' ]
+          args: [
+            "--log-level=debug",
+            "http://ecnet-controller.{{ include "ecnet.namespace" . }}:{{ .Values.ecnet.proxyServerPort }}/repo/ecnet/proxy.ecnet.ecnet-system/",
+          ]
         - name: bridge
           image: "{{ include "ecnetBridge.image" . }}"
           imagePullPolicy: {{ .Values.ecnet.image.pullPolicy }}

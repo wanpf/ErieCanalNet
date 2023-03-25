@@ -30,9 +30,9 @@ func (mc *MeshCatalog) getDNSResolvableServiceEndpoints(svc service.MeshService)
 	return endpoints
 }
 
-// ListAllowedUpstreamEndpointsForService returns the list of endpoints over which the downstream client identity
+// ListUpstreamEndpointsForService returns the list of endpoints over which the downstream client identity
 // is allowed access the upstream service
-func (mc *MeshCatalog) ListAllowedUpstreamEndpointsForService(downstreamIdentity identity.ServiceIdentity, upstreamSvc service.MeshService) []endpoint.Endpoint {
+func (mc *MeshCatalog) ListUpstreamEndpointsForService(upstreamSvc service.MeshService) []endpoint.Endpoint {
 	outboundEndpoints := mc.listEndpointsForService(upstreamSvc)
 	if len(outboundEndpoints) == 0 {
 		return nil
