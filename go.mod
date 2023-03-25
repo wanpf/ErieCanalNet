@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/AlekSi/gocov-xml v0.0.0-20190121064608-3a14fb1c4737
-	github.com/axw/gocov v1.0.0
+	github.com/axw/gocov v1.1.0
 	github.com/containerd/containerd v1.6.15 // indirect
 	github.com/cskr/pubsub v1.0.2
 	github.com/deckarep/golang-set v1.7.1
@@ -19,7 +19,6 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/go-version v1.6.0
 	github.com/jstemmer/go-junit-report v0.9.1
-	github.com/matm/gocov-html v0.0.0-20200509184451-71874e2e203b
 	github.com/mitchellh/gox v1.0.1
 	github.com/norwoodj/helm-docs v1.4.0
 	github.com/onsi/ginkgo v1.16.5 // indirect
