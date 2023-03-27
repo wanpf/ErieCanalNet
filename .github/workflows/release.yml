@@ -17,12 +17,11 @@ jobs:
     name: Binaries
     runs-on: ubuntu-latest
     needs: version
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+      BUILD_DATE: '$$(date +%Y-%m-%d-%H:%M)'
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - name: SetEnv
-        run: |
-          echo "VERSION=${{ needs.version.outputs.version }}" >> $GITHUB_ENV
-          echo "BUILD_DATE='$$(date +%Y-%m-%d-%H:%M)'" >> $GITHUB_ENV
-          echo "GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
       - name: Checkout
         uses: actions/checkout@v3
         with:
@@ -81,60 +80,60 @@ jobs:
           asset_name: sha256sums.txt
           asset_content_type: text/plain
 
-#  images:
-#    name: Docker Images
-#    runs-on: ubuntu-latest
-#    needs: version
-#    env:
-#      VERSION: ${{ needs.version.outputs.version }}
-#      BUILD_DATE_VAR: 'github.com/flomesh-io/ErieCanal/pkg/ecnet/version.BuildDate'
-#      BUILD_VERSION_VAR: 'github.com/flomesh-io/ErieCanal/pkg/ecnet/version.Version'
-#      BUILD_GITCOMMIT_VAR: 'github.com/flomesh-io/ErieCanal/pkg/ecnet/version.GitCommit'
-#    strategy:
-#      matrix:
-#        id: [ "controller", "crds", "bootstrap", "preinstall", "bridge" ]
-#    steps:
-#      - name: Set up QEMU
-#        uses: docker/setup-qemu-action@v2.1.0
-#
-#      - name: Set up Docker Buildx
-#        uses: docker/setup-buildx-action@v2.5.0
-#
-#      - name: Login to DockerHub
-#        uses: docker/login-action@v2.1.0
-#        with:
-#          username: ${{ secrets.RELEASE_DOCKER_USER }}
-#          password: ${{ secrets.RELEASE_DOCKER_PASS }}
-#
-#      - name: Checkout
-#        uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#
-#      - name: Docker meta - ${{ matrix.id }}
-#        id: docker_meta
-#        uses: crazy-max/ghaction-docker-meta@v4.3.0
-#        with:
-#          images: ${{ secrets.RELEASE_REGISTRY }}/ecnet-${{ matrix.id }}
-#          tags: |
-#            type=semver,pattern={{version}}
-#          flavor: |
-#            latest=false
-#
-#      - name: Get Build Info
-#        run: |
-#          echo "BUILD_DATE=$(date +%Y-%m-%d-%H:%M)" >> $GITHUB_ENV
-#          echo "GIT_SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
-#
-#      - name: Build and Push - ${{ matrix.id }}
-#        uses: docker/build-push-action@v4.0.0
-#        with:
-#          context: .
-#          file: ./dockerfiles/Dockerfile.ecnet-${{ matrix.id }}
-#          platforms: linux/amd64,linux/arm64
-#          build-args: |
-#            GO_VERSION=1.19
-#            LDFLAGS=-X ${{ env.BUILD_DATE_VAR }}=${{ env.BUILD_DATE }} -X ${{ env.BUILD_VERSION_VAR }}=${{ env.VERSION }} -X ${{ env.BUILD_GITCOMMIT_VAR }}=${{ env.GIT_SHA }} -s -w
-#          push: ${{ (github.event_name != 'pull_request' && (startsWith(github.ref, 'refs/tags/v') || github.ref == format('refs/heads/{0}', github.event.repository.default_branch) )) }}
-#          tags: ${{ steps.docker_meta.outputs.tags }}
-#          labels: ${{ steps.docker_meta.outputs.labels }}
+  images:
+    name: Docker Images
+    runs-on: ubuntu-latest
+    needs: version
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+      BUILD_DATE_VAR: 'github.com/flomesh-io/ErieCanal/pkg/ecnet/version.BuildDate'
+      BUILD_VERSION_VAR: 'github.com/flomesh-io/ErieCanal/pkg/ecnet/version.Version'
+      BUILD_GITCOMMIT_VAR: 'github.com/flomesh-io/ErieCanal/pkg/ecnet/version.GitCommit'
+    strategy:
+      matrix:
+        id: [ "controller", "crds", "bootstrap", "preinstall", "bridge" ]
+    steps:
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2.1.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2.5.0
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v2.1.0
+        with:
+          username: ${{ secrets.RELEASE_DOCKER_USER }}
+          password: ${{ secrets.RELEASE_DOCKER_PASS }}
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Docker meta - ${{ matrix.id }}
+        id: docker_meta
+        uses: crazy-max/ghaction-docker-meta@v4.3.0
+        with:
+          images: ${{ secrets.RELEASE_REGISTRY }}/ecnet-${{ matrix.id }}
+          tags: |
+            type=semver,pattern={{version}}
+          flavor: |
+            latest=false
+
+      - name: Get Build Info
+        run: |
+          echo "BUILD_DATE=$(date +%Y-%m-%d-%H:%M)" >> $GITHUB_ENV
+          echo "GIT_SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
+
+      - name: Build and Push - ${{ matrix.id }}
+        uses: docker/build-push-action@v4.0.0
+        with:
+          context: .
+          file: ./dockerfiles/Dockerfile.ecnet-${{ matrix.id }}
+          platforms: linux/amd64,linux/arm64
+          build-args: |
+            GO_VERSION=1.19
+            LDFLAGS=-X ${{ env.BUILD_DATE_VAR }}=${{ env.BUILD_DATE }} -X ${{ env.BUILD_VERSION_VAR }}=${{ env.VERSION }} -X ${{ env.BUILD_GITCOMMIT_VAR }}=${{ env.GIT_SHA }} -s -w
+          push: ${{ (github.event_name != 'pull_request' && (startsWith(github.ref, 'refs/tags/v') || github.ref == format('refs/heads/{0}', github.event.repository.default_branch) )) }}
+          tags: ${{ steps.docker_meta.outputs.tags }}
+          labels: ${{ steps.docker_meta.outputs.labels }}
