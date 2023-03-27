@@ -255,7 +255,7 @@ dist:
 		$(DIST_DIRS) cp ../README.md {} \; && \
 		$(DIST_DIRS) tar -zcf erie-canal-net-${VERSION}-{}.tar.gz {} \; && \
 		$(DIST_DIRS) zip -r erie-canal-net-${VERSION}-{}.zip {} \; && \
-		$(SHA256) ecnet-* > sha256sums.txt \
+		$(SHA256) erie-canal-net-* > sha256sums.txt \
 	)
 
 .PHONY: release-artifacts
