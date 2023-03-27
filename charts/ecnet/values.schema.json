@@ -169,7 +169,7 @@
                 "pluginChains",
                 "curlImage",
                 "meshName",
-                "sidecarLogLevel",
+                "proxyLogLevel",
                 "controllerLogLevel",
                 "enforceSingleMesh",
                 "ecnetController",
@@ -242,11 +242,11 @@
                         "tolerations": {
                             "type": "array"
                         },
-                        "debug": {
-                            "$id": "#/properties/ecnet/properties/ecnetBridge/properties//debug",
+                        "enableKernelTracing": {
+                            "$id": "#/properties/ecnet/properties/ecnetBridge/properties/enableKernelTracing",
                             "type": "boolean",
-                            "title": "debug enable",
-                            "description": "Indicates whether debug should be enabled or not.",
+                            "title": "KernelTracing",
+                            "description": "Indicates whether kernel tracing should be enabled or not.",
                             "examples": [
                                 false
                             ]
@@ -350,10 +350,10 @@
                     "additionalProperties": false
                 },
                 "sidecarImage": {
-                    "$id": "#/properties/ecnet/properties/sidecarImage",
+                    "$id": "#/properties/ecnet/properties/proxyImage",
                     "type": "string",
-                    "title": "The sidecarImage schema",
-                    "description": "The proxy side car image to run.",
+                    "title": "The proxyImage schema",
+                    "description": "The proxy image to run.",
                     "examples": [
                         "flomesh/pipy-nightly:latest"
                     ]
@@ -570,11 +570,11 @@
                         "30s"
                     ]
                 },
-                "sidecarLogLevel": {
-                    "$id": "#/properties/ecnet/properties/sidecarLogLevel",
+                "proxyLogLevel": {
+                    "$id": "#/properties/ecnet/properties/proxyLogLevel",
                     "type": "string",
-                    "title": "The sidecarLogLevel schema",
-                    "description": "Sidecar log level.",
+                    "title": "The proxyLogLevel schema",
+                    "description": "Proxy log level.",
                     "pattern": "^(trace|debug|info|warning|warn|error|critical|off)$",
                     "examples": [
                         "error"

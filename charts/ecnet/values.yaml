@@ -23,28 +23,34 @@ ecnet:
       ecnetCRDs: ecnet-crds
       # -- ecnet-preinstall's image name
       ecnetPreinstall: ecnet-preinstall
-      # -- ecnet-interceptor's image name
+      # -- ecnet-bridge's image name
       ecnetBridge: ecnet-bridge
 
   # -- `ecnet-controller` image pull secret
   imagePullSecrets: [ ]
-  # -- Sidecar image for Linux workloads
-  sidecarImage: local.registry/flomesh/pipy-repo:0.90.0-54
+  # -- Proxy image for Linux node workloads
+  proxyImage: flomesh/pipy-repo:0.90.0-54
   # -- Remote destination port on which the Discovery Service listens for new connections from Sidecars.
   proxyServerPort: 6060
   # -- Curl image for control plane init container
-  curlImage: local.registry/curlimages/curl
+  curlImage: curlimages/curl
 
   # -- Pipy RepoServer
   repoServer:
     # -- Image used for Pipy RepoServer
-    image: local.registry/flomesh/pipy-repo:0.90.0-54
+    image: flomesh/pipy-repo:0.90.0-54
     # -- if false , Pipy RepoServer is installed within ecnetController pod.
     standalone: false
     # -- ipaddr of host/service where Pipy RepoServer is installed
     ipaddr: "127.0.0.1"
     # -- codebase is the folder used by ecnetController.
     codebase: ""
+
+  # -- Log level for the proxy. Non developers should generally never set this value. In production environments the LogLevel should be set to `error`
+  proxyLogLevel: error
+
+  # -- Controller log verbosity
+  controllerLogLevel: info
 
   #
   # -- ECNET controller parameters
@@ -112,7 +118,7 @@ ecnet:
   #
   # -- ECNET bridge parameters
   ecnetBridge:
-    debug: true
+    enableKernelTracing: true
     resource:
       limits:
         cpu: "1.5"
@@ -158,18 +164,12 @@ ecnet:
   # -- Identifier for the instance of a service mesh within a cluster
   meshName: ecnet
 
-  # -- Log level for the proxy sidecar. Non developers should generally never set this value. In production environments the LogLevel should be set to `error`
-  sidecarLogLevel: error
-
   # -- Local DNS Proxy improves the performance of your computer by caching the responses coming from your DNS servers
   localDNSProxy:
     enable: true
 
   # -- Sets the resync interval for regular proxy broadcast updates, set to 0s to not enforce any resync
   configResyncInterval: "90s"
-
-  # -- Controller log verbosity
-  controllerLogLevel: info
 
   # -- Enforce only deploying one mesh in the cluster
   enforceSingleMesh: true

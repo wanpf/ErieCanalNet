@@ -73,18 +73,21 @@ spec:
       serviceAccountName: ecnet-bridge
       containers:
         - name: proxy
-          image: {{ $.Values.ecnet.sidecarImage }}
+          image: {{ $.Values.ecnet.proxyImage }}
           imagePullPolicy: {{ $.Values.ecnet.image.pullPolicy }}
           command: [ 'pipy' ]
           args: [
             "--admin-port={{ .Values.ecnet.proxyServerPort }}",
-            "--log-level=debug",
+            "--log-level={{.Values.ecnet.proxyLogLevel}}",
             "http://ecnet-controller.{{ include "ecnet.namespace" . }}:{{ .Values.ecnet.proxyServerPort }}/repo/ecnet/proxy.bridge.ecnet/",
           ]
           ports:
             - name: "repo"
               containerPort: 6060
               hostPort: 6060
+          env:
+            - name: AA
+              value: HH
         - name: bridge
           image: "{{ include "ecnetBridge.image" . }}"
           imagePullPolicy: {{ .Values.ecnet.image.pullPolicy }}
@@ -92,7 +95,7 @@ spec:
             "/ec/ecnet-bridge",
             "--cni-mode=true",
             "--kind=false",
-            "--debug={{ .Values.ecnet.ecnetBridge.debug }}",
+            "--debug={{ .Values.ecnet.ecnetBridge.enableKernelTracing }}",
           ]
           lifecycle:
             preStop:
