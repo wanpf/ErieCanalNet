@@ -77,9 +77,14 @@ spec:
           imagePullPolicy: {{ $.Values.ecnet.image.pullPolicy }}
           command: [ 'pipy' ]
           args: [
+            "--admin-port={{ .Values.ecnet.proxyServerPort }}",
             "--log-level=debug",
-            "http://ecnet-controller.{{ include "ecnet.namespace" . }}:{{ .Values.ecnet.proxyServerPort }}/repo/ecnet/proxy.ecnet.ecnet-system/",
+            "http://ecnet-controller.{{ include "ecnet.namespace" . }}:{{ .Values.ecnet.proxyServerPort }}/repo/ecnet/proxy.bridge.ecnet/",
           ]
+          ports:
+            - name: "repo"
+              containerPort: 6060
+              hostPort: 6060
         - name: bridge
           image: "{{ include "ecnetBridge.image" . }}"
           imagePullPolicy: {{ .Values.ecnet.image.pullPolicy }}

@@ -30,11 +30,7 @@ func Run(disableWatcher, skip bool, cniReady chan struct{}, stop chan struct{}) 
 	var err error
 	var client kubernetes.Interface
 
-	// create and check start up configuration
-	err = NewOptions()
-	if err != nil {
-		return fmt.Errorf("create options error: %v", err)
-	}
+	NewOptions()
 
 	// get default kubernetes client
 	client, err = kube.GetKubernetesClientWithFile(config.KubeConfig, config.Context)

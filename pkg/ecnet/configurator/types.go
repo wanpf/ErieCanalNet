@@ -6,9 +6,8 @@ import (
 
 	configv1alpha1 "github.com/flomesh-io/ErieCanal/pkg/ecnet/apis/config/v1alpha1"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/k8s/informers"
-
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/logger"
-	"github.com/flomesh-io/ErieCanal/pkg/ecnet/trafficpolicy"
+	"github.com/flomesh-io/ErieCanal/pkg/ecnet/service/policy"
 )
 
 var (
@@ -45,12 +44,6 @@ type Configurator interface {
 	// GetSidecarLogLevel returns the sidecar log level
 	GetSidecarLogLevel() string
 
-	// GetSidecarClass returns the sidecar class
-	GetSidecarClass() string
-
-	// GetSidecarImage returns the sidecar image
-	GetSidecarImage() string
-
 	// GetProxyServerPort returns the port on which the Discovery Service listens for new connections from Sidecars
 	GetProxyServerPort() uint32
 
@@ -65,5 +58,5 @@ type Configurator interface {
 	GetConfigResyncInterval() time.Duration
 
 	// GetGlobalPluginChains returns plugin chains
-	GetGlobalPluginChains() map[string][]trafficpolicy.Plugin
+	GetGlobalPluginChains() map[string][]policy.Plugin
 }

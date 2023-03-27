@@ -23,12 +23,10 @@ import (
 
 	configClientset "github.com/flomesh-io/ErieCanal/pkg/ecnet/gen/client/config/clientset/versioned"
 	multiclusterClientset "github.com/flomesh-io/ErieCanal/pkg/ecnet/gen/client/multicluster/clientset/versioned"
-	_ "github.com/flomesh-io/ErieCanal/pkg/ecnet/sidecar/providers/pipy/driver"
 
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/catalog"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/configurator"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/constants"
-	"github.com/flomesh-io/ErieCanal/pkg/ecnet/endpoint"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/errcode"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/health"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/httpserver"
@@ -37,12 +35,13 @@ import (
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/k8s/informers"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/logger"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/messaging"
-	"github.com/flomesh-io/ErieCanal/pkg/ecnet/multicluster"
-	"github.com/flomesh-io/ErieCanal/pkg/ecnet/providers/fsm"
-	"github.com/flomesh-io/ErieCanal/pkg/ecnet/providers/kube"
+	"github.com/flomesh-io/ErieCanal/pkg/ecnet/proxyserver/registry"
+	"github.com/flomesh-io/ErieCanal/pkg/ecnet/proxyserver/server"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/service"
-	"github.com/flomesh-io/ErieCanal/pkg/ecnet/sidecar"
-	"github.com/flomesh-io/ErieCanal/pkg/ecnet/sidecar/driver"
+	"github.com/flomesh-io/ErieCanal/pkg/ecnet/service/endpoint"
+	"github.com/flomesh-io/ErieCanal/pkg/ecnet/service/multicluster"
+	"github.com/flomesh-io/ErieCanal/pkg/ecnet/service/providers/fsm"
+	"github.com/flomesh-io/ErieCanal/pkg/ecnet/service/providers/kube"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/signals"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/version"
 )
@@ -115,15 +114,8 @@ func main() {
 		events.GenericEventRecorder().FatalEvent(err, events.InvalidCLIParameters, "Error validating CLI parameters")
 	}
 
-	background := driver.ControllerContext{
-		EcnetNamespace: ecnetNamespace,
-		KubeConfig:     kubeConfig,
-		DebugHandlers:  make(map[string]http.Handler),
-	}
-	ctx, cancel := context.WithCancel(&background)
+	_, cancel := context.WithCancel(context.Background())
 	stop := signals.RegisterExitHandlers(cancel)
-	background.CancelFunc = cancel
-	background.Stop = stop
 
 	msgBroker := messaging.NewBroker(stop)
 
@@ -138,18 +130,10 @@ func main() {
 
 	// This component will be watching resources in the config.openservicemesh.io API group
 	cfg := configurator.NewConfigurator(informerCollection, ecnetNamespace, ecnetMeshConfigName, msgBroker)
-	err = sidecar.InstallDriver(cfg.GetSidecarClass())
-	if err != nil {
-		events.GenericEventRecorder().FatalEvent(err, events.InitializationError, "Error creating sidecar driver")
-	}
-
 	k8sClient := k8s.NewKubernetesController(informerCollection, msgBroker)
-
 	multiclusterController := multicluster.NewMultiClusterController(informerCollection, kubeClient, k8sClient, msgBroker)
-
 	kubeProvider := kube.NewClient(k8sClient, cfg)
 	multiclusterProvider := fsm.NewClient(multiclusterController, cfg)
-
 	endpointsProviders := []endpoint.Provider{kubeProvider, multiclusterProvider}
 	serviceProviders := []service.Provider{kubeProvider, multiclusterProvider}
 
@@ -163,21 +147,18 @@ func main() {
 		msgBroker,
 	)
 
-	background.Configurator = cfg
-	background.MeshCatalog = meshCatalog
-	background.MsgBroker = msgBroker
-	background.ProxyServerPort = cfg.GetProxyServerPort()
-
-	// Create and start the sidecar proxy service
-	healthProbes, err := sidecar.Start(ctx)
-	if err != nil {
+	proxyRegistry := registry.NewProxyRegistry(msgBroker)
+	// Create and start the pipy repo http service
+	repoServer := server.NewRepoServer(meshCatalog, proxyRegistry, ecnetNamespace, cfg, k8sClient, msgBroker)
+	// Create and start the proxy service
+	if err = repoServer.Start(cfg.GetProxyServerPort()); err != nil {
 		events.GenericEventRecorder().FatalEvent(err, events.InitializationError, "Error initializing proxy control server")
 	}
 
 	// Initialize ECNET's http service server
 	httpServer := httpserver.NewHTTPServer(constants.ECNETHTTPServerPort)
 	// Health/Liveness probes
-	funcProbes := []health.Probes{healthProbes}
+	funcProbes := []health.Probes{repoServer}
 	httpServer.AddHandlers(map[string]http.Handler{
 		constants.ECNETControllerReadinessPath: health.ReadinessHandler(funcProbes, nil),
 		constants.ECNETControllerLivenessPath:  health.LivenessHandler(funcProbes, nil),

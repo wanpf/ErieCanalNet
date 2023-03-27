@@ -51,12 +51,6 @@ type SidecarSpec struct {
 	// LogLevel defines the logging level for the sidecar's logs. Non developers should generally never set this value. In production environments the LogLevel should be set to error.
 	LogLevel string `json:"logLevel,omitempty"`
 
-	// SidecarClass defines the class used for the proxy sidecar.
-	SidecarClass string `json:"sidecarClass,omitempty"`
-
-	// SidecarImage defines the container image used for the proxy sidecar.
-	SidecarImage string `json:"sidecarImage,omitempty"`
-
 	// ProxyServerPort is the port on which the Discovery Service listens for new connections from Sidecars
 	ProxyServerPort uint32 `json:"proxyServerPort"`
 

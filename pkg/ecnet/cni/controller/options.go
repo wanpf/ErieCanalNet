@@ -14,7 +14,7 @@
 package controller
 
 import (
-	log "github.com/sirupsen/logrus"
+	logrus "github.com/sirupsen/logrus"
 
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/config"
 )
@@ -22,7 +22,7 @@ import (
 // NewOptions setup tasks when start up and return a kubernetes client
 func NewOptions() error {
 	if config.Debug {
-		log.SetLevel(log.DebugLevel)
+		logrus.SetLevel(logrus.DebugLevel)
 	}
 	return nil
 }

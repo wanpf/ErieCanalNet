@@ -6,14 +6,11 @@ import (
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 
-	"github.com/flomesh-io/ErieCanal/pkg/ecnet/identity"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/k8s/informers"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/logger"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/messaging"
-	"github.com/flomesh-io/ErieCanal/pkg/ecnet/models"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/service"
 )
 
@@ -83,13 +80,10 @@ type Controller interface {
 	ListPods() []*corev1.Pod
 
 	// ListServiceIdentitiesForService lists ServiceAccounts associated with the given service
-	ListServiceIdentitiesForService(service.MeshService) ([]identity.K8sServiceAccount, error)
+	ListServiceIdentitiesForService(service.MeshService) ([]service.K8sServiceAccount, error)
 
 	// GetEndpoints returns the endpoints for a given service, if found
 	GetEndpoints(service.MeshService) (*corev1.Endpoints, error)
-
-	// GetPodForProxy returns the pod for the given proxy
-	GetPodForProxy(models.Proxy) (*v1.Pod, error)
 
 	GetTargetPortForServicePort(types.NamespacedName, uint16) (uint16, error)
 }

@@ -7,7 +7,7 @@ import (
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/errcode"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/k8s"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/service"
-	"github.com/flomesh-io/ErieCanal/pkg/ecnet/trafficpolicy"
+	"github.com/flomesh-io/ErieCanal/pkg/ecnet/service/policy"
 )
 
 // GetOutboundMeshTrafficPolicy returns the outbound mesh traffic policy for the given downstream identity
@@ -23,10 +23,10 @@ import (
 // The route configurations are consolidated per port, such that upstream services using the same port are a part
 // of the same route configuration. This is required to avoid route conflicts that can occur when the same hostname
 // needs to be routed differently based on the port used.
-func (mc *MeshCatalog) GetOutboundMeshTrafficPolicy() *trafficpolicy.OutboundMeshTrafficPolicy {
-	var trafficMatches []*trafficpolicy.TrafficMatch
-	var clusterConfigs []*trafficpolicy.MeshClusterConfig
-	routeConfigPerPort := make(map[int][]*trafficpolicy.OutboundTrafficPolicy)
+func (mc *MeshCatalog) GetOutboundMeshTrafficPolicy() *policy.OutboundMeshTrafficPolicy {
+	var trafficMatches []*policy.TrafficMatch
+	var clusterConfigs []*policy.MeshClusterConfig
+	routeConfigPerPort := make(map[int][]*policy.OutboundTrafficPolicy)
 	servicesResolvableSet := make(map[string][]interface{})
 
 	// For each service, build the traffic policies required to access it.
@@ -59,15 +59,15 @@ func (mc *MeshCatalog) GetOutboundMeshTrafficPolicy() *trafficpolicy.OutboundMes
 
 		// ---
 		// Create the cluster config for this upstream service
-		clusterConfigForServicePort := &trafficpolicy.MeshClusterConfig{
+		clusterConfigForServicePort := &policy.MeshClusterConfig{
 			Name:    meshSvc.SidecarClusterName(),
 			Service: meshSvc,
 		}
 		clusterConfigs = append(clusterConfigs, clusterConfigForServicePort)
 
 		hasTrafficSplitWildCard := true
-		var routeMatches []*trafficpolicy.HTTPRouteMatchWithWeightedClusters
-		routeMatch := new(trafficpolicy.HTTPRouteMatchWithWeightedClusters)
+		var routeMatches []*policy.HTTPRouteMatchWithWeightedClusters
+		routeMatch := new(policy.HTTPRouteMatchWithWeightedClusters)
 		routeMatch.UpstreamClusters = mc.mergeUpstreamClusters(meshSvc, routeMatch.UpstreamClusters)
 		routeMatches = append(routeMatches, routeMatch)
 
@@ -77,7 +77,7 @@ func (mc *MeshCatalog) GetOutboundMeshTrafficPolicy() *trafficpolicy.OutboundMes
 		// for this upstream service, port, and destination IP ranges. This
 		// will be programmed on the downstream client.
 		for _, routeMatch := range routeMatches {
-			trafficMatchForServicePort := &trafficpolicy.TrafficMatch{
+			trafficMatchForServicePort := &policy.TrafficMatch{
 				Name:                meshSvc.OutboundTrafficMatchName(),
 				DestinationPort:     int(meshSvc.Port),
 				DestinationProtocol: meshSvc.Protocol,
@@ -94,7 +94,7 @@ func (mc *MeshCatalog) GetOutboundMeshTrafficPolicy() *trafficpolicy.OutboundMes
 
 		// Create a route to access the upstream service via it's hostnames and upstream weighted clusters
 		httpHostNamesForServicePort := k8s.GetHostnamesForService(meshSvc, false)
-		outboundTrafficPolicy := trafficpolicy.NewOutboundTrafficPolicy(meshSvc.FQDN(), httpHostNamesForServicePort)
+		outboundTrafficPolicy := policy.NewOutboundTrafficPolicy(meshSvc.FQDN(), httpHostNamesForServicePort)
 
 		hasWildCardRoute := false
 		for _, routeMatch := range routeMatches {
@@ -111,7 +111,7 @@ func (mc *MeshCatalog) GetOutboundMeshTrafficPolicy() *trafficpolicy.OutboundMes
 		}
 		if !hasWildCardRoute {
 			upstreamClusters := mc.getWildCardRouteUpstreamClusters(hasTrafficSplitWildCard, routeMatches)
-			if err := outboundTrafficPolicy.AddRoute(trafficpolicy.WildCardRouteMatch, upstreamClusters...); err != nil {
+			if err := outboundTrafficPolicy.AddRoute(policy.WildCardRouteMatch, upstreamClusters...); err != nil {
 				log.Error().Err(err).Str(errcode.Kind, errcode.GetErrCodeWithMetric(errcode.ErrAddingRouteToOutboundTrafficPolicy)).
 					Msgf("Error adding route to outbound mesh HTTP traffic policy for destination %s", meshSvc)
 				continue
@@ -120,7 +120,7 @@ func (mc *MeshCatalog) GetOutboundMeshTrafficPolicy() *trafficpolicy.OutboundMes
 		routeConfigPerPort[int(meshSvc.Port)] = append(routeConfigPerPort[int(meshSvc.Port)], outboundTrafficPolicy)
 	}
 
-	return &trafficpolicy.OutboundMeshTrafficPolicy{
+	return &policy.OutboundMeshTrafficPolicy{
 		TrafficMatches:          trafficMatches,
 		ClustersConfigs:         clusterConfigs,
 		HTTPRouteConfigsPerPort: routeConfigPerPort,
@@ -128,7 +128,7 @@ func (mc *MeshCatalog) GetOutboundMeshTrafficPolicy() *trafficpolicy.OutboundMes
 	}
 }
 
-func (mc *MeshCatalog) getWildCardRouteUpstreamClusters(hasTrafficSplitWildCard bool, routeMatches []*trafficpolicy.HTTPRouteMatchWithWeightedClusters) []service.WeightedCluster {
+func (mc *MeshCatalog) getWildCardRouteUpstreamClusters(hasTrafficSplitWildCard bool, routeMatches []*policy.HTTPRouteMatchWithWeightedClusters) []service.WeightedCluster {
 	var upstreamClusters []service.WeightedCluster
 	upstreamClusterMap := make(map[service.ClusterName]bool)
 	if hasTrafficSplitWildCard {

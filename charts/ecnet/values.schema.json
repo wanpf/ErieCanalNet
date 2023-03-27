@@ -165,7 +165,6 @@
             "description": "The top level required key in the values file.",
             "required": [
                 "image",
-                "sidecarClass",
                 "proxyServerPort",
                 "pluginChains",
                 "curlImage",
@@ -349,15 +348,6 @@
                         }
                     },
                     "additionalProperties": false
-                },
-                "sidecarClass": {
-                    "$id": "#/properties/ecnet/properties/sidecarClass",
-                    "type": "string",
-                    "title": "The sidecarClass schema",
-                    "description": "The class of the ECNET Sidecar.",
-                    "examples": [
-                        "pipy"
-                    ]
                 },
                 "sidecarImage": {
                     "$id": "#/properties/ecnet/properties/sidecarImage",

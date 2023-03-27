@@ -59,15 +59,6 @@ spec:
                         - error
                         - critical
                         - off
-                    sidecarClass:
-                      description: Class of the sidecar
-                      type: string
-                      enum:
-                        - pipy
-                        - envoy
-                    sidecarImage:
-                      description: Image for the sidecar
-                      type: string
                     proxyServerPort:
                       description: Remote destination port on which the Discovery Service listens for new connections from Sidecars.
                       type: integer

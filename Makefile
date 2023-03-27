@@ -65,6 +65,12 @@ helm-update-dep:
 clean-ecnet:
 	@rm -rf bin/ecnet
 
+.PHONY: protoc
+protoc:
+	protoc --go_out=. --go_opt=paths=import --go-grpc_out=. \
+	--go-grpc_opt=paths=import \
+	pkg/ecnet/pipy/repo/codebase/config.proto
+
 .PHONY: codegen
 codegen:
 	./codegen/gen-crd-client.sh

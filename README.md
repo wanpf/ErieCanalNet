@@ -17,20 +17,60 @@ ecnet install \
     --timeout=900s
 ```
 
-## 部署本地业务服务
+## 部署模拟客户端
 
-```
-kubectl create namespace pipy
-kubectl apply -n pipy -f https://raw.githubusercontent.com/cybwan/ecnet-edge-start-demo/main/demo/multi-cluster/pipy-ok-c1.pipy.yaml
+```bash
+kubectl create namespace demo
+cat <<EOF | kubectl apply -n demo -f -
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sleep
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sleep
+  labels:
+    app: sleep
+    service: sleep
+spec:
+  ports:
+  - port: 80
+    name: http
+  selector:
+    app: sleep
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sleep
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sleep
+  template:
+    metadata:
+      labels:
+        app: sleep
+    spec:
+      terminationGracePeriodSeconds: 0
+      serviceAccountName: sleep
+      containers:
+      - name: sleep
+        image: local.registry/ubuntu:20.04
+        imagePullPolicy: Always
+        command: ["/bin/sleep", "infinity"]
+      nodeName: node2
+EOF
 
-#等待依赖的 POD 正常启动
-sleep 3
-kubectl wait --for=condition=ready pod -n pipy -l app=pipy-ok-c1 --timeout=180s
+kubectl wait --for=condition=ready pod -n demo -l app=sleep --timeout=180s
 ```
 
 ## 模拟导入多集群服务
 
-```
+```bash
 kubectl create namespace pipy
 
 cat <<EOF | kubectl apply -f -
@@ -44,17 +84,10 @@ spec:
   - endpoints:
     - clusterKey: default/default/default/cluster3
       target:
-        host: 192.168.127.91
-        ip: 192.168.127.91
-        path: /c3/ok
-        port: 8093
-    - clusterKey: default/default/default/cluster1
-      target:
-        host: 192.168.127.91
-        ip: 192.168.127.91
-        path: /c1/ok
-        port: 8091
-    name: pipy
+        host: 3.226.203.163
+        ip: 3.226.203.163
+        path: /
+        port: 80
     port: 8080
     protocol: TCP
   serviceAccountName: '*'
@@ -70,5 +103,27 @@ metadata:
 spec:
   lbType: ActiveActive
 EOF
+```
+
+## 测试
+
+测试指令:
+
+```bash
+sleep_client="$(kubectl get pod -n demo -l app=sleep -o jsonpath='{.items[0].metadata.name}')"
+kubectl exec ${sleep_client} -n demo -- curl -sI pipy-ok.pipy:8080
+```
+
+期望结果:
+
+```bash
+HTTP/1.1 200 OK
+date: Sat, 25 Mar 2023 16:47:17 GMT
+content-type: text/html; charset=utf-8
+content-length: 9593
+server: gunicorn/19.9.0
+access-control-allow-origin: *
+access-control-allow-credentials: true
+connection: keep-alive
 ```
 

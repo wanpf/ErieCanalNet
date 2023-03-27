@@ -9,8 +9,6 @@ data:
       "sidecar": {
         "logLevel": {{.Values.ecnet.sidecarLogLevel | mustToJson}},
         "configResyncInterval": {{.Values.ecnet.configResyncInterval | mustToJson}},
-        "sidecarClass": {{.Values.ecnet.sidecarClass | mustToJson }},
-        "sidecarImage": {{.Values.ecnet.sidecarImage | mustToJson }},
         "proxyServerPort": {{.Values.ecnet.proxyServerPort | mustToJson}},
         "localDNSProxy": {{.Values.ecnet.localDNSProxy | mustToJson}}
       },

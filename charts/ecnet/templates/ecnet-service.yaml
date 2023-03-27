@@ -8,7 +8,7 @@ metadata:
     app: ecnet-controller
 spec:
   ports:
-    - name: repo
+    - name: cds
       port: 6060
       targetPort: 6060
     - name: healthz

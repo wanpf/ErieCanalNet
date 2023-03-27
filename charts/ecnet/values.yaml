@@ -28,10 +28,8 @@ ecnet:
 
   # -- `ecnet-controller` image pull secret
   imagePullSecrets: [ ]
-  # -- The class of the ECNET Sidecar Driver
-  sidecarClass: pipy
   # -- Sidecar image for Linux workloads
-  sidecarImage: local.registry/flomesh/pipy:0.90.0-54
+  sidecarImage: local.registry/flomesh/pipy-repo:0.90.0-54
   # -- Remote destination port on which the Discovery Service listens for new connections from Sidecars.
   proxyServerPort: 6060
   # -- Curl image for control plane init container
@@ -114,7 +112,7 @@ ecnet:
   #
   # -- ECNET bridge parameters
   ecnetBridge:
-    debug: false
+    debug: true
     resource:
       limits:
         cpu: "1.5"

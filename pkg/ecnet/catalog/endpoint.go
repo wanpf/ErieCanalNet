@@ -1,9 +1,8 @@
 package catalog
 
 import (
-	"github.com/flomesh-io/ErieCanal/pkg/ecnet/endpoint"
-	"github.com/flomesh-io/ErieCanal/pkg/ecnet/identity"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/service"
+	"github.com/flomesh-io/ErieCanal/pkg/ecnet/service/endpoint"
 )
 
 // ListEndpointsForService returns the list of provider endpoints corresponding to a service
@@ -38,18 +37,4 @@ func (mc *MeshCatalog) ListUpstreamEndpointsForService(upstreamSvc service.MeshS
 		return nil
 	}
 	return outboundEndpoints
-}
-
-// Note: ServiceIdentity must be in the format "name.namespace" [https://github.com/flomesh-io/ErieCanal/issues/3188]
-func (mc *MeshCatalog) listEndpointsForServiceIdentity(serviceIdentity identity.ServiceIdentity) []endpoint.Endpoint {
-	var endpoints []endpoint.Endpoint
-	for _, provider := range mc.endpointsProviders {
-		ep := provider.ListEndpointsForIdentity(serviceIdentity)
-		if len(ep) == 0 {
-			log.Trace().Msgf("[%s] No endpoints found for service account=%s", provider.GetID(), serviceIdentity)
-			continue
-		}
-		endpoints = append(endpoints, ep...)
-	}
-	return endpoints
 }

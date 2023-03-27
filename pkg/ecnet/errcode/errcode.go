@@ -38,20 +38,6 @@ const (
 	ErrMeshConfigMarshaling
 )
 
-// Range 5000-5500 reserved for errors related to Sidecar XDS control plane
-const (
-	// ErrFetchingPodFromCert indicates the proxy UUID obtained from a certificate's common name metadata was not
-	// found as a ecnet-proxy-uuid label value for any pod
-	ErrFetchingPodFromCert ErrCode = iota + 5000
-
-	// ErrPodBelongsToMultipleServices indicates a pod in the mesh belongs to more than one service
-	ErrPodBelongsToMultipleServices
-
-	// ErrMismatchedServiceAccount inicates the ServiceAccount referenced in the NodeID does not match the
-	// ServiceAccount specified in the proxy certificate
-	ErrMismatchedServiceAccount
-)
-
 // String returns the error code as a string, ex. E1000
 func (e ErrCode) String() string {
 	return fmt.Sprintf("E%d", e)

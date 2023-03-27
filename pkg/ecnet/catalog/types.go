@@ -6,12 +6,12 @@ package catalog
 
 import (
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/configurator"
-	"github.com/flomesh-io/ErieCanal/pkg/ecnet/endpoint"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/k8s"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/logger"
-	"github.com/flomesh-io/ErieCanal/pkg/ecnet/multicluster"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/service"
-	"github.com/flomesh-io/ErieCanal/pkg/ecnet/trafficpolicy"
+	"github.com/flomesh-io/ErieCanal/pkg/ecnet/service/endpoint"
+	"github.com/flomesh-io/ErieCanal/pkg/ecnet/service/multicluster"
+	"github.com/flomesh-io/ErieCanal/pkg/ecnet/service/policy"
 )
 
 var (
@@ -47,5 +47,5 @@ type MeshCataloger interface {
 	GetKubeController() k8s.Controller
 
 	// GetOutboundMeshTrafficPolicy returns the outbound mesh traffic policy for the given downstream identity
-	GetOutboundMeshTrafficPolicy() *trafficpolicy.OutboundMeshTrafficPolicy
+	GetOutboundMeshTrafficPolicy() *policy.OutboundMeshTrafficPolicy
 }

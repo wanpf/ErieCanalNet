@@ -2,7 +2,7 @@ name: ecnet-release
 on:
   push:
     tags:
-      - "v[0-9]+.[0-9]+.[0-9]+\\-ec.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+"
 jobs:
   version:
     name: Set Version from git ref
@@ -91,7 +91,7 @@ jobs:
       BUILD_GITCOMMIT_VAR: 'github.com/flomesh-io/ErieCanal/pkg/ecnet/version.GitCommit'
     strategy:
       matrix:
-        id: [ "controller", "crds", "bootstrap", "preinstall" ]
+        id: [ "controller", "crds", "bootstrap", "preinstall", "bridge" ]
     steps:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2.1.0

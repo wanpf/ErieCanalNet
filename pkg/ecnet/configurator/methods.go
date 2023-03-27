@@ -7,10 +7,9 @@ import (
 	"time"
 
 	configv1alpha1 "github.com/flomesh-io/ErieCanal/pkg/ecnet/apis/config/v1alpha1"
-
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/constants"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/errcode"
-	"github.com/flomesh-io/ErieCanal/pkg/ecnet/trafficpolicy"
+	"github.com/flomesh-io/ErieCanal/pkg/ecnet/service/policy"
 )
 
 // The functions in this file implement the configurator.Configurator interface
@@ -67,24 +66,6 @@ func (c *Client) GetSidecarLogLevel() string {
 	return constants.DefaultSidecarLogLevel
 }
 
-// GetSidecarClass returns the sidecar class
-func (c *Client) GetSidecarClass() string {
-	class := c.getMeshConfig().Spec.Sidecar.SidecarClass
-	if class == "" {
-		class = constants.SidecarClassPipy
-	}
-	return class
-}
-
-// GetSidecarImage returns the sidecar image
-func (c *Client) GetSidecarImage() string {
-	image := c.getMeshConfig().Spec.Sidecar.SidecarImage
-	if len(image) == 0 {
-		image = os.Getenv("ECNET_DEFAULT_SIDECAR_IMAGE")
-	}
-	return image
-}
-
 // GetProxyServerPort returns the port on which the Discovery Service listens for new connections from Sidecars
 func (c *Client) GetProxyServerPort() uint32 {
 	return c.getMeshConfig().Spec.Sidecar.ProxyServerPort
@@ -130,52 +111,52 @@ func (c *Client) GetConfigResyncInterval() time.Duration {
 }
 
 // GetGlobalPluginChains returns plugin chains
-func (c *Client) GetGlobalPluginChains() map[string][]trafficpolicy.Plugin {
-	pluginChainMap := make(map[string][]trafficpolicy.Plugin)
+func (c *Client) GetGlobalPluginChains() map[string][]policy.Plugin {
+	pluginChainMap := make(map[string][]policy.Plugin)
 	pluginChainSpec := c.getMeshConfig().Spec.PluginChains
 
-	inboundTCPChains := make([]trafficpolicy.Plugin, 0)
+	inboundTCPChains := make([]policy.Plugin, 0)
 	for _, plugin := range pluginChainSpec.InboundTCPChains {
 		if plugin.Disable {
 			continue
 		}
-		inboundTCPChains = append(inboundTCPChains, trafficpolicy.Plugin{
+		inboundTCPChains = append(inboundTCPChains, policy.Plugin{
 			Name:     plugin.Plugin,
 			Priority: plugin.Priority,
 			BuildIn:  true,
 		})
 	}
 
-	inboundHTTPChains := make([]trafficpolicy.Plugin, 0)
+	inboundHTTPChains := make([]policy.Plugin, 0)
 	for _, plugin := range pluginChainSpec.InboundHTTPChains {
 		if plugin.Disable {
 			continue
 		}
-		inboundHTTPChains = append(inboundHTTPChains, trafficpolicy.Plugin{
+		inboundHTTPChains = append(inboundHTTPChains, policy.Plugin{
 			Name:     plugin.Plugin,
 			Priority: plugin.Priority,
 			BuildIn:  true,
 		})
 	}
 
-	outboundTCPChains := make([]trafficpolicy.Plugin, 0)
+	outboundTCPChains := make([]policy.Plugin, 0)
 	for _, plugin := range pluginChainSpec.OutboundTCPChains {
 		if plugin.Disable {
 			continue
 		}
-		outboundTCPChains = append(outboundTCPChains, trafficpolicy.Plugin{
+		outboundTCPChains = append(outboundTCPChains, policy.Plugin{
 			Name:     plugin.Plugin,
 			Priority: plugin.Priority,
 			BuildIn:  true,
 		})
 	}
 
-	outboundHTTPChains := make([]trafficpolicy.Plugin, 0)
+	outboundHTTPChains := make([]policy.Plugin, 0)
 	for _, plugin := range pluginChainSpec.OutboundHTTPChains {
 		if plugin.Disable {
 			continue
 		}
-		outboundHTTPChains = append(outboundHTTPChains, trafficpolicy.Plugin{
+		outboundHTTPChains = append(outboundHTTPChains, policy.Plugin{
 			Name:     plugin.Plugin,
 			Priority: plugin.Priority,
 			BuildIn:  true,

@@ -7,7 +7,6 @@ import (
 
 	mapset "github.com/deckarep/golang-set"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
@@ -15,11 +14,8 @@ import (
 
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/announcements"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/constants"
-	"github.com/flomesh-io/ErieCanal/pkg/ecnet/errcode"
-	"github.com/flomesh-io/ErieCanal/pkg/ecnet/identity"
 	ecnetinformers "github.com/flomesh-io/ErieCanal/pkg/ecnet/k8s/informers"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/messaging"
-	"github.com/flomesh-io/ErieCanal/pkg/ecnet/models"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/service"
 )
 
@@ -215,8 +211,8 @@ func (c client) GetEndpoints(svc service.MeshService) (*corev1.Endpoints, error)
 }
 
 // ListServiceIdentitiesForService lists ServiceAccounts associated with the given service
-func (c client) ListServiceIdentitiesForService(svc service.MeshService) ([]identity.K8sServiceAccount, error) {
-	var svcAccounts []identity.K8sServiceAccount
+func (c client) ListServiceIdentitiesForService(svc service.MeshService) ([]service.K8sServiceAccount, error) {
+	var svcAccounts []service.K8sServiceAccount
 
 	k8sSvc := c.GetService(svc)
 	if k8sSvc == nil {
@@ -233,7 +229,7 @@ func (c client) ListServiceIdentitiesForService(svc service.MeshService) ([]iden
 			continue
 		}
 		if selector.Matches(labels.Set(pod.Labels)) {
-			podSvcAccount := identity.K8sServiceAccount{
+			podSvcAccount := service.K8sServiceAccount{
 				Name:      pod.Spec.ServiceAccountName,
 				Namespace: pod.Namespace, // ServiceAccount must belong to the same namespace as the pod
 			}
@@ -242,7 +238,7 @@ func (c client) ListServiceIdentitiesForService(svc service.MeshService) ([]iden
 	}
 
 	for svcAcc := range svcAccountsSet.Iter() {
-		svcAccounts = append(svcAccounts, svcAcc.(identity.K8sServiceAccount))
+		svcAccounts = append(svcAccounts, svcAcc.(service.K8sServiceAccount))
 	}
 	return svcAccounts, nil
 }
@@ -357,60 +353,6 @@ func GetTargetPortFromEndpoints(endpointName string, endpoints corev1.Endpoints)
 		}
 	}
 	return
-}
-
-func (c client) GetPodForProxy(proxy models.Proxy) (*v1.Pod, error) {
-	proxyUUID, svcAccount := proxy.GetUUID().String(), proxy.GetIdentity().ToK8sServiceAccount()
-	log.Trace().Msgf("Looking for pod with uid= %q", proxyUUID)
-	podList := c.ListPods()
-	var pods []v1.Pod
-
-	for _, pod := range podList {
-		if uuid := string(pod.UID); uuid == proxyUUID {
-			pods = append(pods, *pod)
-		}
-	}
-
-	if len(pods) == 0 {
-		log.Warn().Str(errcode.Kind, errcode.GetErrCodeWithMetric(errcode.ErrFetchingPodFromCert)).
-			Msgf("Did not find Pod with uid= %s in namespace %s",
-				proxyUUID, svcAccount.Namespace)
-		return nil, errDidNotFindPodForUUID
-	}
-
-	// Each pod is assigned a unique UUID at the time of sidecar injection.
-	// The certificate's CommonName encodes this UUID, and we lookup the pod
-	// whose label matches this UUID.
-	// Only 1 pod must match the UUID encoded in the given certificate. If multiple
-	// pods match, it is an error.
-	if len(pods) > 1 {
-		log.Error().Str(errcode.Kind, errcode.GetErrCodeWithMetric(errcode.ErrPodBelongsToMultipleServices)).
-			Msgf("Found more than one pod with uid= %s in namespace %s. There can be only one!",
-				proxyUUID, svcAccount.Namespace)
-		return nil, errMoreThanOnePodForUUID
-	}
-
-	pod := pods[0]
-	log.Trace().Msgf("Found Pod with UID=%s for proxyID %s", pod.ObjectMeta.UID, proxyUUID)
-
-	if pod.Namespace != svcAccount.Namespace {
-		log.Warn().Str(errcode.Kind, errcode.GetErrCodeWithMetric(errcode.ErrFetchingPodFromCert)).
-			Msgf("Pod with UID=%s belongs to Namespace %s. The pod's xDS certificate was issued for Namespace %s",
-				pod.ObjectMeta.UID, pod.Namespace, svcAccount.Namespace)
-		return nil, errNamespaceDoesNotMatchProxy
-	}
-
-	// Ensure the Name encoded in the certificate matches that of the Pod
-	// TODO(draychev): check that the Kind matches too! [https://github.com/flomesh-io/ErieCanal/issues/3173]
-	if pod.Spec.ServiceAccountName != svcAccount.Name {
-		// Since we search for the pod in the namespace we obtain from the certificate -- these namespaces will always match.
-		log.Warn().Str(errcode.Kind, errcode.GetErrCodeWithMetric(errcode.ErrFetchingPodFromCert)).
-			Msgf("Pod with UID=%s belongs to ServiceAccount=%s. The pod's xDS certificate was issued for ServiceAccount=%s",
-				pod.ObjectMeta.UID, pod.Spec.ServiceAccountName, svcAccount)
-		return nil, errServiceAccountDoesNotMatchProxy
-	}
-
-	return &pod, nil
 }
 
 // GetTargetPortForServicePort returns the TargetPort corresponding to the Port used by clients

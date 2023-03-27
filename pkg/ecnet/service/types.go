@@ -6,8 +6,6 @@ import (
 	"strings"
 
 	"k8s.io/apimachinery/pkg/types"
-
-	"github.com/flomesh-io/ErieCanal/pkg/ecnet/identity"
 )
 
 // MeshService is the struct representing a service (Kubernetes or otherwise) within the service mesh.
@@ -86,11 +84,6 @@ func (ms MeshService) SidecarClusterName() string {
 	return fmt.Sprintf("%s/%s|%d", ms.Namespace, ms.Name, ms.TargetPort)
 }
 
-// SidecarLocalClusterName is the name of the local cluster corresponding to the MeshService in Sidecar
-func (ms MeshService) SidecarLocalClusterName() string {
-	return fmt.Sprintf("%s/%s|%d|local", ms.Namespace, ms.Name, ms.TargetPort)
-}
-
 // FQDN is similar to String(), but uses a dot separator and is in a different order.
 func (ms MeshService) FQDN() string {
 	return fmt.Sprintf("%s.%s.svc.cluster.local", ms.Name, ms.Namespace)
@@ -99,36 +92,6 @@ func (ms MeshService) FQDN() string {
 // OutboundTrafficMatchName returns the MeshService outbound traffic match name
 func (ms MeshService) OutboundTrafficMatchName() string {
 	return fmt.Sprintf("outbound_%s_%d_%s", ms, ms.Port, ms.Protocol)
-}
-
-// InboundTrafficMatchName returns the MeshService inbound traffic match name
-func (ms MeshService) InboundTrafficMatchName() string {
-	return fmt.Sprintf("inbound_%s_%d_%s", ms, ms.TargetPort, ms.Protocol)
-}
-
-// IngressTrafficMatchName returns the ingress traffic match name
-func (ms MeshService) IngressTrafficMatchName() string {
-	return IngressTrafficMatchName(ms.Namespace, ms.Name, ms.TargetPort, ms.Protocol)
-}
-
-// IngressTrafficMatchName returns the ingress traffic match name
-func IngressTrafficMatchName(name, namespace string, targetPort uint16, protocol string) string {
-	return fmt.Sprintf("ingress_%s/%s_%d_%s", namespace, name, targetPort, protocol)
-}
-
-// AccessControlTrafficMatchName returns the acl traffic match name
-func (ms MeshService) AccessControlTrafficMatchName() string {
-	return AccessControlTrafficMatchName(ms.Namespace, ms.Name, ms.TargetPort, ms.Protocol)
-}
-
-// AccessControlTrafficMatchName returns the acl traffic match name
-func AccessControlTrafficMatchName(name, namespace string, targetPort uint16, protocol string) string {
-	return fmt.Sprintf("acl_%s/%s_%d_%s", namespace, name, targetPort, protocol)
-}
-
-// ExportedServiceTrafficMatchName returns the export service traffic match name
-func ExportedServiceTrafficMatchName(name, namespace string, targetPort uint16, protocol string) string {
-	return fmt.Sprintf("exp_%s/%s_%d_%s", namespace, name, targetPort, protocol)
 }
 
 // ClusterName is a type for a service name
@@ -147,14 +110,9 @@ type WeightedCluster struct {
 
 // Provider is an interface to be implemented by components abstracting Kubernetes, and other compute/cluster providers
 type Provider interface {
-	// GetServicesForServiceIdentity retrieves the namespaced services for a given service identity
-	GetServicesForServiceIdentity(identity.ServiceIdentity) []MeshService
 
 	// ListServices returns a list of services that are part of monitored namespaces
 	ListServices() []MeshService
-
-	// ListServiceIdentitiesForService returns service identities for given service
-	ListServiceIdentitiesForService(MeshService) []identity.ServiceIdentity
 
 	// GetID returns the unique identifier of the Provider
 	GetID() string

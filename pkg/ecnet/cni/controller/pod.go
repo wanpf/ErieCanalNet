@@ -18,7 +18,6 @@ import (
 	"os/signal"
 	"syscall"
 
-	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 
@@ -39,7 +38,7 @@ func runLocalPodController(skip bool, client kubernetes.Interface, stop chan str
 		return fmt.Errorf("start watcher failed: %v", err)
 	}
 
-	log.Info("Pod watcher Ready")
+	log.Info().Msg("Pod watcher Ready")
 	if err = helpers.AttachProgs(skip); err != nil {
 		return fmt.Errorf("failed to attach ebpf programs: %v", err)
 	}
@@ -55,7 +54,7 @@ func runLocalPodController(skip bool, client kubernetes.Interface, stop chan str
 	if err = helpers.UnLoadProgs(skip); err != nil {
 		return fmt.Errorf("unload failed: %v", err)
 	}
-	log.Info("Pod watcher Down")
+	log.Info().Msg("Pod watcher Down")
 	return nil
 }
 
@@ -88,7 +87,7 @@ func addFunc(obj interface{}) {
 	if !isInjectedSidecar(pod) {
 		return
 	}
-	log.Debugf("got pod updated %s/%s", pod.Namespace, pod.Name)
+	log.Debug().Msgf("got pod updated %s/%s", pod.Namespace, pod.Name)
 }
 
 func updateFunc(old, cur interface{}) {
@@ -114,6 +113,6 @@ func deleteFunc(obj interface{}) {
 		return
 	}
 	if pod, ok := obj.(*v1.Pod); ok {
-		log.Debugf("got pod delete %s/%s", pod.Namespace, pod.Name)
+		log.Debug().Msgf("got pod delete %s/%s", pod.Namespace, pod.Name)
 	}
 }

@@ -1,8 +1,8 @@
 package catalog
 
 import (
-	"github.com/flomesh-io/ErieCanal/pkg/ecnet/providers/fsm"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/service"
+	"github.com/flomesh-io/ErieCanal/pkg/ecnet/service/providers/fsm"
 )
 
 // listMeshServices returns all services in the mesh

@@ -43,12 +43,6 @@ import (
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/util"
 )
 
-type qdisc struct {
-	netns         string
-	device        string
-	managedClsact bool
-}
-
 func getMarkKeyOfNetns(netns string) uint32 {
 	// todo check conflict?
 	algorithm := fnv.New32a()

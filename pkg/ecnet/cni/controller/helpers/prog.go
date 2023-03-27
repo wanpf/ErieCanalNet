@@ -14,15 +14,11 @@
 package helpers
 
 import (
-	"encoding/binary"
 	"fmt"
-	"net"
-	"os"
-	"os/exec"
-	"strings"
-
 	"github.com/cilium/ebpf"
 	log "github.com/sirupsen/logrus"
+	"os"
+	"os/exec"
 )
 
 // LoadProgs load ebpf progs
@@ -35,29 +31,11 @@ func LoadProgs(debug bool) error {
 	if debug {
 		cmd.Env = append(cmd.Env, "DEBUG=1")
 	}
-	if ifaces, err := net.Interfaces(); err == nil {
-		for _, iface := range ifaces {
-			if iface.Flags&net.FlagUp != 0 && strings.HasPrefix(iface.Name, "cni0") {
-				if addrs, err := iface.Addrs(); err == nil {
-					for _, addr := range addrs {
-						if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
-							if ipnet.IP.To4() != nil {
-								bridgeIp := binary.BigEndian.Uint32(ipnet.IP.To4())
-								fmt.Println(bridgeIp)
-								cmd.Env = append(cmd.Env, fmt.Sprintf("BRIDGE_IP=%d", bridgeIp))
-								break
-							}
-						}
-					}
-				} else {
-					return fmt.Errorf("unexpected exit err: %v", err)
-				}
-				break
-			}
-		}
 
+	if _, bridgeIntAddr, _ := GetBridgeIP(); bridgeIntAddr > 0 {
+		cmd.Env = append(cmd.Env, fmt.Sprintf("BRIDGE_IP=%d", bridgeIntAddr))
 	} else {
-		return fmt.Errorf("unexpected exit err: %v", err)
+		return fmt.Errorf("unexpected exit err: retrieves cni bridge veth's ipv4 addr")
 	}
 
 	cmd.Stdout = os.Stdout
@@ -142,7 +120,7 @@ func initTrafficControlProgs() error {
 	ps := progs{}
 	err = coll.LoadAndAssign(&ps, &ebpf.CollectionOptions{
 		MapReplacements: map[string]*ebpf.Map{
-			"ecnet_dns_nat":  GetMcsDNSNatMap(),
+			"ecnet_dns_nat": GetMcsDNSNatMap(),
 			"ecnet_svc_nat": GetMcsSvcNatMap(),
 		},
 	})
