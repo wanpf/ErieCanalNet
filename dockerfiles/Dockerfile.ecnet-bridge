@@ -1,6 +1,6 @@
 ARG GO_VERSION
 
-FROM golang:$GO_VERSION as gobuild
+FROM golang:$GO_VERSION as builder
 
 WORKDIR /ec
 
@@ -26,7 +26,7 @@ WORKDIR /ec
 
 COPY bpf bpf
 COPY Makefile.CNI Makefile
-COPY --from=gobuild /ec/dist/ecnet-bridge ecnet-bridge
-COPY --from=gobuild /ec/dist/ecnet-cni ecnet-cni
+COPY --from=builder /ec/dist/ecnet-bridge ecnet-bridge
+COPY --from=builder /ec/dist/ecnet-cni ecnet-cni
 
 CMD /ec/ecnet-bridge
