@@ -17,7 +17,7 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/go-version v1.6.0
-	github.com/jstemmer/go-junit-report v0.9.1
+	github.com/jstemmer/go-junit-report v1.0.0
 	github.com/mitchellh/gox v1.0.1
 	github.com/norwoodj/helm-docs v1.11.0
 	github.com/onsi/ginkgo v1.16.5 // indirect
