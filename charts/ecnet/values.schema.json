@@ -396,7 +396,7 @@
                     },
                     "additionalProperties": false
                 },
-                "sidecarImage": {
+                "proxyImage": {
                     "$id": "#/properties/ecnet/properties/proxyImage",
                     "type": "string",
                     "title": "The proxyImage schema",
