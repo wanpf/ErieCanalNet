@@ -1,10 +1,11 @@
 package server
 
 import (
-	mapset "github.com/deckarep/golang-set"
-	"github.com/pkg/errors"
 	"strconv"
 	"strings"
+
+	mapset "github.com/deckarep/golang-set"
+	"github.com/pkg/errors"
 
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/catalog"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/constants"

@@ -14,9 +14,10 @@ package controller
 
 import (
 	"fmt"
+	"os"
+
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
-	"os"
 
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/controller/helpers"
 )

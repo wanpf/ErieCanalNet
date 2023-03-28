@@ -3,13 +3,13 @@ package server
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/flomesh-io/ErieCanal/pkg/ecnet/pipy/util"
 	"sync"
 	"time"
 
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/catalog"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/pipy/repo/client"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/pipy/repo/codebase"
+	"github.com/flomesh-io/ErieCanal/pkg/ecnet/pipy/util"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/proxyserver"
 )
 
@@ -104,8 +104,7 @@ func features(s *Server, proxy *proxyserver.Proxy, pipyConf *PipyConf) {
 }
 
 var (
-	repoLock     sync.RWMutex
-	latestConfig = PipyConf{}
+	repoLock sync.RWMutex
 )
 
 func (job *PipyConfGeneratorJob) publishSidecarConf(repoClient *client.PipyRepoClient, proxy *proxyserver.Proxy, pipyConf *PipyConf, pluginSetV string) {

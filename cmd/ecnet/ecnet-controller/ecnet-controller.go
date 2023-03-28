@@ -1,6 +1,6 @@
 // Package main implements the main entrypoint for ecnet-controller and utility routines to
 // bootstrap the various internal components of ecnet-controller.
-// ecnet-controller is the core control plane component in ECNET responsible for programming sidecar proxies.
+// ecnet-controller is the core control plane component in ECNET responsible for programming proxies.
 package main
 
 import (

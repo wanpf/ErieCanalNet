@@ -17,9 +17,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/controller/helpers"
-	cniserver "github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/controller/server"
-	"github.com/flomesh-io/ErieCanal/pkg/ecnet/logger"
 	"os"
 	"path"
 	"runtime"
@@ -30,13 +27,16 @@ import (
 
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/config"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/controller"
+	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/controller/helpers"
+	cniserver "github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/controller/server"
+	"github.com/flomesh-io/ErieCanal/pkg/ecnet/logger"
 )
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use: "ecnet-bridge",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		logger.SetLogLevel("debug")
+		_ = logger.SetLogLevel("debug")
 
 		if err := helpers.LoadProgs(config.Debug); err != nil {
 			return fmt.Errorf("failed to load ebpf programs: %v", err)

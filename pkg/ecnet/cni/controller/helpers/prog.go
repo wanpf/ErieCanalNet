@@ -15,10 +15,11 @@ package helpers
 
 import (
 	"fmt"
-	"github.com/cilium/ebpf"
-	log "github.com/sirupsen/logrus"
 	"os"
 	"os/exec"
+
+	"github.com/cilium/ebpf"
+	log "github.com/sirupsen/logrus"
 )
 
 // LoadProgs load ebpf progs

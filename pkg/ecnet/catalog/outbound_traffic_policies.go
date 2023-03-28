@@ -60,7 +60,7 @@ func (mc *MeshCatalog) GetOutboundMeshTrafficPolicy() *policy.OutboundMeshTraffi
 		// ---
 		// Create the cluster config for this upstream service
 		clusterConfigForServicePort := &policy.MeshClusterConfig{
-			Name:    meshSvc.SidecarClusterName(),
+			Name:    meshSvc.ClusterName(),
 			Service: meshSvc,
 		}
 		clusterConfigs = append(clusterConfigs, clusterConfigForServicePort)
@@ -166,7 +166,7 @@ func (mc *MeshCatalog) getWildCardRouteUpstreamClusters(hasTrafficSplitWildCard 
 
 func (mc *MeshCatalog) mergeUpstreamClusters(meshSvc service.MeshService, upstreamClusters []service.WeightedCluster) []service.WeightedCluster {
 	wc := service.WeightedCluster{
-		ClusterName: service.ClusterName(meshSvc.SidecarClusterName()),
+		ClusterName: service.ClusterName(meshSvc.ClusterName()),
 		Weight:      constants.ClusterWeightAcceptAll,
 	}
 	if meshSvc.IsMultiClusterService() {

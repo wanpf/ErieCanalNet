@@ -30,7 +30,7 @@ func Run(disableWatcher, skip bool, cniReady chan struct{}, stop chan struct{}) 
 	var err error
 	var client kubernetes.Interface
 
-	NewOptions()
+	_ = NewOptions()
 
 	// get default kubernetes client
 	client, err = kube.GetKubernetesClientWithFile(config.KubeConfig, config.Context)

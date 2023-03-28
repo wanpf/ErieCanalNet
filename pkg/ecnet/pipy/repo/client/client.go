@@ -203,7 +203,7 @@ func (p *PipyRepoClient) RunCodebase(codebaseName string) error {
 	_, err := p.httpClient.R().
 		SetHeader("Content-Type", "text/plain").
 		SetBody(fmt.Sprintf("/%s", codebaseName)).
-		Post(fmt.Sprintf("%s", p.apiURI.progURI))
+		Post(p.apiURI.progURI)
 	return err
 }
 

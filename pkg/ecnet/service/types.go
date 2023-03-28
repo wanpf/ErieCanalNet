@@ -79,8 +79,8 @@ func (ms MeshService) String() string {
 	return fmt.Sprintf("%s/%s", ms.Namespace, ms.Name)
 }
 
-// SidecarClusterName is the name of the cluster corresponding to the MeshService in Sidecar
-func (ms MeshService) SidecarClusterName() string {
+// ClusterName is the name of the cluster corresponding to the MeshService in Sidecar
+func (ms MeshService) ClusterName() string {
 	return fmt.Sprintf("%s/%s|%d", ms.Namespace, ms.Name, ms.TargetPort)
 }
 

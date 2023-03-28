@@ -3,9 +3,10 @@ package helpers
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/config"
 	"net"
 	"strings"
+
+	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/config"
 )
 
 var (

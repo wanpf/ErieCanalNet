@@ -1,3 +1,4 @@
+// Package util defines utilities
 package util
 
 import (

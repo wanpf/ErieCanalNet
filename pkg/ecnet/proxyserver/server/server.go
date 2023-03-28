@@ -60,7 +60,7 @@ func NewRepoServer(meshCatalog catalog.MeshCataloger, proxyRegistry *registry.Pr
 // Start starts the codebase push server
 func (s *Server) Start(_ uint32) error {
 	// wait until pipy repo is up
-	wait.PollImmediate(5*time.Second, 90*time.Second, func() (bool, error) {
+	_ = wait.PollImmediate(5*time.Second, 90*time.Second, func() (bool, error) {
 		success, _ := s.repoClient.IsRepoUp()
 		if success {
 			log.Info().Msg("Repo is READY!")
