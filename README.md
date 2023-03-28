@@ -19,6 +19,10 @@ cp ./${system}-${arch}/ecnet /usr/local/bin/
 
 ## 3. 安装 ErieCanal Net
 
+根据k8s 环境使用 cni 选择如下命令之一
+
+### 3.1 flannel
+
 ```bash
 export ecnet_namespace=ecnet-system
 export ecnet_name=ecnet
@@ -26,7 +30,6 @@ export dns_svc_ip="$(kubectl get svc -n kube-system -l k8s-app=kube-dns -o jsonp
 ecnet install \
     --ecnet-name "$ecnet_name" \
     --ecnet-namespace "$ecnet_namespace" \
-    --set=ecnet.ecnetBridge.cni.hostCniBridgeEth=cni0 \
     --set=ecnet.image.registry=cybwan \
     --set=ecnet.image.tag=1.0.1 \
     --set=ecnet.image.pullPolicy=Always \
@@ -34,6 +37,47 @@ ecnet install \
     --set=ecnet.controllerLogLevel=warn \
     --set=ecnet.localDNSProxy.enable=true \
     --set=ecnet.localDNSProxy.primaryUpstreamDNSServerIPAddr="${dns_svc_ip}" \
+    --set=ecnet.ecnetBridge.cni.hostCniBridgeEth=cni0 \
+    --timeout=900s
+```
+
+### 3.2 calico
+
+```bash
+export ecnet_namespace=ecnet-system
+export ecnet_name=ecnet
+export dns_svc_ip="$(kubectl get svc -n kube-system -l k8s-app=kube-dns -o jsonpath='{.items[0].spec.clusterIP}')"
+ecnet install \
+    --ecnet-name "$ecnet_name" \
+    --ecnet-namespace "$ecnet_namespace" \
+    --set=ecnet.image.registry=cybwan \
+    --set=ecnet.image.tag=1.0.1 \
+    --set=ecnet.image.pullPolicy=Always \
+    --set=ecnet.proxyLogLevel=debug \
+    --set=ecnet.controllerLogLevel=warn \
+    --set=ecnet.localDNSProxy.enable=true \
+    --set=ecnet.localDNSProxy.primaryUpstreamDNSServerIPAddr="${dns_svc_ip}" \
+    --set=ecnet.ecnetBridge.cni.hostCniBridgeEth=tunl0 \
+    --timeout=900s
+```
+
+### 3.3 weave
+
+```bash
+export ecnet_namespace=ecnet-system
+export ecnet_name=ecnet
+export dns_svc_ip="$(kubectl get svc -n kube-system -l k8s-app=kube-dns -o jsonpath='{.items[0].spec.clusterIP}')"
+ecnet install \
+    --ecnet-name "$ecnet_name" \
+    --ecnet-namespace "$ecnet_namespace" \
+    --set=ecnet.image.registry=cybwan \
+    --set=ecnet.image.tag=1.0.1 \
+    --set=ecnet.image.pullPolicy=Always \
+    --set=ecnet.proxyLogLevel=debug \
+    --set=ecnet.controllerLogLevel=warn \
+    --set=ecnet.localDNSProxy.enable=true \
+    --set=ecnet.localDNSProxy.primaryUpstreamDNSServerIPAddr="${dns_svc_ip}" \
+    --set=ecnet.ecnetBridge.cni.hostCniBridgeEth=weave \
     --timeout=900s
 ```
 
@@ -79,7 +123,7 @@ spec:
       serviceAccountName: sleep
       containers:
       - name: sleep
-        image: local.registry/ubuntu:20.04
+        image: curlimages/curl
         imagePullPolicy: Always
         command: ["/bin/sleep", "infinity"]
       nodeName: node2
