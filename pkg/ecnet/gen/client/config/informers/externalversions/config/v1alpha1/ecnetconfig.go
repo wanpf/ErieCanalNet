@@ -29,59 +29,59 @@ import (
 	cache "k8s.io/client-go/tools/cache"
 )
 
-// MeshConfigInformer provides access to a shared informer and lister for
-// MeshConfigs.
-type MeshConfigInformer interface {
+// EcnetConfigInformer provides access to a shared informer and lister for
+// EcnetConfigs.
+type EcnetConfigInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() v1alpha1.MeshConfigLister
+	Lister() v1alpha1.EcnetConfigLister
 }
 
-type meshConfigInformer struct {
+type ecnetConfigInformer struct {
 	factory          internalinterfaces.SharedInformerFactory
 	tweakListOptions internalinterfaces.TweakListOptionsFunc
 	namespace        string
 }
 
-// NewMeshConfigInformer constructs a new informer for MeshConfig type.
+// NewEcnetConfigInformer constructs a new informer for EcnetConfig type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewMeshConfigInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
-	return NewFilteredMeshConfigInformer(client, namespace, resyncPeriod, indexers, nil)
+func NewEcnetConfigInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
+	return NewFilteredEcnetConfigInformer(client, namespace, resyncPeriod, indexers, nil)
 }
 
-// NewFilteredMeshConfigInformer constructs a new informer for MeshConfig type.
+// NewFilteredEcnetConfigInformer constructs a new informer for EcnetConfig type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewFilteredMeshConfigInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
+func NewFilteredEcnetConfigInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.ConfigV1alpha1().MeshConfigs(namespace).List(context.TODO(), options)
+				return client.ConfigV1alpha1().EcnetConfigs(namespace).List(context.TODO(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.ConfigV1alpha1().MeshConfigs(namespace).Watch(context.TODO(), options)
+				return client.ConfigV1alpha1().EcnetConfigs(namespace).Watch(context.TODO(), options)
 			},
 		},
-		&configv1alpha1.MeshConfig{},
+		&configv1alpha1.EcnetConfig{},
 		resyncPeriod,
 		indexers,
 	)
 }
 
-func (f *meshConfigInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-	return NewFilteredMeshConfigInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
+func (f *ecnetConfigInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
+	return NewFilteredEcnetConfigInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
 }
 
-func (f *meshConfigInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&configv1alpha1.MeshConfig{}, f.defaultInformer)
+func (f *ecnetConfigInformer) Informer() cache.SharedIndexInformer {
+	return f.factory.InformerFor(&configv1alpha1.EcnetConfig{}, f.defaultInformer)
 }
 
-func (f *meshConfigInformer) Lister() v1alpha1.MeshConfigLister {
-	return v1alpha1.NewMeshConfigLister(f.Informer().GetIndexer())
+func (f *ecnetConfigInformer) Lister() v1alpha1.EcnetConfigLister {
+	return v1alpha1.NewEcnetConfigLister(f.Informer().GetIndexer())
 }

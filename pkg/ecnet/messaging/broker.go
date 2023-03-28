@@ -250,17 +250,17 @@ func getProxyUpdateEvent(msg events.PubSubMessage) *proxyUpdateEvent {
 			topic: announcements.ProxyUpdate.String(),
 		}
 
-	case announcements.MeshConfigUpdated:
-		prevMeshConfig, okPrevCast := msg.OldObj.(*configv1alpha1.MeshConfig)
-		newMeshConfig, okNewCast := msg.NewObj.(*configv1alpha1.MeshConfig)
+	case announcements.EcnetConfigUpdated:
+		prevEcnetConfig, okPrevCast := msg.OldObj.(*configv1alpha1.EcnetConfig)
+		newEcnetConfig, okNewCast := msg.NewObj.(*configv1alpha1.EcnetConfig)
 		if !okPrevCast || !okNewCast {
-			log.Error().Msgf("Expected MeshConfig type, got previous=%T, new=%T", okPrevCast, okNewCast)
+			log.Error().Msgf("Expected EcnetConfig type, got previous=%T, new=%T", okPrevCast, okNewCast)
 			return nil
 		}
 
-		prevSpec := prevMeshConfig.Spec
-		newSpec := newMeshConfig.Spec
-		// A proxy config update must only be triggered when a MeshConfig field that maps to a proxy config
+		prevSpec := prevEcnetConfig.Spec
+		newSpec := newEcnetConfig.Spec
+		// A proxy config update must only be triggered when a EcnetConfig field that maps to a proxy config
 		// changes.
 		if prevSpec.Sidecar.LogLevel != newSpec.Sidecar.LogLevel ||
 			// Only trigger an update on InboundExternalAuthorization field changes if the new spec has the 'Enable' flag set to true.

@@ -51,7 +51,7 @@ var (
 	meshName            string // An ID that uniquely identifies an ECNET instance
 	ecnetNamespace      string
 	ecnetServiceAccount string
-	ecnetMeshConfigName string
+	ecnetConfigName     string
 	ecnetVersion        string
 	trustDomain         string
 
@@ -68,7 +68,7 @@ func init() {
 	flags.StringVar(&meshName, "mesh-name", "", "ECNET mesh name")
 	flags.StringVar(&ecnetNamespace, "ecnet-namespace", "", "ECNET controller's namespace")
 	flags.StringVar(&ecnetServiceAccount, "ecnet-service-account", "", "ECNET controller's service account")
-	flags.StringVar(&ecnetMeshConfigName, "ecnet-config-name", "ecnet-mesh-config", "Name of the ECNET MeshConfig")
+	flags.StringVar(&ecnetConfigName, "ecnet-config-name", "ecnet-config", "Name of the ECNET Config")
 	flags.StringVar(&ecnetVersion, "ecnet-version", "", "Version of ECNET")
 
 	// TODO (#4502): Remove when we add full MRC support
@@ -121,15 +121,15 @@ func main() {
 
 	informerCollection, err := informers.NewInformerCollection(meshName, stop,
 		informers.WithKubeClient(kubeClient),
-		informers.WithConfigClient(configClient, ecnetMeshConfigName, ecnetNamespace),
+		informers.WithConfigClient(configClient, ecnetConfigName, ecnetNamespace),
 		informers.WithMultiClusterClient(multiclusterClient),
 	)
 	if err != nil {
 		events.GenericEventRecorder().FatalEvent(err, events.InitializationError, "Error creating informer collection")
 	}
 
-	// This component will be watching resources in the config.openservicemesh.io API group
-	cfg := configurator.NewConfigurator(informerCollection, ecnetNamespace, ecnetMeshConfigName, msgBroker)
+	// This component will be watching resources in the config.flomesh.io API group
+	cfg := configurator.NewConfigurator(informerCollection, ecnetNamespace, ecnetConfigName, msgBroker)
 	k8sClient := k8s.NewKubernetesController(informerCollection, msgBroker)
 	multiclusterController := multicluster.NewMultiClusterController(informerCollection, kubeClient, k8sClient, msgBroker)
 	kubeProvider := kube.NewClient(k8sClient, cfg)

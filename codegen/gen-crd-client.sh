@@ -71,7 +71,7 @@ function generate_client() {
   rm -rf ${TEMP_DIR}
 }
 
-echo "##### Generating config.openservicemesh.io client ######"
+echo "##### Generating config.flomesh.io client ######"
 generate_client "config" "v1alpha1"
 
 echo "##### Generating networking.k8s.io client ######"

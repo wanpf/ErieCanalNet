@@ -16,7 +16,7 @@ import (
 )
 
 // ResyncTicker is the type that implements a ticker to trigger internal system resyncs
-// periodicially based on the configuration specified in the MeshConfig resource.
+// periodicially based on the configuration specified in the EcnetConfig resource.
 type ResyncTicker struct {
 	stopTickerCh chan struct{}
 	msgBroker    *messaging.Broker
@@ -58,16 +58,16 @@ func (r *ResyncTicker) Start(quit <-chan struct{}, resyncInterval time.Duration)
 // watchConfig watches for new ticker configuration and starts/stops/resets ticker
 // based on the configuration.
 func (r *ResyncTicker) watchConfig(quit <-chan struct{}) {
-	// Subscribe to MeshConfig updates through which Ticker can be turned on/off
+	// Subscribe to EcnetConfig updates through which Ticker can be turned on/off
 	kubePubSub := r.msgBroker.GetKubeEventPubSub()
-	meshConfigUpdateChan := kubePubSub.Sub(announcements.MeshConfigUpdated.String())
-	defer r.msgBroker.Unsub(kubePubSub, meshConfigUpdateChan)
+	ecnetConfigUpdateChan := kubePubSub.Sub(announcements.EcnetConfigUpdated.String())
+	defer r.msgBroker.Unsub(kubePubSub, ecnetConfigUpdateChan)
 
 	for {
 		select {
-		case msg, ok := <-meshConfigUpdateChan:
+		case msg, ok := <-ecnetConfigUpdateChan:
 			if !ok {
-				log.Warn().Msgf("Notification channel closed for MeshConfig")
+				log.Warn().Msgf("Notification channel closed for EcnetConfig")
 				continue
 			}
 
@@ -77,10 +77,10 @@ func (r *ResyncTicker) watchConfig(quit <-chan struct{}) {
 				continue
 			}
 
-			oldMeshSpec, oldOk := event.OldObj.(*configv1alpha1.MeshConfig)
-			newMeshSpec, newOk := event.NewObj.(*configv1alpha1.MeshConfig)
+			oldMeshSpec, oldOk := event.OldObj.(*configv1alpha1.EcnetConfig)
+			newMeshSpec, newOk := event.NewObj.(*configv1alpha1.EcnetConfig)
 			if !oldOk || !newOk {
-				log.Error().Msgf("Received unexpected message old=%T new=%T on channel, expected *MeshConfig", oldMeshSpec, newMeshSpec)
+				log.Error().Msgf("Received unexpected message old=%T new=%T on channel, expected *EcnetConfig", oldMeshSpec, newMeshSpec)
 				continue
 			}
 

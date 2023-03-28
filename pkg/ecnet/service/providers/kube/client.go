@@ -19,8 +19,8 @@ var _ service.Provider = (*client)(nil)
 // NewClient returns a client that has all components necessary to connect to and maintain state of a Kubernetes cluster.
 func NewClient(kubeController k8s.Controller, cfg configurator.Configurator) *client { //nolint: revive // unexported-return
 	return &client{
-		kubeController:   kubeController,
-		meshConfigurator: cfg,
+		kubeController:    kubeController,
+		ecnetConfigurator: cfg,
 	}
 }
 

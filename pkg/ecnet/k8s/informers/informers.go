@@ -70,13 +70,13 @@ func WithKubeClient(kubeClient kubernetes.Interface) InformerCollectionOption {
 }
 
 // WithConfigClient sets the config client for the InformerCollection
-func WithConfigClient(configClient configClientset.Interface, meshConfigName, ecnetNamespace string) InformerCollectionOption {
+func WithConfigClient(configClient configClientset.Interface, ecnetConfigName, ecnetNamespace string) InformerCollectionOption {
 	return func(ic *InformerCollection) {
 		listOption := configInformers.WithTweakListOptions(func(opt *metav1.ListOptions) {
-			opt.FieldSelector = fields.OneTermEqualSelector(metav1.ObjectNameField, meshConfigName).String()
+			opt.FieldSelector = fields.OneTermEqualSelector(metav1.ObjectNameField, ecnetConfigName).String()
 		})
-		meshConfiginformerFactory := configInformers.NewSharedInformerFactoryWithOptions(configClient, DefaultKubeEventResyncInterval, configInformers.WithNamespace(ecnetNamespace), listOption)
-		ic.informers[InformerKeyMeshConfig] = meshConfiginformerFactory.Config().V1alpha1().MeshConfigs().Informer()
+		ecnetConfiginformerFactory := configInformers.NewSharedInformerFactoryWithOptions(configClient, DefaultKubeEventResyncInterval, configInformers.WithNamespace(ecnetNamespace), listOption)
+		ic.informers[InformerKeyEcnetConfig] = ecnetConfiginformerFactory.Config().V1alpha1().EcnetConfigs().Informer()
 	}
 }
 

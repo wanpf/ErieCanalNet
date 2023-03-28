@@ -13,5 +13,5 @@ const (
 // client is the type used to represent the k8s client for endpoints and service provider
 type client struct {
 	multiclusterController multicluster.Controller
-	meshConfigurator       configurator.Configurator
+	ecnetConfigurator      configurator.Configurator
 }

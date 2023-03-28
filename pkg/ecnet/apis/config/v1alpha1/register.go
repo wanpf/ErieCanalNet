@@ -1,7 +1,7 @@
 // +k8s:deepcopy-gen=package,register
-// +groupName=config.openservicemesh.io
+// +groupName=config.flomesh.io
 
-// Package v1alpha1 contains API Schema definitions for the config.openservicemesh.io v1alpha1 API group
+// Package v1alpha1 contains API Schema definitions for the config.flomesh.io v1alpha1 API group
 package v1alpha1
 
 import (
@@ -11,9 +11,9 @@ import (
 )
 
 var (
-	// SchemeGroupVersion is group version used to register MeshConfig
+	// SchemeGroupVersion is group version used to register EcnetConfig
 	SchemeGroupVersion = schema.GroupVersion{
-		Group:   "config.openservicemesh.io",
+		Group:   "config.flomesh.io",
 		Version: "v1alpha1",
 	}
 
@@ -37,8 +37,8 @@ func Resource(resource string) schema.GroupResource {
 // Adds the list of known types to Scheme.
 func addKnownTypes(scheme *runtime.Scheme) error {
 	scheme.AddKnownTypes(SchemeGroupVersion,
-		&MeshConfig{},
-		&MeshConfigList{},
+		&EcnetConfig{},
+		&EcnetConfigList{},
 	)
 
 	metav1.AddToGroupVersion(

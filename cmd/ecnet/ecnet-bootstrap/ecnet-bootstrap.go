@@ -41,18 +41,18 @@ import (
 )
 
 const (
-	meshConfigName          = "ecnet-mesh-config"
-	presetMeshConfigName    = "preset-mesh-config"
-	presetMeshConfigJSONKey = "preset-mesh-config.json"
+	configName               = "ecnet-config"
+	presetEcnetConfigName    = "preset-ecnet-config"
+	presetEcnetConfigJSONKey = "preset-ecnet-config.json"
 )
 
 var (
-	verbosity           string
-	ecnetNamespace      string
-	ecnetMeshConfigName string
-	meshName            string
-	ecnetVersion        string
-	trustDomain         string
+	verbosity       string
+	ecnetNamespace  string
+	ecnetConfigName string
+	meshName        string
+	ecnetVersion    string
+	trustDomain     string
 
 	scheme = runtime.NewScheme()
 )
@@ -72,7 +72,7 @@ func init() {
 	flags.StringVar(&meshName, "mesh-name", "", "ECNET mesh name")
 	flags.StringVarP(&verbosity, "verbosity", "v", "info", "Set log verbosity level")
 	flags.StringVar(&ecnetNamespace, "ecnet-namespace", "", "Namespace to which ECNET belongs to.")
-	flags.StringVar(&ecnetMeshConfigName, "ecnet-config-name", "ecnet-mesh-config", "Name of the ECNET MeshConfig")
+	flags.StringVar(&ecnetConfigName, "ecnet-config-name", "ecnet-config", "Name of the ECNET EcnetConfig")
 	flags.StringVar(&ecnetVersion, "ecnet-version", "", "Version of ECNET")
 
 	// TODO (#4502): Remove when we add full MRC support
@@ -121,9 +121,9 @@ func main() {
 
 	applyOrUpdateCRDs(crdClient)
 
-	err = bootstrap.ensureMeshConfig()
+	err = bootstrap.ensureEcnetConfig()
 	if err != nil {
-		log.Fatal().Err(err).Msgf("Error setting up default MeshConfig %s from ConfigMap %s", meshConfigName, presetMeshConfigName)
+		log.Fatal().Err(err).Msgf("Error setting up default EcnetConfig %s from ConfigMap %s", configName, presetEcnetConfigName)
 		return
 	}
 
@@ -211,38 +211,38 @@ func applyOrUpdateCRDs(crdClient *apiclient.ApiextensionsV1Client) {
 	}
 }
 
-func (b *bootstrap) createDefaultMeshConfig() error {
-	// find presets config map to build the default MeshConfig from that
-	presetsConfigMap, err := b.kubeClient.CoreV1().ConfigMaps(b.namespace).Get(context.TODO(), presetMeshConfigName, metav1.GetOptions{})
+func (b *bootstrap) createDefaultEcnetConfig() error {
+	// find presets config map to build the default EcnetConfig from that
+	presetsConfigMap, err := b.kubeClient.CoreV1().ConfigMaps(b.namespace).Get(context.TODO(), presetEcnetConfigName, metav1.GetOptions{})
 
-	// If the presets MeshConfig could not be loaded return the error
+	// If the presets EcnetConfig could not be loaded return the error
 	if err != nil {
 		return err
 	}
 
-	// Create a default meshConfig
-	defaultMeshConfig, err := buildDefaultMeshConfig(presetsConfigMap)
+	// Create a default EcnetConfig
+	defaultEcnetConfig, err := buildDefaultEcnetConfig(presetsConfigMap)
 	if err != nil {
 		return err
 	}
-	if _, err = b.configClient.ConfigV1alpha1().MeshConfigs(b.namespace).Create(context.TODO(), defaultMeshConfig, metav1.CreateOptions{}); err == nil {
-		log.Info().Msgf("MeshConfig (%s) created in namespace %s", meshConfigName, b.namespace)
+	if _, err = b.configClient.ConfigV1alpha1().EcnetConfigs(b.namespace).Create(context.TODO(), defaultEcnetConfig, metav1.CreateOptions{}); err == nil {
+		log.Info().Msgf("EcnetConfig (%s) created in namespace %s", configName, b.namespace)
 		return nil
 	}
 
 	if apierrors.IsAlreadyExists(err) {
-		log.Info().Msgf("MeshConfig already exists in %s. Skip creating.", b.namespace)
+		log.Info().Msgf("EcnetConfig already exists in %s. Skip creating.", b.namespace)
 		return nil
 	}
 
 	return err
 }
 
-func (b *bootstrap) ensureMeshConfig() error {
-	config, err := b.configClient.ConfigV1alpha1().MeshConfigs(b.namespace).Get(context.TODO(), meshConfigName, metav1.GetOptions{})
+func (b *bootstrap) ensureEcnetConfig() error {
+	config, err := b.configClient.ConfigV1alpha1().EcnetConfigs(b.namespace).Get(context.TODO(), configName, metav1.GetOptions{})
 	if apierrors.IsNotFound(err) {
 		// create a default mesh config since it was not found
-		return b.createDefaultMeshConfig()
+		return b.createDefaultEcnetConfig()
 	}
 	if err != nil {
 		return err
@@ -253,7 +253,7 @@ func (b *bootstrap) ensureMeshConfig() error {
 		if err := util.CreateApplyAnnotation(config, unstructured.UnstructuredJSONScheme); err != nil {
 			return err
 		}
-		if _, err := b.configClient.ConfigV1alpha1().MeshConfigs(b.namespace).Update(context.TODO(), config, metav1.UpdateOptions{}); err != nil {
+		if _, err := b.configClient.ConfigV1alpha1().EcnetConfigs(b.namespace).Update(context.TODO(), config, metav1.UpdateOptions{}); err != nil {
 			return err
 		}
 	}
@@ -307,23 +307,23 @@ func validateCLIParams() error {
 	return nil
 }
 
-func buildDefaultMeshConfig(presetMeshConfigMap *corev1.ConfigMap) (*configv1alpha1.MeshConfig, error) {
-	presetMeshConfig := presetMeshConfigMap.Data[presetMeshConfigJSONKey]
-	presetMeshConfigSpec := configv1alpha1.MeshConfigSpec{}
-	err := json.Unmarshal([]byte(presetMeshConfig), &presetMeshConfigSpec)
+func buildDefaultEcnetConfig(presetEcnetConfigMap *corev1.ConfigMap) (*configv1alpha1.EcnetConfig, error) {
+	presetEcnetConfig := presetEcnetConfigMap.Data[presetEcnetConfigJSONKey]
+	presetEcnetConfigSpec := configv1alpha1.EcnetConfigSpec{}
+	err := json.Unmarshal([]byte(presetEcnetConfig), &presetEcnetConfigSpec)
 	if err != nil {
-		log.Fatal().Err(err).Msgf("Error converting preset-mesh-config json string to meshConfig object")
+		log.Fatal().Err(err).Msgf("Error converting preset-ecnet-config json string to ecnetConfig object")
 	}
 
-	config := &configv1alpha1.MeshConfig{
+	config := &configv1alpha1.EcnetConfig{
 		TypeMeta: metav1.TypeMeta{
-			Kind:       "MeshConfig",
-			APIVersion: "config.openservicemesh.io/configv1alpha1",
+			Kind:       "EcnetConfig",
+			APIVersion: "config.flomesh.io/configv1alpha1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name: meshConfigName,
+			Name: configName,
 		},
-		Spec: presetMeshConfigSpec,
+		Spec: presetEcnetConfigSpec,
 	}
 
 	return config, util.CreateApplyAnnotation(config, unstructured.UnstructuredJSONScheme)

@@ -21,8 +21,8 @@ import (
 
 // Interface provides access to all the informers in this group version.
 type Interface interface {
-	// MeshConfigs returns a MeshConfigInformer.
-	MeshConfigs() MeshConfigInformer
+	// EcnetConfigs returns a EcnetConfigInformer.
+	EcnetConfigs() EcnetConfigInformer
 }
 
 type version struct {
@@ -36,7 +36,7 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 	return &version{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
 }
 
-// MeshConfigs returns a MeshConfigInformer.
-func (v *version) MeshConfigs() MeshConfigInformer {
-	return &meshConfigInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+// EcnetConfigs returns a EcnetConfigInformer.
+func (v *version) EcnetConfigs() EcnetConfigInformer {
+	return &ecnetConfigInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }

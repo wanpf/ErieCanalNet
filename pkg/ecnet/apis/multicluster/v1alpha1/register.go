@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	// SchemeGroupVersion is group version used to register API objects in the policy.openservicemesh.io v1alpha1 API group
+	// SchemeGroupVersion is group version used to register API objects in the policy.flomesh.io v1alpha1 API group
 	SchemeGroupVersion = schema.GroupVersion{
 		Group:   "flomesh.io",
 		Version: "v1alpha1",

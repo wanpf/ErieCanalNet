@@ -59,7 +59,6 @@ ecnet:
   ecnetController:
     # -- ECNET controller's replica count (ignored when autoscale.enable is true)
     replicaCount: 1
-    # -- ECNET controller's container resource parameters. See https://docs.openservicemesh.io/docs/guides/ha_scale/scale/ for more details.
     resource:
       limits:
         cpu: "1.5"

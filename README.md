@@ -26,6 +26,7 @@ export dns_svc_ip="$(kubectl get svc -n kube-system -l k8s-app=kube-dns -o jsonp
 ecnet install \
     --mesh-name "$ecnet_mesh_name" \
     --ecnet-namespace "$ecnet_namespace" \
+    --set=ecnet.ecnetBridge.cni.hostCniBridgeEth=cni0 \
     --set=ecnet.image.registry=cybwan \
     --set=ecnet.image.tag=1.0.1 \
     --set=ecnet.image.pullPolicy=Always \

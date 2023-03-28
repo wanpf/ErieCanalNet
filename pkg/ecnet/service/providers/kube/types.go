@@ -17,6 +17,6 @@ var (
 
 // client is the type used to represent the k8s client for endpoints and service provider
 type client struct {
-	kubeController   k8s.Controller
-	meshConfigurator configurator.Configurator
+	kubeController    k8s.Controller
+	ecnetConfigurator configurator.Configurator
 }

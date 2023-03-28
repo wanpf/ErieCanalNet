@@ -98,7 +98,7 @@ func features(s *Server, proxy *proxyserver.Proxy, pipyConf *PipyConf) {
 	if mc, ok := s.catalog.(*catalog.MeshCatalog); ok {
 		meshConf := mc.GetConfigurator()
 		proxy.MeshConf = meshConf
-		pipyConf.setSidecarLogLevel((*meshConf).GetMeshConfig().Spec.Sidecar.LogLevel)
+		pipyConf.setSidecarLogLevel((*meshConf).GetEcnetConfig().Spec.Sidecar.LogLevel)
 		pipyConf.setLocalDNSProxy((*meshConf).LocalDNSProxyEnabled(), (*meshConf).GetLocalDNSProxyPrimaryUpstream(), (*meshConf).GetLocalDNSProxySecondaryUpstream())
 	}
 }

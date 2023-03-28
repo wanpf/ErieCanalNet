@@ -10,7 +10,7 @@ import (
 // WatchAndUpdateLogLevel watches for log level changes and updates the global log level
 func WatchAndUpdateLogLevel(msgBroker *messaging.Broker, stop <-chan struct{}) {
 	kubePubSub := msgBroker.GetKubeEventPubSub()
-	meshCfgUpdateChan := kubePubSub.Sub(announcements.MeshConfigUpdated.String())
+	meshCfgUpdateChan := kubePubSub.Sub(announcements.EcnetConfigUpdated.String())
 	defer msgBroker.Unsub(kubePubSub, meshCfgUpdateChan)
 
 	for {
@@ -26,10 +26,10 @@ func WatchAndUpdateLogLevel(msgBroker *messaging.Broker, stop <-chan struct{}) {
 				continue
 			}
 
-			prevObj, prevOk := msg.OldObj.(*configv1alpha1.MeshConfig)
-			newObj, newOk := msg.NewObj.(*configv1alpha1.MeshConfig)
+			prevObj, prevOk := msg.OldObj.(*configv1alpha1.EcnetConfig)
+			newObj, newOk := msg.NewObj.(*configv1alpha1.EcnetConfig)
 			if !prevOk || !newOk {
-				log.Error().Msgf("Error casting to *MeshConfig, got type prev=%T, new=%T", prevObj, newObj)
+				log.Error().Msgf("Error casting to *EcnetConfig, got type prev=%T, new=%T", prevObj, newObj)
 			}
 		}
 	}

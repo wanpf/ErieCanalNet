@@ -14,17 +14,17 @@ import (
 
 // The functions in this file implement the configurator.Configurator interface
 
-// GetMeshConfig returns the MeshConfig resource corresponding to the control plane
-func (c *Client) GetMeshConfig() configv1alpha1.MeshConfig {
-	return c.getMeshConfig()
+// GetEcnetConfig returns the EcnetConfig resource corresponding to the control plane
+func (c *Client) GetEcnetConfig() configv1alpha1.EcnetConfig {
+	return c.getEcnetConfig()
 }
 
-// GetECNETNamespace returns the namespace in which the ECNET controller pod resides.
-func (c *Client) GetECNETNamespace() string {
+// GetEcnetNamespace returns the namespace in which the ECNET controller pod resides.
+func (c *Client) GetEcnetNamespace() string {
 	return c.ecnetNamespace
 }
 
-func marshalConfigToJSON(config configv1alpha1.MeshConfigSpec) (string, error) {
+func marshalConfigToJSON(config configv1alpha1.EcnetConfigSpec) (string, error) {
 	bytes, err := json.MarshalIndent(&config, "", "    ")
 	if err != nil {
 		return "", err
@@ -32,11 +32,11 @@ func marshalConfigToJSON(config configv1alpha1.MeshConfigSpec) (string, error) {
 	return string(bytes), nil
 }
 
-// GetMeshConfigJSON returns the MeshConfig in pretty JSON.
-func (c *Client) GetMeshConfigJSON() (string, error) {
-	cm, err := marshalConfigToJSON(c.getMeshConfig().Spec)
+// GetEcnetConfigJSON returns the EcnetConfig in pretty JSON.
+func (c *Client) GetEcnetConfigJSON() (string, error) {
+	cm, err := marshalConfigToJSON(c.getEcnetConfig().Spec)
 	if err != nil {
-		log.Error().Err(err).Str(errcode.Kind, errcode.GetErrCodeWithMetric(errcode.ErrMeshConfigMarshaling)).Msgf("Error marshaling MeshConfig %s: %+v", c.getMeshConfigCacheKey(), c.getMeshConfig())
+		log.Error().Err(err).Str(errcode.Kind, errcode.GetErrCodeWithMetric(errcode.ErrEcnetConfigMarshaling)).Msgf("Error marshaling EcnetConfig %s: %+v", c.getEcnetConfigCacheKey(), c.getEcnetConfig())
 		return "", err
 	}
 	return cm, nil
@@ -44,22 +44,22 @@ func (c *Client) GetMeshConfigJSON() (string, error) {
 
 // LocalDNSProxyEnabled returns whether local DNS proxy is enabled
 func (c *Client) LocalDNSProxyEnabled() bool {
-	return c.getMeshConfig().Spec.Sidecar.LocalDNSProxy.Enable
+	return c.getEcnetConfig().Spec.Sidecar.LocalDNSProxy.Enable
 }
 
 // GetLocalDNSProxyPrimaryUpstream returns the primary upstream DNS server for local DNS Proxy
 func (c *Client) GetLocalDNSProxyPrimaryUpstream() string {
-	return c.getMeshConfig().Spec.Sidecar.LocalDNSProxy.PrimaryUpstreamDNSServerIPAddr
+	return c.getEcnetConfig().Spec.Sidecar.LocalDNSProxy.PrimaryUpstreamDNSServerIPAddr
 }
 
 // GetLocalDNSProxySecondaryUpstream returns the secondary upstream DNS server for local DNS Proxy
 func (c *Client) GetLocalDNSProxySecondaryUpstream() string {
-	return c.getMeshConfig().Spec.Sidecar.LocalDNSProxy.SecondaryUpstreamDNSServerIPAddr
+	return c.getEcnetConfig().Spec.Sidecar.LocalDNSProxy.SecondaryUpstreamDNSServerIPAddr
 }
 
 // GetSidecarLogLevel returns the sidecar log level
 func (c *Client) GetSidecarLogLevel() string {
-	logLevel := c.getMeshConfig().Spec.Sidecar.LogLevel
+	logLevel := c.getEcnetConfig().Spec.Sidecar.LogLevel
 	if logLevel != "" {
 		return logLevel
 	}
@@ -68,14 +68,14 @@ func (c *Client) GetSidecarLogLevel() string {
 
 // GetProxyServerPort returns the port on which the Discovery Service listens for new connections from Sidecars
 func (c *Client) GetProxyServerPort() uint32 {
-	return c.getMeshConfig().Spec.Sidecar.ProxyServerPort
+	return c.getEcnetConfig().Spec.Sidecar.ProxyServerPort
 }
 
 // GetRepoServerIPAddr returns the ip address of RepoServer
 func (c *Client) GetRepoServerIPAddr() string {
 	ipAddr := os.Getenv("ECNET_REPO_SERVER_IPADDR")
 	if len(ipAddr) == 0 {
-		ipAddr = c.getMeshConfig().Spec.RepoServer.IPAddr
+		ipAddr = c.getEcnetConfig().Spec.RepoServer.IPAddr
 	}
 	if len(ipAddr) == 0 {
 		ipAddr = "127.0.0.1"
@@ -87,7 +87,7 @@ func (c *Client) GetRepoServerIPAddr() string {
 func (c *Client) GetRepoServerCodebase() string {
 	codebase := os.Getenv("ECNET_REPO_SERVER_CODEBASE")
 	if len(codebase) == 0 {
-		codebase = c.getMeshConfig().Spec.RepoServer.Codebase
+		codebase = c.getEcnetConfig().Spec.RepoServer.Codebase
 	}
 	if len(codebase) > 0 && strings.HasSuffix(codebase, "/") {
 		codebase = strings.TrimSuffix(codebase, "/")
@@ -101,7 +101,7 @@ func (c *Client) GetRepoServerCodebase() string {
 // GetConfigResyncInterval returns the duration for resync interval.
 // If error or non-parsable value, returns 0 duration
 func (c *Client) GetConfigResyncInterval() time.Duration {
-	resyncDuration := c.getMeshConfig().Spec.Sidecar.ConfigResyncInterval
+	resyncDuration := c.getEcnetConfig().Spec.Sidecar.ConfigResyncInterval
 	duration, err := time.ParseDuration(resyncDuration)
 	if err != nil {
 		log.Warn().Msgf("Error parsing config resync interval: %s", duration)
@@ -113,7 +113,7 @@ func (c *Client) GetConfigResyncInterval() time.Duration {
 // GetGlobalPluginChains returns plugin chains
 func (c *Client) GetGlobalPluginChains() map[string][]policy.Plugin {
 	pluginChainMap := make(map[string][]policy.Plugin)
-	pluginChainSpec := c.getMeshConfig().Spec.PluginChains
+	pluginChainSpec := c.getEcnetConfig().Spec.PluginChains
 
 	inboundTCPChains := make([]policy.Plugin, 0)
 	for _, plugin := range pluginChainSpec.InboundTCPChains {

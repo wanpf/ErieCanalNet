@@ -25,16 +25,16 @@ import (
 
 type ConfigV1alpha1Interface interface {
 	RESTClient() rest.Interface
-	MeshConfigsGetter
+	EcnetConfigsGetter
 }
 
-// ConfigV1alpha1Client is used to interact with features provided by the config.openservicemesh.io group.
+// ConfigV1alpha1Client is used to interact with features provided by the config.flomesh.io group.
 type ConfigV1alpha1Client struct {
 	restClient rest.Interface
 }
 
-func (c *ConfigV1alpha1Client) MeshConfigs(namespace string) MeshConfigInterface {
-	return newMeshConfigs(c, namespace)
+func (c *ConfigV1alpha1Client) EcnetConfigs(namespace string) EcnetConfigInterface {
+	return newEcnetConfigs(c, namespace)
 }
 
 // NewForConfig creates a new ConfigV1alpha1Client for the given config.

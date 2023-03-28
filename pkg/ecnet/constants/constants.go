@@ -2,7 +2,7 @@
 package constants
 
 const (
-	// DefaultSidecarLogLevel is the default sidecar log level if not defined in the ecnet MeshConfig
+	// DefaultSidecarLogLevel is the default sidecar log level if not defined in the EcnetConfig
 	DefaultSidecarLogLevel = "error"
 
 	// DefaultECNETLogLevel is the default ECNET log level if none is specified
@@ -27,7 +27,7 @@ const (
 	WildcardHTTPMethod = "*"
 
 	// ECNETKubeResourceMonitorAnnotation is the key of the annotation used to monitor a K8s resource
-	ECNETKubeResourceMonitorAnnotation = "openservicemesh.io/monitored-by"
+	ECNETKubeResourceMonitorAnnotation = "flomesh.io/monitored-by"
 
 	// EnvVarHumanReadableLogMessages is an environment variable, which when set to "true" enables colorful human-readable log messages.
 	EnvVarHumanReadableLogMessages = "ECNET_HUMAN_DEBUG_LOG"
@@ -42,16 +42,16 @@ const (
 // Annotations used by the control plane
 const (
 	// SidecarInjectionAnnotation is the annotation used for sidecar injection
-	SidecarInjectionAnnotation = "openservicemesh.io/sidecar-injection"
+	SidecarInjectionAnnotation = "flomesh.io/sidecar-injection"
 
 	// MetricsAnnotation is the annotation used for enabling/disabling metrics
-	MetricsAnnotation = "openservicemesh.io/metrics"
+	MetricsAnnotation = "flomesh.io/metrics"
 )
 
 // Labels used by the control plane
 const (
 	// IgnoreLabel is the label used to ignore a resource
-	IgnoreLabel = "openservicemesh.io/ignore"
+	IgnoreLabel = "flomesh.io/ignore"
 
 	// AppLabel is the label used to identify the app
 	AppLabel = "app"

@@ -9,8 +9,8 @@ metadata:
     helm.sh/hook: post-delete
     helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
 rules:
-  - apiGroups: ["config.openservicemesh.io"]
-    resources: ["meshconfigs"]
+  - apiGroups: ["config.flomesh.io"]
+    resources: ["ecnetconfigs"]
     verbs: ["delete"]
   - apiGroups: [ "" ]
     resources: [ "secrets"]
@@ -79,7 +79,7 @@ spec:
             - -c
             - >
              kubectl replace -f /ecnet-crds;
-             kubectl delete --ignore-not-found meshconfig -n '{{ include "ecnet.namespace" . }}' ecnet-mesh-config;
+             kubectl delete --ignore-not-found ecnetconfig -n '{{ include "ecnet.namespace" . }}' ecnet-config;
              kubectl delete --ignore-not-found secret -n '{{ include "ecnet.namespace" . }}' {{ .Values.ecnet.caBundleSecretName }};
 {{- if .Values.ecnet.imagePullSecrets }}
       imagePullSecrets:

@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: preset-mesh-config
+  name: preset-ecnet-config
   namespace: {{ include "ecnet.namespace" . }}
 data:
-  preset-mesh-config.json: |
+  preset-ecnet-config.json: |
     {
       "sidecar": {
         "logLevel": {{.Values.ecnet.proxyLogLevel | mustToJson}},

@@ -17,19 +17,19 @@
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  name: meshconfigs.config.openservicemesh.io
+  name: ecnetconfigs.config.flomesh.io
   labels:
-    app.kubernetes.io/name : "openservicemesh.io"
+    app.kubernetes.io/name : "flomesh.io"
 spec:
-  group: config.openservicemesh.io
+  group: config.flomesh.io
   scope: Namespaced
   names:
-    kind: MeshConfig
-    listKind: MeshConfigList
+    kind: EcnetConfig
+    listKind: EcnetConfigList
     shortNames:
-      - meshconfig
-    singular: meshconfig
-    plural: meshconfigs
+      - ecnetconfig
+    singular: ecnetconfig
+    plural: ecnetconfigs
   conversion:
     strategy: None
   versions:

@@ -27,7 +27,7 @@ var _ service.Provider = (*client)(nil)
 func NewClient(multiclusterController multicluster.Controller, cfg configurator.Configurator) *client { //nolint: revive // unexported-return
 	return &client{
 		multiclusterController: multiclusterController,
-		meshConfigurator:       cfg,
+		ecnetConfigurator:      cfg,
 	}
 }
 

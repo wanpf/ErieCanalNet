@@ -14,23 +14,23 @@ var (
 	log = logger.New("configurator")
 )
 
-// Client is the type used to represent the Kubernetes Client for the config.openservicemesh.io API group
+// Client is the type used to represent the Kubernetes Client for the config.flomesh.io API group
 type Client struct {
-	ecnetNamespace string
-	informers      *informers.InformerCollection
-	meshConfigName string
+	ecnetNamespace  string
+	informers       *informers.InformerCollection
+	ecnetConfigName string
 }
 
 // Configurator is the controller interface for K8s namespaces
 type Configurator interface {
-	// GetMeshConfig returns the MeshConfig resource corresponding to the control plane
-	GetMeshConfig() configv1alpha1.MeshConfig
+	// GetEcnetConfig returns the EcnetConfig resource corresponding to the control plane
+	GetEcnetConfig() configv1alpha1.EcnetConfig
 
-	// GetECNETNamespace returns the namespace in which ECNET controller pod resides
-	GetECNETNamespace() string
+	// GetEcnetNamespace returns the namespace in which ECNET controller pod resides
+	GetEcnetNamespace() string
 
-	// GetMeshConfigJSON returns the MeshConfig in pretty JSON (human readable)
-	GetMeshConfigJSON() (string, error)
+	// GetEcnetConfigJSON returns the EcnetConfig in pretty JSON (human readable)
+	GetEcnetConfigJSON() (string, error)
 
 	// LocalDNSProxyEnabled returns whether local DNS proxy is enabled
 	LocalDNSProxyEnabled() bool

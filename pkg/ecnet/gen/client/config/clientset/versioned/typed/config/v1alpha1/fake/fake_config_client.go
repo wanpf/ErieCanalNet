@@ -25,8 +25,8 @@ type FakeConfigV1alpha1 struct {
 	*testing.Fake
 }
 
-func (c *FakeConfigV1alpha1) MeshConfigs(namespace string) v1alpha1.MeshConfigInterface {
-	return &FakeMeshConfigs{c, namespace}
+func (c *FakeConfigV1alpha1) EcnetConfigs(namespace string) v1alpha1.EcnetConfigInterface {
+	return &FakeEcnetConfigs{c, namespace}
 }
 
 // RESTClient returns a RESTClient that is used to communicate

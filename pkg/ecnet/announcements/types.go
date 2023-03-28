@@ -66,18 +66,18 @@ const (
 	// ServiceAccountUpdated is the type of announcement emitted when we observe an update to a Kubernetes Service
 	ServiceAccountUpdated Kind = "serviceaccount-updated"
 
-	// --- config.openservicemesh.io API events
+	// --- config.flomesh.io API events
 
-	// MeshConfigAdded is the type of announcement emitted when we observe an addition of a Kubernetes MeshConfig
-	MeshConfigAdded Kind = "meshconfig-added"
+	// EcnetConfigAdded is the type of announcement emitted when we observe an addition of a Kubernetes EcnetConfig
+	EcnetConfigAdded Kind = "ecnetconfig-added"
 
-	// MeshConfigDeleted the type of announcement emitted when we observe the deletion of a Kubernetes MeshConfig
-	MeshConfigDeleted Kind = "meshconfig-deleted"
+	// EcnetConfigDeleted the type of announcement emitted when we observe the deletion of a Kubernetes EcnetConfig
+	EcnetConfigDeleted Kind = "ecnetconfig-deleted"
 
-	// MeshConfigUpdated is the type of announcement emitted when we observe an update to a Kubernetes MeshConfig
-	MeshConfigUpdated Kind = "meshconfig-updated"
+	// EcnetConfigUpdated is the type of announcement emitted when we observe an update to a Kubernetes EcnetConfig
+	EcnetConfigUpdated Kind = "ecnetconfig-updated"
 
-	// --- policy.openservicemesh.io API events
+	// --- policy.flomesh.io API events
 
 	// ServiceImportAdded is the type of announcement emitted when we observe an addition of serviceimports.flomesh.io
 	ServiceImportAdded Kind = "serviceimport-added"

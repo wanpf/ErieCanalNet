@@ -28,9 +28,9 @@ release.
 Note: edits to resources NOT made by Helm or the ECNET CLI may not persist after
 "ecnet mesh upgrade" is run.
 
-Note: edits made to chart values that impact the preset-mesh-config will not
-apply to the ecnet-mesh-config, when "ecnet mesh upgrade" is run. This means configuration
-changes made to the ecnet-mesh-config resource will persist through an upgrade
+Note: edits made to chart values that impact the preset-ecnet-config will not
+apply to the ecnet-config, when "ecnet mesh upgrade" is run. This means configuration
+changes made to the ecnet-config resource will persist through an upgrade
 and any configuration changes needed can be done by patching this resource prior or
 post an upgrade.
 

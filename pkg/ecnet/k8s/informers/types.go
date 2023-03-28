@@ -22,8 +22,8 @@ const (
 	// InformerKeyServiceAccount is the InformerKey for a ServiceAccount informer
 	InformerKeyServiceAccount InformerKey = "ServiceAccount"
 
-	// InformerKeyMeshConfig is the InformerKey for a MeshConfig informer
-	InformerKeyMeshConfig InformerKey = "MeshConfig"
+	// InformerKeyEcnetConfig is the InformerKey for a EcnetConfig informer
+	InformerKeyEcnetConfig InformerKey = "EcnetConfig"
 	// InformerKeyServiceImport is the InformerKey for a ServiceImport informer
 	InformerKeyServiceImport InformerKey = "ServiceImport"
 	// InformerKeyGlobalTrafficPolicy is the InformerKey for a GlobalTrafficPolicy informer

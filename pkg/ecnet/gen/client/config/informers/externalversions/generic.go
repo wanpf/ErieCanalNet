@@ -49,9 +49,9 @@ func (f *genericInformer) Lister() cache.GenericLister {
 // TODO extend this to unknown resources with a client pool
 func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource) (GenericInformer, error) {
 	switch resource {
-	// Group=config.openservicemesh.io, Version=v1alpha1
-	case v1alpha1.SchemeGroupVersion.WithResource("meshconfigs"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Config().V1alpha1().MeshConfigs().Informer()}, nil
+	// Group=config.flomesh.io, Version=v1alpha1
+	case v1alpha1.SchemeGroupVersion.WithResource("ecnetconfigs"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Config().V1alpha1().EcnetConfigs().Informer()}, nil
 
 	}
 

@@ -5,11 +5,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// MeshConfig is the type used to represent the mesh configuration.
+// EcnetConfig is the type used to represent the mesh configuration.
 // +genclient
 // +genclient:noStatus
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-type MeshConfig struct {
+type EcnetConfig struct {
 	// Object's type metadata.
 	metav1.TypeMeta `json:",inline" yaml:",inline"`
 
@@ -17,13 +17,13 @@ type MeshConfig struct {
 	// +optional
 	metav1.ObjectMeta `json:"metadata,omitempty" yaml:"metadata,omitempty"`
 
-	// Spec is the MeshConfig specification.
+	// Spec is the EcnetConfig specification.
 	// +optional
-	Spec MeshConfigSpec `json:"spec,omitempty" yaml:"spec,omitempty"`
+	Spec EcnetConfigSpec `json:"spec,omitempty" yaml:"spec,omitempty"`
 }
 
-// MeshConfigSpec is the spec for ECNET's configuration.
-type MeshConfigSpec struct {
+// EcnetConfigSpec is the spec for ECNET's configuration.
+type EcnetConfigSpec struct {
 	// Sidecar defines the configurations of the proxy sidecar in a mesh.
 	Sidecar SidecarSpec `json:"sidecar,omitempty"`
 
@@ -112,13 +112,13 @@ type IngressGatewayCertSpec struct {
 	Secret corev1.SecretReference `json:"secret"`
 }
 
-// MeshConfigList lists the MeshConfig objects.
+// EcnetConfigList lists the EcnetConfig objects.
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-type MeshConfigList struct {
+type EcnetConfigList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 
-	Items []MeshConfig `json:"items"`
+	Items []EcnetConfig `json:"items"`
 }
 
 // RepoServerSpec is the type to represent repo server.

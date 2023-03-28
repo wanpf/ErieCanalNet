@@ -29,13 +29,13 @@ const (
 	ErrAddingRouteToOutboundTrafficPolicy ErrCode = iota + 2000
 )
 
-// Range 4150-4200 reserved for errors related to config.openservicemesh.io resources
+// Range 4150-4200 reserved for errors related to config.flomesh.io resources
 const (
-	// ErrMeshConfigFetchFromCache indicates failed to fetch MeshConfig from cache with specific key
-	ErrMeshConfigFetchFromCache ErrCode = iota + 4150
+	// ErrEcnetConfigFetchFromCache indicates failed to fetch EcnetConfig from cache with specific key
+	ErrEcnetConfigFetchFromCache ErrCode = iota + 4150
 
-	// ErrMeshConfigMarshaling indicates failed to marshal MeshConfig into other format like JSON
-	ErrMeshConfigMarshaling
+	// ErrEcnetConfigMarshaling indicates failed to marshal EcnetConfig into other format like JSON
+	ErrEcnetConfigMarshaling
 )
 
 // String returns the error code as a string, ex. E1000

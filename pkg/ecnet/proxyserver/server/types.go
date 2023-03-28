@@ -158,8 +158,8 @@ type LocalDNSProxy struct {
 	UpstreamDNSServers *UpstreamDNSServers `json:"UpstreamDNSServers,omitempty"`
 }
 
-// MeshConfigSpec represents the spec of mesh config
-type MeshConfigSpec struct {
+// EcnetConfigSpec represents the spec of mesh config
+type EcnetConfigSpec struct {
 	SidecarLogLevel string
 	Probes          struct {
 		ReadinessProbes []v1.Probe `json:"ReadinessProbes,omitempty"`
@@ -240,7 +240,7 @@ type OutboundTrafficPolicy struct {
 type PipyConf struct {
 	Ts           *time.Time
 	Version      *string
-	Spec         MeshConfigSpec
+	Spec         EcnetConfigSpec
 	Outbound     *OutboundTrafficPolicy   `json:"Outbound"`
 	Chains       map[string][]string      `json:"Chains,omitempty"`
 	DNSResolveDB map[string][]interface{} `json:"DNSResolveDB,omitempty"`

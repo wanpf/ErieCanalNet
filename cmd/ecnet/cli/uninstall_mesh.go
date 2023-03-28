@@ -277,7 +277,7 @@ func (d *uninstallMeshCmd) uninstallClusterResources() []string {
 // uninstallCustomResourceDefinitions uninstalls ecnet and smi-related crds from the cluster.
 func (d *uninstallMeshCmd) uninstallCustomResourceDefinitions() error {
 	crds := []string{
-		"meshconfigs.config.openservicemesh.io",
+		"ecnetconfigs.config.flomesh.io",
 	}
 
 	var failedDeletions []string

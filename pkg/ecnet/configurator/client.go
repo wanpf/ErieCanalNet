@@ -12,45 +12,45 @@ import (
 )
 
 // NewConfigurator implements configurator.Configurator and creates the Kubernetes client to manage namespaces.
-func NewConfigurator(informerCollection *informers.InformerCollection, ecnetNamespace, meshConfigName string, msgBroker *messaging.Broker) *Client {
+func NewConfigurator(informerCollection *informers.InformerCollection, ecnetNamespace, ecnetConfigName string, msgBroker *messaging.Broker) *Client {
 	c := &Client{
-		informers:      informerCollection,
-		ecnetNamespace: ecnetNamespace,
-		meshConfigName: meshConfigName,
+		informers:       informerCollection,
+		ecnetNamespace:  ecnetNamespace,
+		ecnetConfigName: ecnetConfigName,
 	}
 
 	// configure listener
-	meshConfigEventTypes := k8s.EventTypes{
-		Add:    announcements.MeshConfigAdded,
-		Update: announcements.MeshConfigUpdated,
-		Delete: announcements.MeshConfigDeleted,
+	ecnetConfigEventTypes := k8s.EventTypes{
+		Add:    announcements.EcnetConfigAdded,
+		Update: announcements.EcnetConfigUpdated,
+		Delete: announcements.EcnetConfigDeleted,
 	}
 
-	informerCollection.AddEventHandler(informers.InformerKeyMeshConfig, k8s.GetEventHandlerFuncs(nil, meshConfigEventTypes, msgBroker))
+	informerCollection.AddEventHandler(informers.InformerKeyEcnetConfig, k8s.GetEventHandlerFuncs(nil, ecnetConfigEventTypes, msgBroker))
 
 	return c
 }
 
-func (c *Client) getMeshConfigCacheKey() string {
-	return fmt.Sprintf("%s/%s", c.ecnetNamespace, c.meshConfigName)
+func (c *Client) getEcnetConfigCacheKey() string {
+	return fmt.Sprintf("%s/%s", c.ecnetNamespace, c.ecnetConfigName)
 }
 
-// Returns the current MeshConfig
-func (c *Client) getMeshConfig() configv1alpha1.MeshConfig {
-	var meshConfig configv1alpha1.MeshConfig
+// Returns the current EcnetConfig
+func (c *Client) getEcnetConfig() configv1alpha1.EcnetConfig {
+	var ecnetConfig configv1alpha1.EcnetConfig
 
-	meshConfigCacheKey := c.getMeshConfigCacheKey()
-	item, exists, err := c.informers.GetByKey(informers.InformerKeyMeshConfig, meshConfigCacheKey)
+	ecnetConfigCacheKey := c.getEcnetConfigCacheKey()
+	item, exists, err := c.informers.GetByKey(informers.InformerKeyEcnetConfig, ecnetConfigCacheKey)
 	if err != nil {
-		log.Error().Err(err).Str(errcode.Kind, errcode.GetErrCodeWithMetric(errcode.ErrMeshConfigFetchFromCache)).Msgf("Error getting MeshConfig from cache with key %s", meshConfigCacheKey)
-		return meshConfig
+		log.Error().Err(err).Str(errcode.Kind, errcode.GetErrCodeWithMetric(errcode.ErrEcnetConfigFetchFromCache)).Msgf("Error getting EcnetConfig from cache with key %s", ecnetConfigCacheKey)
+		return ecnetConfig
 	}
 
 	if !exists {
-		log.Warn().Msgf("MeshConfig %s does not exist. Default config values will be used.", meshConfigCacheKey)
-		return meshConfig
+		log.Warn().Msgf("EcnetConfig %s does not exist. Default config values will be used.", ecnetConfigCacheKey)
+		return ecnetConfig
 	}
 
-	meshConfig = *item.(*configv1alpha1.MeshConfig)
-	return meshConfig
+	ecnetConfig = *item.(*configv1alpha1.EcnetConfig)
+	return ecnetConfig
 }

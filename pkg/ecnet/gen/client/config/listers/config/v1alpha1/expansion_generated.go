@@ -15,10 +15,10 @@ limitations under the License.
 
 package v1alpha1
 
-// MeshConfigListerExpansion allows custom methods to be added to
-// MeshConfigLister.
-type MeshConfigListerExpansion interface{}
+// EcnetConfigListerExpansion allows custom methods to be added to
+// EcnetConfigLister.
+type EcnetConfigListerExpansion interface{}
 
-// MeshConfigNamespaceListerExpansion allows custom methods to be added to
-// MeshConfigNamespaceLister.
-type MeshConfigNamespaceListerExpansion interface{}
+// EcnetConfigNamespaceListerExpansion allows custom methods to be added to
+// EcnetConfigNamespaceLister.
+type EcnetConfigNamespaceListerExpansion interface{}

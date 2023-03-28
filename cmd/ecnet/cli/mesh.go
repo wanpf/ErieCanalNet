@@ -7,7 +7,7 @@ import (
 	"helm.sh/helm/v3/pkg/action"
 )
 
-const meshDescription = `
+const ecnetDescription = `
 This command consists of multiple subcommands related to managing instances of
 ecnet installations. Each ecnet installation results in a mesh. Each installation
 receives a unique mesh name.
@@ -16,9 +16,9 @@ receives a unique mesh name.
 
 func newMeshCmd(config *action.Configuration, in io.Reader, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "mesh",
+		Use:   "ecnet",
 		Short: "manage ecnet installations",
-		Long:  meshDescription,
+		Long:  ecnetDescription,
 		Args:  cobra.NoArgs,
 	}
 	cmd.AddCommand(newMeshList(out))
