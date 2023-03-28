@@ -60,7 +60,6 @@ require (
 	github.com/containernetworking/plugins v1.1.1
 	github.com/florianl/go-tc v0.4.2
 	github.com/fsnotify/fsnotify v1.6.0
-	github.com/ftrvxmtrx/fd v0.0.0-20150925145434-c6d800382fff
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.0
