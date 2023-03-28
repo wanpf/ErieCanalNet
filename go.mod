@@ -19,7 +19,7 @@ require (
 	github.com/hashicorp/go-version v1.6.0
 	github.com/jstemmer/go-junit-report v0.9.1
 	github.com/mitchellh/gox v1.0.1
-	github.com/norwoodj/helm-docs v1.4.0
+	github.com/norwoodj/helm-docs v1.11.0
 	github.com/onsi/ginkgo v1.16.5 // indirect
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/prometheus/client_golang v1.14.0 // indirect
@@ -80,7 +80,6 @@ require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/Masterminds/semver/v3 v3.1.1 // indirect
-	github.com/Masterminds/sprig v2.22.0+incompatible // indirect
 	github.com/Masterminds/sprig/v3 v3.2.2 // indirect
 	github.com/Masterminds/squirrel v1.5.3 // indirect
 	github.com/OpenPeeDeeP/depguard v1.1.1 // indirect
