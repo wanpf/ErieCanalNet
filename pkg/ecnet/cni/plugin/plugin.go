@@ -37,7 +37,7 @@ type K8sArgs struct {
 	K8S_POD_INFRA_CONTAINER_ID types.UnmarshallableString // nolint: revive, stylecheck
 }
 
-func ignore(conf *Config, k8sArgs *K8sArgs) bool {
+func ignore(_ *Config, _ *K8sArgs) bool {
 	return false
 }
 

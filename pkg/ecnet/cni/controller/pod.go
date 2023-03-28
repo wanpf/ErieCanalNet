@@ -63,7 +63,7 @@ func createLocalPodController(client kubernetes.Interface) watcher {
 	}
 }
 
-func isInjectedSidecar(pod *v1.Pod) bool {
+func isInjectedSidecar(_ *v1.Pod) bool {
 	return true
 }
 

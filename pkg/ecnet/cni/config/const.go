@@ -18,8 +18,6 @@ const (
 	CNICreatePodURL = "/v1/cni/create-pod"
 	// CNIDeletePodURL is the route for cni plugin for deleting pod
 	CNIDeletePodURL = "/v1/cni/delete-pod"
-	// CNITransferFdStartURL is the route for cni plugin for transfer fd
-	CNITransferFdStartURL = "/v1/cni/transfer-fd"
 
 	// ECNetDNSNatEbpfMap is the mount point of ecnet_dns_nat map
 	ECNetDNSNatEbpfMap = "/sys/fs/bpf/tc/globals/ecnet_dns_nat"

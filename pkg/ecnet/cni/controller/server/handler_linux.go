@@ -64,14 +64,3 @@ func (s *server) PodDeleted(w http.ResponseWriter, req *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write([]byte("ok"))
 }
-
-func (s *server) TransferFd(w http.ResponseWriter, req *http.Request) {
-	_, err := io.ReadAll(req.Body)
-	if err != nil {
-		w.WriteHeader(500)
-		_, _ = w.Write([]byte(err.Error()))
-	}
-	s.transferFds()
-	w.WriteHeader(200)
-	_, _ = w.Write([]byte("ok"))
-}
