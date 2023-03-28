@@ -169,7 +169,7 @@ spec:
 EOF
 ```
 
-## 5. 转发 pipy repo 管理端口
+## 6. 转发 pipy repo 管理端口
 
 ```
 export ecnet_namespace=ecnet-system
@@ -177,7 +177,7 @@ ECNET_POD=$(kubectl get pods -n "$ecnet_namespace" --no-headers  --selector app=
 kubectl port-forward -n "$ecnet_namespace" "$ECNET_POD" 80:6060 --address 0.0.0.0
 ```
 
-## 6.测试
+## 7.测试
 
 测试指令:
 
