@@ -1,23 +1,42 @@
-## 部署 ecnet edge 集群
+
+
+# ErieCanal Net
+
+## 1. 部署 k8s 环境
+
+参考: https://github.com/cybwan/osm-edge-start-demo/blob/main/demo/interceptor/README.zh.md
+
+## 2. 下载并安装 ecnet 命令行工具
 
 ```bash
-LOCAL_REGISTRY="${LOCAL_REGISTRY:-localhost:5000}"
+system=$(uname -s | tr [:upper:] [:lower:])
+arch=$(dpkg --print-architecture)
+release=v1.0.1
+curl -L https://github.com/cybwan/ErieCanalNet/releases/download/${release}/erie-canal-net-${release}-${system}-${arch}.tar.gz | tar -vxzf -
+./${system}-${arch}/ecnet version
+cp ./${system}-${arch}/ecnet /usr/local/bin/
+```
 
+## 3. 安装 ErieCanal Net
+
+```bash
 export ecnet_namespace=ecnet-system
 export ecnet_mesh_name=ecnet
-
+export dns_svc_ip="$(kubectl get svc -n kube-system -l k8s-app=kube-dns -o jsonpath='{.items[0].spec.clusterIP}')"
 ecnet install \
     --mesh-name "$ecnet_mesh_name" \
     --ecnet-namespace "$ecnet_namespace" \
-    --set=ecnet.image.registry=${LOCAL_REGISTRY}/flomesh \
-    --set=ecnet.image.tag=latest \
+    --set=ecnet.image.registry=cybwan \
+    --set=ecnet.image.tag=1.0.1 \
     --set=ecnet.image.pullPolicy=Always \
-    --set=ecnet.sidecarLogLevel=error \
+    --set=ecnet.proxyLogLevel=debug \
     --set=ecnet.controllerLogLevel=warn \
+    --set=ecnet.localDNSProxy.enable=true \
+    --set=ecnet.localDNSProxy.primaryUpstreamDNSServerIPAddr="${dns_svc_ip}" \
     --timeout=900s
 ```
 
-## 部署模拟客户端
+## 4. 部署模拟业务
 
 ```bash
 kubectl create namespace demo
@@ -68,9 +87,9 @@ EOF
 kubectl wait --for=condition=ready pod -n demo -l app=sleep --timeout=180s
 ```
 
-## 模拟导入多集群服务
+## 5.模拟导入多集群服务
 
-```bash
+```
 kubectl create namespace pipy
 
 cat <<EOF | kubectl apply -f -
@@ -84,7 +103,7 @@ spec:
   - endpoints:
     - clusterKey: default/default/default/cluster3
       target:
-        host: 3.226.203.163
+        host: 3.226.203.163 # httpbin.org
         ip: 3.226.203.163
         path: /
         port: 80
@@ -105,7 +124,15 @@ spec:
 EOF
 ```
 
-## 测试
+## 5. 转发 pipy repo 管理端口
+
+```
+export ecnet_namespace=ecnet-system
+ECNET_POD=$(kubectl get pods -n "$ecnet_namespace" --no-headers  --selector app=ecnet-controller | awk 'NR==1{print $1}')
+kubectl port-forward -n "$ecnet_namespace" "$ECNET_POD" 80:6060 --address 0.0.0.0
+```
+
+## 6.测试
 
 测试指令:
 
@@ -118,12 +145,11 @@ kubectl exec ${sleep_client} -n demo -- curl -sI pipy-ok.pipy:8080
 
 ```bash
 HTTP/1.1 200 OK
-date: Sat, 25 Mar 2023 16:47:17 GMT
+date: Tue, 28 Mar 2023 01:40:35 GMT
 content-type: text/html; charset=utf-8
 content-length: 9593
 server: gunicorn/19.9.0
 access-control-allow-origin: *
 access-control-allow-credentials: true
-connection: keep-alive
 ```
 
