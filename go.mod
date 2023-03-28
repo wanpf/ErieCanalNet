@@ -3,7 +3,7 @@ module github.com/flomesh-io/ErieCanal
 go 1.19
 
 require (
-	github.com/AlekSi/gocov-xml v0.0.0-20190121064608-3a14fb1c4737
+	github.com/AlekSi/gocov-xml v1.1.0
 	github.com/axw/gocov v1.1.0
 	github.com/containerd/containerd v1.6.15 // indirect
 	github.com/cskr/pubsub v1.0.2
