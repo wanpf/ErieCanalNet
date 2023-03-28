@@ -223,7 +223,8 @@
                     "title": "The ecnetBridge schema",
                     "description": "The details of the ecnetBridge.",
                     "required": [
-                        "resource"
+                        "resource",
+                        "cni"
                     ],
                     "properties": {
                         "resource": {
@@ -242,8 +243,54 @@
                         "tolerations": {
                             "type": "array"
                         },
-                        "enableKernelTracing": {
-                            "$id": "#/properties/ecnet/properties/ecnetBridge/properties/enableKernelTracing",
+                        "cni": {
+                            "$id": "#/properties/ecnet/properties/ecnetBridge/properties/cni",
+                            "type": "object",
+                            "title": "The CNI schema",
+                            "description": "The details of CNI.",
+                            "required": [
+                                "hostCniBridgeEth"
+                            ],
+                            "properties": {
+                                "hostCniBridgeEth": {
+                                    "$id": "#/properties/ecnet/properties/ecnetBridge/properties/cni/hostCniBridgeEth",
+                                    "type": "string",
+                                    "title": "The hostCniBridgeEth schema",
+                                    "description": "hostCniBridgeEth",
+                                    "default": {}
+                                },
+                                "hostCniBinDir": {
+                                    "$id": "#/properties/ecnet/properties/ecnetBridge/properties/cni/hostCniBinDir",
+                                    "type": "string",
+                                    "title": "The hostCniBinDir schema",
+                                    "description": "hostCniBinDir",
+                                    "default": {}
+                                },
+                                "hostCniConfigDir": {
+                                    "$id": "#/properties/ecnet/properties/ecnetBridge/properties/cni/hostCniConfigDir",
+                                    "type": "string",
+                                    "title": "The hostCniConfigDir schema",
+                                    "description": "hostCniConfigDir",
+                                    "default": {}
+                                },
+                                "hostVarRunDir": {
+                                    "$id": "#/properties/ecnet/properties/ecnetBridge/properties/cni/hostVarRunDir",
+                                    "type": "string",
+                                    "title": "The hostVarRunDir schema",
+                                    "description": "hostVarRunDir",
+                                    "default": {}
+                                },
+                                "hostProcDir": {
+                                    "$id": "#/properties/ecnet/properties/ecnetBridge/properties/cni/hostProcDir",
+                                    "type": "string",
+                                    "title": "The hostProcDir schema",
+                                    "description": "hostProcDir",
+                                    "default": {}
+                                }
+                            }
+                        },
+                        "kernelTracing": {
+                            "$id": "#/properties/ecnet/properties/ecnetBridge/properties/kernelTracing",
                             "type": "boolean",
                             "title": "KernelTracing",
                             "description": "Indicates whether kernel tracing should be enabled or not.",

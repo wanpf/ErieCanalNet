@@ -18,6 +18,7 @@ package main
 import (
 	"fmt"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/controller/helpers"
+	cniserver "github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/controller/server"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/logger"
 	"os"
 	"path"
@@ -29,7 +30,6 @@ import (
 
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/config"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/controller"
-	cniserver "github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/controller/server"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -44,13 +44,11 @@ var rootCmd = &cobra.Command{
 
 		stop := make(chan struct{}, 1)
 		cniReady := make(chan struct{}, 1)
-		if config.EnableCNI {
-			s := cniserver.NewServer(path.Join(config.HostVarRun, "ecnet-cni.sock"),
-				"/sys/fs/bpf", cniReady, stop)
-			if err := s.Start(); err != nil {
-				log.Fatal(err)
-				return err
-			}
+		s := cniserver.NewServer(path.Join(config.HostVarRun, "ecnet-cni.sock"),
+			"/sys/fs/bpf", cniReady, stop)
+		if err := s.Start(); err != nil {
+			log.Fatal(err)
+			return err
 		}
 		// todo: wait for stop
 		if err := controller.Run(config.DisableWatcher, config.Skip, cniReady, stop); err != nil {
@@ -92,12 +90,12 @@ func init() {
 	log.SetReportCaller(true)
 
 	// Get some flags from commands
-	rootCmd.PersistentFlags().BoolVarP(&config.Debug, "debug", "d", false, "Debug mode")
+	rootCmd.PersistentFlags().BoolVarP(&config.Debug, "kernel-tracing", "d", false, "kernel tracing mode")
 	rootCmd.PersistentFlags().BoolVarP(&config.Skip, "skip", "s", false, "Skip init bpf")
 	rootCmd.PersistentFlags().BoolVarP(&config.DisableWatcher, "disableWatcher", "w", false, "disable Pod watcher")
 	rootCmd.PersistentFlags().BoolVarP(&config.IsKind, "kind", "k", false, "Enable when Kubernetes is running in Kind")
 	_ = rootCmd.PersistentFlags().MarkDeprecated("ips-file", "no need to collect node IPs")
-	rootCmd.PersistentFlags().BoolVar(&config.EnableCNI, "cni-mode", false, "Enable CNI plugin")
+	rootCmd.PersistentFlags().StringVar(&config.BridgeEth, "bridge-eth", "cni0", "bridge veth created by CNI")
 	rootCmd.PersistentFlags().StringVar(&config.HostProc, "host-proc", "/host/proc", "/proc mount path")
 	rootCmd.PersistentFlags().StringVar(&config.CNIBinDir, "cni-bin-dir", "/host/opt/cni/bin", "/opt/cni/bin mount path")
 	rootCmd.PersistentFlags().StringVar(&config.CNIConfigDir, "cni-config-dir", "/host/etc/cni/net.d", "/etc/cni/net.d mount path")

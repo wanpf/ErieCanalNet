@@ -14,14 +14,10 @@ package controller
 
 import (
 	"fmt"
-	"os"
-	"os/signal"
-	"syscall"
-
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
+	"os"
 
-	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/config"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/controller/helpers"
 )
 
@@ -42,13 +38,7 @@ func runLocalPodController(skip bool, client kubernetes.Interface, stop chan str
 	if err = helpers.AttachProgs(skip); err != nil {
 		return fmt.Errorf("failed to attach ebpf programs: %v", err)
 	}
-	if config.EnableCNI {
-		<-stop
-	} else {
-		ch := make(chan os.Signal, 1)
-		signal.Notify(ch, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT)
-		<-ch
-	}
+	<-stop
 	w.shutdown()
 
 	if err = helpers.UnLoadProgs(skip); err != nil {

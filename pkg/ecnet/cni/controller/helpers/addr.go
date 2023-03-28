@@ -3,6 +3,7 @@ package helpers
 import (
 	"encoding/binary"
 	"fmt"
+	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/config"
 	"net"
 	"strings"
 )
@@ -18,7 +19,7 @@ func GetBridgeIP() (net.IP, uint32, error) {
 		found := false
 		if ifaces, err := net.Interfaces(); err == nil {
 			for _, iface := range ifaces {
-				if iface.Flags&net.FlagUp != 0 && strings.HasPrefix(iface.Name, "cni0") {
+				if iface.Flags&net.FlagUp != 0 && strings.HasPrefix(iface.Name, config.BridgeEth) {
 					if addrs, addrErr := iface.Addrs(); addrErr == nil {
 						for _, addr := range addrs {
 							if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
@@ -39,7 +40,7 @@ func GetBridgeIP() (net.IP, uint32, error) {
 			return bridgeIPAddr, bridgeIP, fmt.Errorf("unexpected exit err: %v", err)
 		}
 		if !found {
-			return bridgeIPAddr, bridgeIP, fmt.Errorf("unexpected retrieves cni bridge veth[%s]'s ipv4 addr", "cni0")
+			return bridgeIPAddr, bridgeIP, fmt.Errorf("unexpected retrieves cni bridge veth[%s]'s ipv4 addr", config.BridgeEth)
 		}
 	}
 	return bridgeIPAddr, bridgeIP, nil

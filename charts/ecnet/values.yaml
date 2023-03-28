@@ -29,7 +29,7 @@ ecnet:
   # -- `ecnet-controller` image pull secret
   imagePullSecrets: [ ]
   # -- Proxy image for Linux node workloads
-  proxyImage: flomesh/pipy-repo:0.90.0-54
+  proxyImage: flomesh/pipy-nightly:latest
   # -- Remote destination port on which the Discovery Service listens for new connections from Sidecars.
   proxyServerPort: 6060
   # -- Curl image for control plane init container
@@ -118,7 +118,9 @@ ecnet:
   #
   # -- ECNET bridge parameters
   ecnetBridge:
-    enableKernelTracing: true
+    kernelTracing: false
+    cni:
+      hostCniBridgeEth: cni0
     resource:
       limits:
         cpu: "1.5"

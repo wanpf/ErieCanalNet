@@ -19,10 +19,10 @@ var (
 	Skip = false
 	// DisableWatcher indicates DisableWatcher feature of/off
 	DisableWatcher = false
-	// EnableCNI indicates CNI feature enable/disable
-	EnableCNI = false
 	// IsKind indicates Kubernetes running in Docker
 	IsKind = false
+	// BridgeEth indicates cni bridge dev
+	BridgeEth string
 	// HostProc defines HostProc volume
 	HostProc string
 	// CNIBinDir defines CNIBIN volume
