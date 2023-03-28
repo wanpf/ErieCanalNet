@@ -71,6 +71,13 @@ spec:
       restartPolicy: Always
       priorityClassName: system-node-critical
       serviceAccountName: ecnet-bridge
+      initContainers:
+        - name: init
+          image: {{ include "ecnetBridgeInit.image" . }}
+          command: ['/check-eth']
+          args: [
+            "{{ .Values.ecnet.ecnetBridge.cni.hostCniBridgeEth }}",
+          ]
       containers:
         - name: proxy
           image: {{ $.Values.ecnet.proxyImage }}

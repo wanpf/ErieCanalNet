@@ -339,7 +339,8 @@
                                 "ecnetBootstrap",
                                 "ecnetCRDs",
                                 "ecnetPreinstall",
-                                "ecnetBridge"
+                                "ecnetBridge",
+                                "ecnetBridgeInit"
                             ],
                             "properties": {
                                 "ecnetController": {
@@ -369,8 +370,14 @@
                                 "ecnetBridge": {
                                     "$id": "#/properties/ecnet/properties/image/properties/name/properties/ecnetBridge",
                                     "type": "string",
-                                    "title": "ecnet-interceptor's image name",
-                                    "description": "ecnet-interceptor container's image name."
+                                    "title": "ecnet-bridge's image name",
+                                    "description": "ecnet-bridge container's image name."
+                                },
+                                "ecnetBridgeInit": {
+                                    "$id": "#/properties/ecnet/properties/image/properties/name/properties/ecnetBridgeInit",
+                                    "type": "string",
+                                    "title": "ecnet-bridge-init's image name",
+                                    "description": "ecnet-bridge-init container's image name."
                                 }
                             }
                         },

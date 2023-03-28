@@ -1,0 +1,20 @@
+#!/bin/sh
+
+valid_eth()
+{
+	stat=1
+	eth=$1
+	while [ ! -e /sys/class/net/$eth ]; do
+		echo not exists eth: $eth and sleep 2 seconds, then check ...
+		sleep 2s
+	done
+	addr=$(/sbin/ip -4 address show $eth | grep inet | awk '{print $2}')
+	/bin/ipcalc -n $addr
+	stat=$?
+	if [ ! $stat ]; then
+		echo $eth missing valid ipv4 address.
+	fi
+	return $stat
+}
+
+valid_eth $1

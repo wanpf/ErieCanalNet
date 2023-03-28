@@ -119,7 +119,7 @@ jobs:
       BUILD_GITCOMMIT_VAR: 'github.com/flomesh-io/ErieCanal/pkg/ecnet/version.GitCommit'
     strategy:
       matrix:
-        id: [ "controller", "crds", "bootstrap", "preinstall", "bridge" ]
+        id: [ "controller", "crds", "bootstrap", "preinstall", "bridge", "bridge-init" ]
     steps:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2.1.0

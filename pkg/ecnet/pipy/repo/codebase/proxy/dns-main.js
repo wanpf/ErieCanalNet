@@ -3,6 +3,7 @@
   dnsServers = { primary: config?.Spec?.LocalDNSProxy?.UpstreamDNSServers?.Primary, secondary: config?.Spec?.LocalDNSProxy?.UpstreamDNSServers?.Secondary },
   dnsSvcAddress = (dnsServers?.primary || dnsServers?.secondary || os.env.LOCAL_DNS_PROXY_PRIMARY_UPSTREAM || '10.96.0.10') + ":53",
   dnsRecordSets = {},
+  bridgeIP = pipy.exec('ip -4 addr show dev ' + (os.env.CNI_BRIDGE_ETH || 'cni0')).toString().split('\n').find(s => s.trim().startsWith('inet'))?.trim?.()?.split?.(' ')?.[1]?.split?.('/')?.[0],
 ) => (
   config?.DNSResolveDB && (
     Object.entries(config.DNSResolveDB).map(
@@ -15,7 +16,7 @@
                 'name': k,
                 'type': 'A',
                 'ttl': 600, // TTL : 10 minutes
-                'rdata': ip
+                'rdata': bridgeIP || ip
               })
             )
           ),

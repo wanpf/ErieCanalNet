@@ -25,6 +25,8 @@ ecnet:
       ecnetPreinstall: ecnet-preinstall
       # -- ecnet-bridge's image name
       ecnetBridge: ecnet-bridge
+      # -- ecnet-bridge-init's image name
+      ecnetBridgeInit: ecnet-bridge-init
 
   # -- `ecnet-controller` image pull secret
   imagePullSecrets: [ ]

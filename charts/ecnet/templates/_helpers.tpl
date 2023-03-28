@@ -21,45 +21,30 @@ securityContext:
 
 {{/* ecnet-controller image */}}
 {{- define "ecnetController.image" -}}
-{{- if .Values.ecnet.image.tag -}}
 {{- printf "%s/%s:%s" .Values.ecnet.image.registry .Values.ecnet.image.name.ecnetController .Values.ecnet.image.tag -}}
-{{- else -}}
-{{- printf "%s/%s@%s" .Values.ecnet.image.registry .Values.ecnet.image.name.ecnetController .Values.ecnet.image.digest.ecnetController -}}
-{{- end -}}
 {{- end -}}
 
 {{/* ecnet-bootstrap image */}}
 {{- define "ecnetBootstrap.image" -}}
-{{- if .Values.ecnet.image.tag -}}
 {{- printf "%s/%s:%s" .Values.ecnet.image.registry .Values.ecnet.image.name.ecnetBootstrap .Values.ecnet.image.tag -}}
-{{- else -}}
-{{- printf "%s/%s@%s" .Values.ecnet.image.registry .Values.ecnet.image.name.ecnetBootstrap .Values.ecnet.image.digest.ecnetBootstrap -}}
-{{- end -}}
 {{- end -}}
 
 {{/* ecnet-crds image */}}
 {{- define "ecnetCRDs.image" -}}
-{{- if .Values.ecnet.image.tag -}}
 {{- printf "%s/%s:%s" .Values.ecnet.image.registry .Values.ecnet.image.name.ecnetCRDs .Values.ecnet.image.tag -}}
-{{- else -}}
-{{- printf "%s/%s@%s" .Values.ecnet.image.registry .Values.ecnet.image.name.ecnetCRDs .Values.ecnet.image.digest.ecnetCRDs -}}
-{{- end -}}
 {{- end -}}
 
 {{/* ecnet-preinstall image */}}
 {{- define "ecnetPreinstall.image" -}}
-{{- if .Values.ecnet.image.tag -}}
 {{- printf "%s/%s:%s" .Values.ecnet.image.registry .Values.ecnet.image.name.ecnetPreinstall .Values.ecnet.image.tag -}}
-{{- else -}}
-{{- printf "%s/%s@%s" .Values.ecnet.image.registry .Values.ecnet.image.name.ecnetPreinstall .Values.ecnet.image.digest.ecnetPreinstall -}}
-{{- end -}}
 {{- end -}}
 
-{{/* ecnet-interceptor image */}}
+{{/* ecnet-bridge image */}}
 {{- define "ecnetBridge.image" -}}
-{{- if .Values.ecnet.image.tag -}}
 {{- printf "%s/%s:%s" .Values.ecnet.image.registry .Values.ecnet.image.name.ecnetBridge .Values.ecnet.image.tag -}}
-{{- else -}}
-{{- printf "%s/%s@%s" .Values.ecnet.image.registry .Values.ecnet.image.name.ecnetBridge .Values.ecnet.image.digest.ecnetController -}}
 {{- end -}}
+
+{{/* ecnet-bridge-init image */}}
+{{- define "ecnetBridgeInit.image" -}}
+{{- printf "%s/%s:%s" .Values.ecnet.image.registry .Values.ecnet.image.name.ecnetBridgeInit .Values.ecnet.image.tag -}}
 {{- end -}}

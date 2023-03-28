@@ -162,7 +162,12 @@ docker-build-ecnet-preinstall:
 docker-build-ecnet-bridge:
 	docker buildx build --builder ecnet --platform=$(DOCKER_BUILDX_PLATFORM) -o $(DOCKER_BUILDX_OUTPUT) -t $(CTR_REGISTRY)/ecnet-bridge:$(CTR_TAG) -f dockerfiles/Dockerfile.ecnet-bridge --build-arg GO_VERSION=$(DOCKER_GO_VERSION) --build-arg LDFLAGS=$(LDFLAGS) .
 
-ECNET_TARGETS = ecnet-crds ecnet-bootstrap ecnet-preinstall ecnet-controller ecnet-bridge
+.PHONY: docker-build-ecnet-bridge-init
+docker-build-ecnet-bridge-init:
+	docker buildx build --builder ecnet --platform=$(DOCKER_BUILDX_PLATFORM) -o $(DOCKER_BUILDX_OUTPUT) -t $(CTR_REGISTRY)/ecnet-bridge-init:$(CTR_TAG) -f dockerfiles/Dockerfile.ecnet-bridge-init .
+
+
+ECNET_TARGETS = ecnet-crds ecnet-bootstrap ecnet-preinstall ecnet-controller ecnet-bridge ecnet-bridge-init
 DOCKER_ECNET_TARGETS = $(addprefix docker-build-, $(ECNET_TARGETS))
 
 .PHONY: docker-build-ecnet

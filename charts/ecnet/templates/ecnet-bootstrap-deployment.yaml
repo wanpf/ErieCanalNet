@@ -56,20 +56,20 @@ spec:
             requests:
               cpu: "{{.Values.ecnet.ecnetBootstrap.resource.requests.cpu}}"
               memory: "{{.Values.ecnet.ecnetBootstrap.resource.requests.memory}}"
-          readinessProbe:
-            initialDelaySeconds: 5
-            timeoutSeconds: 5
-            httpGet:
-              scheme: HTTP
-              path: /healthz
-              port: 9091
-          livenessProbe:
-            initialDelaySeconds: 5
-            timeoutSeconds: 5
-            httpGet:
-              scheme: HTTP
-              path: /healthz
-              port: 9091
+#          readinessProbe:
+#            initialDelaySeconds: 5
+#            timeoutSeconds: 5
+#            httpGet:
+#              scheme: HTTP
+#              path: /healthz
+#              port: 9091
+#          livenessProbe:
+#            initialDelaySeconds: 5
+#            timeoutSeconds: 5
+#            httpGet:
+#              scheme: HTTP
+#              path: /healthz
+#              port: 9091
           env:
             # The BOOTSTRAP_POD_NAME env variable sets pod name dynamically, used by ecnet-bootstrap to register events
             - name: BOOTSTRAP_POD_NAME
