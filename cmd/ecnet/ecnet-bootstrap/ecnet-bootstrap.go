@@ -50,7 +50,7 @@ var (
 	verbosity       string
 	ecnetNamespace  string
 	ecnetConfigName string
-	meshName        string
+	ecnetName       string
 	ecnetVersion    string
 	trustDomain     string
 
@@ -69,7 +69,7 @@ type bootstrap struct {
 }
 
 func init() {
-	flags.StringVar(&meshName, "mesh-name", "", "ECNET mesh name")
+	flags.StringVar(&ecnetName, "ecnet-name", "", "ecnet name")
 	flags.StringVarP(&verbosity, "verbosity", "v", "info", "Set log verbosity level")
 	flags.StringVar(&ecnetNamespace, "ecnet-namespace", "", "Namespace to which ECNET belongs to.")
 	flags.StringVar(&ecnetConfigName, "ecnet-config-name", "ecnet-config", "Name of the ECNET EcnetConfig")

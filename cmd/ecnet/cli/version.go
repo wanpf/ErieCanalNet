@@ -38,7 +38,7 @@ type remoteVersionGetter interface {
 type remoteVersion struct{}
 
 type remoteVersionInfo struct {
-	meshName  string
+	ecnetName string
 	namespace string
 	version   *version.Info
 }
@@ -144,7 +144,7 @@ func (v *versionCmd) getMeshVersion() (*remoteVersionInfo, error) {
 		return nil, err
 	}
 	versionInfo = &remoteVersionInfo{
-		meshName:  controllerPod.Labels[constants.ECNETAppInstanceLabelKey],
+		ecnetName: controllerPod.Labels[constants.ECNETAppInstanceLabelKey],
 		namespace: v.namespace,
 		version:   version,
 	}
@@ -173,12 +173,12 @@ func (v *versionCmd) outputPrettyVersionInfo(remoteVerList []*remoteVersionInfo)
 	if len(remoteVerList) == 0 {
 		return "Unable to find ECNET control plane in the cluster\n"
 	}
-	table := "\nMESH NAME\tMESH NAMESPACE\tVERSION\tGIT COMMIT\tBUILD DATE\n"
+	table := "\nECNET NAME\tECNET NAMESPACE\tVERSION\tGIT COMMIT\tBUILD DATE\n"
 	for _, remoteVersionInfo := range remoteVerList {
-		if remoteVersionInfo != nil && remoteVersionInfo.meshName != "" {
+		if remoteVersionInfo != nil && remoteVersionInfo.ecnetName != "" {
 			table += fmt.Sprintf(
 				"%s\t%s\t%s\t%s\t%s\n",
-				remoteVersionInfo.meshName,
+				remoteVersionInfo.ecnetName,
 				remoteVersionInfo.namespace,
 				remoteVersionInfo.version.Version,
 				remoteVersionInfo.version.GitCommit,

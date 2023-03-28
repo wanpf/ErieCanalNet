@@ -3,20 +3,37 @@ package helpers
 import (
 	"encoding/binary"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"net"
 	"strings"
+	"time"
 
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/config"
 )
 
 var (
-	bridgeIP     uint32
+	bridgeIPInt  uint32
 	bridgeIPAddr net.IP
 )
 
 // GetBridgeIP retrieves cni bridge veth's ipv4 addr
-func GetBridgeIP() (net.IP, uint32, error) {
-	if bridgeIP == 0 {
+func GetBridgeIP() (ipAddr net.IP, ipInt uint32) {
+	var err error
+	for {
+		ipAddr, ipInt, err = waitBridgeIP()
+		if err == nil && ipInt > 0 {
+			break
+		}
+		if err != nil {
+			log.Warnf("fail retrieving cni bridge veth[%s]'s ipv4 addr:%v, and retring...", config.BridgeEth, err)
+			time.Sleep(time.Second * 5)
+		}
+	}
+	return
+}
+
+func waitBridgeIP() (net.IP, uint32, error) {
+	if bridgeIPInt == 0 {
 		found := false
 		if ifaces, err := net.Interfaces(); err == nil {
 			for _, iface := range ifaces {
@@ -25,24 +42,24 @@ func GetBridgeIP() (net.IP, uint32, error) {
 						for _, addr := range addrs {
 							if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
 								if bridgeIPAddr = ipnet.IP.To4(); bridgeIPAddr != nil {
-									bridgeIP = binary.BigEndian.Uint32(bridgeIPAddr)
+									bridgeIPInt = binary.BigEndian.Uint32(bridgeIPAddr)
 									found = true
 									break
 								}
 							}
 						}
 					} else {
-						return bridgeIPAddr, bridgeIP, fmt.Errorf("unexpected exit err: %v", err)
+						return bridgeIPAddr, bridgeIPInt, fmt.Errorf("unexpected exit err: %v", err)
 					}
 					break
 				}
 			}
 		} else {
-			return bridgeIPAddr, bridgeIP, fmt.Errorf("unexpected exit err: %v", err)
+			return bridgeIPAddr, bridgeIPInt, fmt.Errorf("unexpected exit err: %v", err)
 		}
 		if !found {
-			return bridgeIPAddr, bridgeIP, fmt.Errorf("unexpected retrieves cni bridge veth[%s]'s ipv4 addr", config.BridgeEth)
+			return bridgeIPAddr, bridgeIPInt, fmt.Errorf("unexpected retrieves cni bridge veth[%s]'s ipv4 addr", config.BridgeEth)
 		}
 	}
-	return bridgeIPAddr, bridgeIP, nil
+	return bridgeIPAddr, bridgeIPInt, nil
 }

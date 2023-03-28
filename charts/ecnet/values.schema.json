@@ -168,7 +168,7 @@
                 "proxyServerPort",
                 "pluginChains",
                 "curlImage",
-                "meshName",
+                "ecnetName",
                 "proxyLogLevel",
                 "controllerLogLevel",
                 "enforceSingleMesh",
@@ -606,10 +606,10 @@
                         "example.com"
                     ]
                 },
-                "meshName": {
-                    "$id": "#/properties/ecnet/properties/meshName",
+                "ecnetName": {
+                    "$id": "#/properties/ecnet/properties/ecnetName",
                     "type": "string",
-                    "title": "The meshName schema",
+                    "title": "The ecnetName schema",
                     "description": "The name associated with the control plane being installed.",
                     "examples": [
                         "ecnet"

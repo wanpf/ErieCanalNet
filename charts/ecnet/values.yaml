@@ -164,8 +164,8 @@ ecnet:
   # -- The trust domain to use as part of the common name when requesting new certificates.
   trustDomain: cluster.local
 
-  # -- Identifier for the instance of a service mesh within a cluster
-  meshName: ecnet
+  # -- Identifier for the instance of an ecnet within a cluster
+  ecnetName: ecnet
 
   # -- Local DNS Proxy improves the performance of your computer by caching the responses coming from your DNS servers
   localDNSProxy:

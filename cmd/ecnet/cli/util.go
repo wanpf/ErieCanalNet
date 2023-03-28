@@ -52,7 +52,7 @@ func confirm(stdin io.Reader, stdout io.Writer, s string, tries int) (bool, erro
 
 // getPrettyPrintedMeshInfoList returns a pretty printed list of meshes.
 func getPrettyPrintedMeshInfoList(meshInfoList []meshInfo) string {
-	s := "\nMESH NAME\tMESH NAMESPACE\tVERSION\tADDED NAMESPACES\n"
+	s := "\nECNET NAME\tECNET NAMESPACE\tVERSION\tADDED NAMESPACES\n"
 
 	for _, meshInfo := range meshInfoList {
 		m := fmt.Sprintf(
@@ -81,8 +81,8 @@ func getMeshInfoList(restConfig *rest.Config, clientSet kubernetes.Interface) ([
 	}
 
 	for _, ecnetControllerDeployment := range ecnetControllerDeployments.Items {
-		meshName := ecnetControllerDeployment.ObjectMeta.Labels["meshName"]
-		meshNamespace := ecnetControllerDeployment.ObjectMeta.Namespace
+		ecnetName := ecnetControllerDeployment.ObjectMeta.Labels["ecnetName"]
+		ecnetNamespace := ecnetControllerDeployment.ObjectMeta.Namespace
 
 		meshVersion := ecnetControllerDeployment.ObjectMeta.Labels[constants.ECNETAppVersionLabelKey]
 		if meshVersion == "" {
@@ -90,7 +90,7 @@ func getMeshInfoList(restConfig *rest.Config, clientSet kubernetes.Interface) ([
 		}
 
 		var meshMonitoredNamespaces []string
-		nsList, err := selectNamespacesMonitoredByMesh(meshName, clientSet)
+		nsList, err := selectNamespacesMonitoredByMesh(ecnetName, clientSet)
 		if err == nil && len(nsList.Items) > 0 {
 			for _, ns := range nsList.Items {
 				meshMonitoredNamespaces = append(meshMonitoredNamespaces, ns.Name)
@@ -98,8 +98,8 @@ func getMeshInfoList(restConfig *rest.Config, clientSet kubernetes.Interface) ([
 		}
 
 		meshInfoList = append(meshInfoList, meshInfo{
-			name:                meshName,
-			namespace:           meshNamespace,
+			name:                ecnetName,
+			namespace:           ecnetNamespace,
 			version:             meshVersion,
 			monitoredNamespaces: meshMonitoredNamespaces,
 		})
@@ -131,7 +131,7 @@ func getControllerPods(clientSet kubernetes.Interface, namespace string) (*corev
 // getPrettyPrintedMeshSmiInfoList returns a pretty printed list
 // of meshes with supported smi versions
 func getPrettyPrintedMeshSmiInfoList(meshSmiInfoList []meshSmiInfo) string {
-	s := "\nMESH NAME\tMESH NAMESPACE\n"
+	s := "\nECNET NAME\tECNET NAMESPACE\n"
 
 	for _, mesh := range meshSmiInfoList {
 		m := fmt.Sprintf(

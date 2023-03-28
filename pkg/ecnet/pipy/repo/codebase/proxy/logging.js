@@ -63,7 +63,7 @@
           sampled ? (
             {
               reqTime: Date.now(),
-              meshName: os.env.MESH_NAME || '',
+              ecnetName: os.env.MESH_NAME || '',
               remoteAddr,
               remotePort,
               localAddr,

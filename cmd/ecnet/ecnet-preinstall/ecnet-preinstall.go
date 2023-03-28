@@ -83,7 +83,7 @@ func singleMeshOK(clientset kubernetes.Interface, enforceSingleMesh bool) func()
 		var existingMeshes []string
 		var existingSingleMeshes []string
 		for _, dep := range deps.Items {
-			mesh := fmt.Sprintf("namespace: %s, name: %s", dep.Namespace, dep.Labels["meshName"])
+			mesh := fmt.Sprintf("namespace: %s, name: %s", dep.Namespace, dep.Labels["ecnetName"])
 			existingMeshes = append(existingMeshes, mesh)
 			if dep.Labels["enforceSingleMesh"] == "true" {
 				existingSingleMeshes = append(existingSingleMeshes, mesh)
@@ -112,12 +112,12 @@ func namespaceHasNoMesh(clientset kubernetes.Interface, namespace string) func()
 		if err != nil {
 			return fmt.Errorf("listing ecnet-controller deployments in namespace %s: %w", namespace, err)
 		}
-		var meshNames []string
+		var ecnetNames []string
 		for _, dep := range deps.Items {
-			meshNames = append(meshNames, dep.Labels["meshName"])
+			ecnetNames = append(ecnetNames, dep.Labels["ecnetName"])
 		}
-		if len(meshNames) > 0 {
-			return fmt.Errorf("Namespace %s already contains meshes %v", namespace, meshNames)
+		if len(ecnetNames) > 0 {
+			return fmt.Errorf("Namespace %s already contains meshes %v", namespace, ecnetNames)
 		}
 		return nil
 	}

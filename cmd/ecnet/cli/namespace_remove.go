@@ -21,7 +21,7 @@ services in this namespace will be removed from the mesh.
 type namespaceRemoveCmd struct {
 	out       io.Writer
 	namespace string
-	meshName  string
+	ecnetName string
 	clientSet kubernetes.Interface
 }
 
@@ -51,9 +51,9 @@ func newNamespaceRemove(out io.Writer) *cobra.Command {
 		},
 	}
 
-	//add mesh name flag
+	//add ecnet name flag
 	f := cmd.Flags()
-	f.StringVar(&namespaceRemove.meshName, "mesh-name", "ecnet", "Name of the service mesh")
+	f.StringVar(&namespaceRemove.ecnetName, "ecnet-name", "ecnet", "Name of the service mesh")
 
 	return cmd
 }
@@ -71,7 +71,7 @@ func (r *namespaceRemoveCmd) run() error {
 	val, exists := namespace.ObjectMeta.Labels[constants.ECNETKubeResourceMonitorAnnotation]
 
 	if exists {
-		if val == r.meshName {
+		if val == r.ecnetName {
 			// Setting null for a key in a map removes only that specific key, which is the desired behavior.
 			// Even if the key does not exist, there will be no side effects with setting the key to null, which
 			// will result in the same behavior as if the key were present - the key being removed.
@@ -92,12 +92,12 @@ func (r *namespaceRemoveCmd) run() error {
 			_, err = r.clientSet.CoreV1().Namespaces().Patch(ctx, r.namespace, types.StrategicMergePatchType, []byte(patch), metav1.PatchOptions{}, "")
 
 			if err != nil {
-				return fmt.Errorf("Could not remove namespace [%s] from mesh [%s]: %w", r.namespace, r.meshName, err)
+				return fmt.Errorf("Could not remove namespace [%s] from mesh [%s]: %w", r.namespace, r.ecnetName, err)
 			}
 
-			fmt.Fprintf(r.out, "Namespace [%s] successfully removed from mesh [%s]\n", r.namespace, r.meshName)
+			fmt.Fprintf(r.out, "Namespace [%s] successfully removed from mesh [%s]\n", r.namespace, r.ecnetName)
 		} else {
-			return fmt.Errorf("Namespace belongs to mesh [%s], not mesh [%s]. Please specify the correct mesh", val, r.meshName)
+			return fmt.Errorf("Namespace belongs to mesh [%s], not mesh [%s]. Please specify the correct mesh", val, r.ecnetName)
 		}
 	} else {
 		fmt.Fprintf(r.out, "Namespace [%s] already does not belong to any mesh\n", r.namespace)

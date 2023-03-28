@@ -23,36 +23,12 @@ import (
 const installDesc = `
 This command installs an ecnet control plane on the Kubernetes cluster.
 
-An ecnet control plane is comprised of namespaced Kubernetes resources
-that get installed into the ecnet-system namespace as well as cluster
-wide Kubernetes resources.
-
-The default Kubernetes namespace that gets created on install is called
-ecnet-system. To create an install control plane components in a different
-namespace, use the global --ecnet-namespace flag.
-
 Example:
   $ ecnet install --ecnet-namespace hello-world
-
-Multiple control plane installations can exist within a cluster. Each
-control plane is given a cluster-wide unqiue identifier called mesh name.
-A mesh name can be passed in via the --mesh-name flag. By default, the
-mesh-name name will be set to "ecnet." The mesh name must conform to same
-guidelines as a valid Kubernetes label value. Must be 63 characters or
-less and must be empty or begin and end with an alphanumeric character
-([a-z0-9A-Z]) with dashes (-), underscores (_), dots (.), and
-alphanumerics between.
-
-Example:
-  $ ecnet install --mesh-name "hello-ecnet"
-
-The mesh name is used in various ways like for naming Kubernetes resources as
-well as for adding a Kubernetes Namespace to the list of Namespaces a control
-plane should watch for sidecar injection of Envoy proxies.
 `
 const (
 	defaultChartPath         = ""
-	defaultMeshName          = "ecnet"
+	defaultEcnetName         = "ecnet"
 	defaultEnforceSingleMesh = true
 )
 
@@ -65,7 +41,7 @@ var chartTGZSource []byte
 type installCmd struct {
 	out            io.Writer
 	chartPath      string
-	meshName       string
+	ecnetName      string
 	timeout        time.Duration
 	clientSet      kubernetes.Interface
 	chartRequested *chart.Chart
@@ -102,7 +78,7 @@ func newInstallCmd(config *helm.Configuration, out io.Writer) *cobra.Command {
 
 	f := cmd.Flags()
 	f.StringVar(&inst.chartPath, "ecnet-chart-path", defaultChartPath, "path to ecnet chart to override default chart")
-	f.StringVar(&inst.meshName, "mesh-name", defaultMeshName, "name for the new control plane instance")
+	f.StringVar(&inst.ecnetName, "ecnet-name", defaultEcnetName, "name for the new control plane instance")
 	f.BoolVar(&inst.enforceSingleMesh, "enforce-single-mesh", defaultEnforceSingleMesh, "Enforce only deploying one mesh in the cluster")
 	f.DurationVar(&inst.timeout, "timeout", 5*time.Minute, "Time to wait for installation and resources in a ready state, zero means no timeout")
 	f.StringArrayVar(&inst.setOptions, "set", nil, "Set arbitrary chart values (can specify multiple or separate values with commas: key1=val1,key2=val2)")
@@ -123,7 +99,7 @@ func (i *installCmd) run(config *helm.Configuration) error {
 	}
 
 	installClient := helm.NewInstall(config)
-	installClient.ReleaseName = i.meshName
+	installClient.ReleaseName = i.ecnetName
 	installClient.Namespace = settings.Namespace()
 	installClient.CreateNamespace = true
 	installClient.Wait = true
@@ -157,7 +133,7 @@ func (i *installCmd) run(config *helm.Configuration) error {
 			}
 		}
 	}
-	fmt.Fprintf(i.out, "ECNET installed successfully in namespace [%s] with mesh name [%s]\n", settings.Namespace(), i.meshName)
+	fmt.Fprintf(i.out, "ECNET installed successfully in namespace [%s] with ecnet name [%s]\n", settings.Namespace(), i.ecnetName)
 	return nil
 }
 
@@ -185,7 +161,7 @@ func (i *installCmd) resolveValues() (map[string]interface{}, error) {
 	}
 
 	valuesConfig := []string{
-		fmt.Sprintf("ecnet.meshName=%s", i.meshName),
+		fmt.Sprintf("ecnet.ecnetName=%s", i.ecnetName),
 		fmt.Sprintf("ecnet.enforceSingleMesh=%t", i.enforceSingleMesh),
 	}
 

@@ -6,7 +6,7 @@ metadata:
   labels:
     {{- include "ecnet.labels" . | nindent 4 }}
     app: ecnet-controller
-    meshName: {{ .Values.ecnet.meshName }}
+    ecnetName: {{ .Values.ecnet.ecnetName }}
     {{ if .Values.ecnet.enforceSingleMesh }}enforceSingleMesh: "true"{{ end }}
 spec:
   {{- if not .Values.ecnet.ecnetController.autoScale.enable }}
@@ -67,7 +67,7 @@ spec:
             "--ecnet-namespace", "{{ include "ecnet.namespace" . }}",
             "--ecnet-version", "{{ .Chart.AppVersion }}",
             "--ecnet-service-account", "{{ .Release.Name }}",
-            "--mesh-name", "{{.Values.ecnet.meshName}}",
+            "--ecnet-name", "{{.Values.ecnet.ecnetName}}",
             "--trust-domain", "{{.Values.ecnet.trustDomain}}",
           ]
           resources:

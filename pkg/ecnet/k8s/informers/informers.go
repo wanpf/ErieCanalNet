@@ -26,9 +26,9 @@ import (
 type InformerCollectionOption func(*InformerCollection)
 
 // NewInformerCollection creates a new InformerCollection
-func NewInformerCollection(meshName string, stop <-chan struct{}, opts ...InformerCollectionOption) (*InformerCollection, error) {
+func NewInformerCollection(ecnetName string, stop <-chan struct{}, opts ...InformerCollectionOption) (*InformerCollection, error) {
 	ic := &InformerCollection{
-		meshName:  meshName,
+		ecnetName: ecnetName,
 		informers: map[InformerKey]cache.SharedIndexInformer{},
 	}
 
@@ -51,7 +51,7 @@ func NewInformerCollection(meshName string, stop <-chan struct{}, opts ...Inform
 func WithKubeClient(kubeClient kubernetes.Interface) InformerCollectionOption {
 	return func(ic *InformerCollection) {
 		// initialize informers
-		monitorNamespaceLabel := map[string]string{constants.ECNETKubeResourceMonitorAnnotation: ic.meshName}
+		monitorNamespaceLabel := map[string]string{constants.ECNETKubeResourceMonitorAnnotation: ic.ecnetName}
 
 		labelSelector := fields.SelectorFromSet(monitorNamespaceLabel).String()
 		option := informers.WithTweakListOptions(func(opt *metav1.ListOptions) {

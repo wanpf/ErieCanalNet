@@ -6,7 +6,7 @@
 {{/* Labels to be added to all resources */}}
 {{- define "ecnet.labels" -}}
 app.kubernetes.io/name: flomesh.io
-app.kubernetes.io/instance: {{ .Values.ecnet.meshName }}
+app.kubernetes.io/instance: {{ .Values.ecnet.ecnetName }}
 app.kubernetes.io/version: {{ .Chart.AppVersion }}
 {{- end -}}
 

@@ -33,8 +33,8 @@ func LoadProgs(debug bool) error {
 		cmd.Env = append(cmd.Env, "DEBUG=1")
 	}
 
-	if _, bridgeIntAddr, _ := GetBridgeIP(); bridgeIntAddr > 0 {
-		cmd.Env = append(cmd.Env, fmt.Sprintf("BRIDGE_IP=%d", bridgeIntAddr))
+	if _, bridgeIP := GetBridgeIP(); bridgeIP > 0 {
+		cmd.Env = append(cmd.Env, fmt.Sprintf("BRIDGE_IP=%d", bridgeIP))
 	} else {
 		return fmt.Errorf("unexpected exit err: retrieves cni bridge veth's ipv4 addr")
 	}

@@ -10,7 +10,7 @@ import (
 const ecnetDescription = `
 This command consists of multiple subcommands related to managing instances of
 ecnet installations. Each ecnet installation results in a mesh. Each installation
-receives a unique mesh name.
+receives a unique ecnet name.
 
 `
 

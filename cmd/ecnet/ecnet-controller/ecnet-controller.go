@@ -48,7 +48,7 @@ import (
 
 var (
 	verbosity           string
-	meshName            string // An ID that uniquely identifies an ECNET instance
+	ecnetName           string // An ID that uniquely identifies an ECNET instance
 	ecnetNamespace      string
 	ecnetServiceAccount string
 	ecnetConfigName     string
@@ -65,11 +65,11 @@ var (
 
 func init() {
 	flags.StringVarP(&verbosity, "verbosity", "v", constants.DefaultECNETLogLevel, "Set boot log verbosity level")
-	flags.StringVar(&meshName, "mesh-name", "", "ECNET mesh name")
-	flags.StringVar(&ecnetNamespace, "ecnet-namespace", "", "ECNET controller's namespace")
-	flags.StringVar(&ecnetServiceAccount, "ecnet-service-account", "", "ECNET controller's service account")
-	flags.StringVar(&ecnetConfigName, "ecnet-config-name", "ecnet-config", "Name of the ECNET Config")
-	flags.StringVar(&ecnetVersion, "ecnet-version", "", "Version of ECNET")
+	flags.StringVar(&ecnetName, "ecnet-name", "", "ecnet name")
+	flags.StringVar(&ecnetNamespace, "ecnet-namespace", "", "ecnet controller's namespace")
+	flags.StringVar(&ecnetServiceAccount, "ecnet-service-account", "", "ecnet controller's service account")
+	flags.StringVar(&ecnetConfigName, "ecnet-config-name", "ecnet-config", "Name of the ecnet Config")
+	flags.StringVar(&ecnetVersion, "ecnet-version", "", "Version of ecnet")
 
 	// TODO (#4502): Remove when we add full MRC support
 	flags.StringVar(&trustDomain, "trust-domain", "cluster.local", "The trust domain to use as part of the common name when requesting new certificates")
@@ -119,7 +119,7 @@ func main() {
 
 	msgBroker := messaging.NewBroker(stop)
 
-	informerCollection, err := informers.NewInformerCollection(meshName, stop,
+	informerCollection, err := informers.NewInformerCollection(ecnetName, stop,
 		informers.WithKubeClient(kubeClient),
 		informers.WithConfigClient(configClient, ecnetConfigName, ecnetNamespace),
 		informers.WithMultiClusterClient(multiclusterClient),

@@ -18,31 +18,14 @@ const trueValue = "true"
 
 const namespaceAddDescription = `
 This command adds a namespace or set of namespaces to the mesh so that the ecnet
-control plane with the given mesh name can observe resources within that namespace
-or set of namespaces. It also enables automatic sidecar injection for all pods
-created within the given namespace. Automatic sidecar injection can be disabled
-via the --disable-sidecar-injection flag.
-`
-const namespaceAddExample = `
-# Add namespace 'test' to the mesh with automatic sidecar injection enabled.
-ecnet namespace add test
-
-# Add namespace 'test' to the mesh while disabling automatic sidecar injection.
-# If sidecar injection was previously enabled, it will be disabled by this command.
-ecnet namespace add test --disable-sidecar-injection
-
-# Add multiple namespaces (test, foo, bar, baz) to the mesh at the same time.
-ecnet namespace add test foo bar baz
-
-# Specify which mesh (ecnet control plane) to add the namespace if multiple control planes
-are present or mesh name was overridden at install time
-ecnet namespace add test --mesh-name=<my-mesh-name>
+control plane with the given ecnet name can observe resources within that namespace
+or set of namespaces.
 `
 
 type namespaceAddCmd struct {
 	out                     io.Writer
 	namespaces              []string
-	meshName                string
+	ecnetName               string
 	disableSidecarInjection bool
 	clientSet               kubernetes.Interface
 }
@@ -54,7 +37,7 @@ func newNamespaceAdd(out io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "add NAMESPACE ...",
-		Short: "add namespace to mesh",
+		Short: "add namespace to ecnet",
 		Long:  namespaceAddDescription,
 		Args:  cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -71,12 +54,11 @@ func newNamespaceAdd(out io.Writer) *cobra.Command {
 			namespaceAdd.clientSet = clientset
 			return namespaceAdd.run()
 		},
-		Example: namespaceAddExample,
 	}
 
-	//add mesh name flag
+	//add ecnet name flag
 	f := cmd.Flags()
-	f.StringVar(&namespaceAdd.meshName, "mesh-name", "ecnet", "Name of the service mesh")
+	f.StringVar(&namespaceAdd.ecnetName, "ecnet-name", "ecnet", "Name of the ecnet")
 
 	//add sidecar injection flag
 	f.BoolVar(&namespaceAdd.disableSidecarInjection, "disable-sidecar-injection", false, "Disable automatic sidecar injection")
@@ -89,12 +71,12 @@ func (a *namespaceAddCmd) run() error {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		exists, err := meshExists(a.clientSet, a.meshName)
+		exists, err := meshExists(a.clientSet, a.ecnetName)
 		if err != nil {
 			return err
 		}
 		if !exists {
-			return fmt.Errorf("mesh [%s] does not exist, please specify another mesh using --mesh-name or create a new mesh", a.meshName)
+			return fmt.Errorf("mesh [%s] does not exist, please specify another mesh using --ecnet-name or create a new mesh", a.ecnetName)
 		}
 
 		deploymentsClient := a.clientSet.AppsV1().Deployments(ns)
@@ -107,18 +89,18 @@ func (a *namespaceAddCmd) run() error {
 
 		// if ecnet-controller is installed in this namespace then don't add that to mesh
 		if len(list.Items) != 0 {
-			_, _ = fmt.Fprintf(a.out, "Namespace [%s] already has [%s] installed and cannot be added to mesh [%s]\n", ns, constants.ECNETControllerName, a.meshName)
+			_, _ = fmt.Fprintf(a.out, "Namespace [%s] already has [%s] installed and cannot be added to mesh [%s]\n", ns, constants.ECNETControllerName, a.ecnetName)
 			continue
 		}
 
 		// if the namespace is already a part of the mesh then don't add it again
 		namespace, err := a.clientSet.CoreV1().Namespaces().Get(ctx, ns, metav1.GetOptions{})
 		if err != nil {
-			return fmt.Errorf("Could not add namespace [%s] to mesh [%s]: %w", ns, a.meshName, err)
+			return fmt.Errorf("Could not add namespace [%s] to mesh [%s]: %w", ns, a.ecnetName, err)
 		}
-		meshName := namespace.Labels[constants.ECNETKubeResourceMonitorAnnotation]
-		if a.meshName == meshName {
-			_, _ = fmt.Fprintf(a.out, "Namespace [%s] has already been added to mesh [%s]\n", ns, a.meshName)
+		ecnetName := namespace.Labels[constants.ECNETKubeResourceMonitorAnnotation]
+		if a.ecnetName == ecnetName {
+			_, _ = fmt.Fprintf(a.out, "Namespace [%s] has already been added to mesh [%s]\n", ns, a.ecnetName)
 			continue
 		}
 
@@ -141,7 +123,7 @@ func (a *namespaceAddCmd) run() error {
 			"%s": "disabled"
 		}
 	}
-}`, constants.ECNETKubeResourceMonitorAnnotation, a.meshName, constants.SidecarInjectionAnnotation)
+}`, constants.ECNETKubeResourceMonitorAnnotation, a.ecnetName, constants.SidecarInjectionAnnotation)
 		} else {
 			// Patch the namespace with the monitoring label.
 			// Enable sidecar injection.
@@ -155,32 +137,32 @@ func (a *namespaceAddCmd) run() error {
 			"%s": "enabled"
 		}
 	}
-}`, constants.ECNETKubeResourceMonitorAnnotation, a.meshName, constants.SidecarInjectionAnnotation)
+}`, constants.ECNETKubeResourceMonitorAnnotation, a.ecnetName, constants.SidecarInjectionAnnotation)
 		}
 
 		_, err = a.clientSet.CoreV1().Namespaces().Patch(ctx, ns, types.StrategicMergePatchType, []byte(patch), metav1.PatchOptions{}, "")
 		if err != nil {
-			return fmt.Errorf("Could not add namespace [%s] to mesh [%s]: %w", ns, a.meshName, err)
+			return fmt.Errorf("Could not add namespace [%s] to mesh [%s]: %w", ns, a.ecnetName, err)
 		}
 
-		_, _ = fmt.Fprintf(a.out, "Namespace [%s] successfully added to mesh [%s]\n", ns, a.meshName)
+		_, _ = fmt.Fprintf(a.out, "Namespace [%s] successfully added to mesh [%s]\n", ns, a.ecnetName)
 	}
 
 	return nil
 }
 
-// meshExists determines if a mesh with meshName exists within the cluster
-func meshExists(clientSet kubernetes.Interface, meshName string) (bool, error) {
+// meshExists determines if a mesh with ecnetName exists within the cluster
+func meshExists(clientSet kubernetes.Interface, ecnetName string) (bool, error) {
 	// search for the mesh across all namespaces
 	deploymentsClient := clientSet.AppsV1().Deployments("")
-	// search and match using the mesh name provided
-	labelSelector := metav1.LabelSelector{MatchLabels: map[string]string{"meshName": meshName}}
+	// search and match using the ecnet name provided
+	labelSelector := metav1.LabelSelector{MatchLabels: map[string]string{"ecnetName": ecnetName}}
 	listOptions := metav1.ListOptions{
 		LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
 	}
 	ecnetControllerDeployments, err := deploymentsClient.List(context.TODO(), listOptions)
 	if err != nil {
-		return false, fmt.Errorf("Cannot obtain information about the mesh [%s]: [%w]", meshName, err)
+		return false, fmt.Errorf("Cannot obtain information about the mesh [%s]: [%w]", ecnetName, err)
 	}
 	// the mesh is present if there are ecnet controllers for the mesh
 	return len(ecnetControllerDeployments.Items) != 0, nil

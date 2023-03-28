@@ -19,7 +19,7 @@ This command will list namespace information for all meshes. It is possible to f
 
 type namespaceListCmd struct {
 	out       io.Writer
-	meshName  string
+	ecnetName string
 	clientSet kubernetes.Interface
 }
 
@@ -35,7 +35,7 @@ func newNamespaceList(out io.Writer) *cobra.Command {
 		Args:  cobra.MaximumNArgs(1),
 		RunE: func(_ *cobra.Command, args []string) error {
 			if len(args) == 1 {
-				namespaceList.meshName = args[0]
+				namespaceList.ecnetName = args[0]
 			}
 
 			config, err := settings.RESTClientGetter().ToRESTConfig()
@@ -52,22 +52,22 @@ func newNamespaceList(out io.Writer) *cobra.Command {
 		},
 	}
 
-	//add mesh name flag
+	//add ecnet name flag
 	f := cmd.Flags()
-	f.StringVar(&namespaceList.meshName, "mesh-name", "", "Name of service mesh to list namespaces")
+	f.StringVar(&namespaceList.ecnetName, "ecnet-name", "", "Name of service mesh to list namespaces")
 
 	return cmd
 }
 
 func (l *namespaceListCmd) run() error {
-	namespaces, err := selectNamespacesMonitoredByMesh(l.meshName, l.clientSet)
+	namespaces, err := selectNamespacesMonitoredByMesh(l.ecnetName, l.clientSet)
 	if err != nil {
-		return fmt.Errorf("Could not list namespaces related to ecnet [%s]: %w", l.meshName, err)
+		return fmt.Errorf("Could not list namespaces related to ecnet [%s]: %w", l.ecnetName, err)
 	}
 
 	if len(namespaces.Items) == 0 {
-		if l.meshName != "" {
-			fmt.Fprintf(l.out, "No namespaces in mesh [%s]\n", l.meshName)
+		if l.ecnetName != "" {
+			fmt.Fprintf(l.out, "No namespaces in mesh [%s]\n", l.ecnetName)
 			return nil
 		}
 
@@ -94,13 +94,13 @@ func (l *namespaceListCmd) run() error {
 	return nil
 }
 
-func selectNamespacesMonitoredByMesh(meshName string, clientSet kubernetes.Interface) (*v1.NamespaceList, error) {
+func selectNamespacesMonitoredByMesh(ecnetName string, clientSet kubernetes.Interface) (*v1.NamespaceList, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	selector := constants.ECNETKubeResourceMonitorAnnotation
-	if meshName != "" {
-		selector = fmt.Sprintf("%s=%s", selector, meshName)
+	if ecnetName != "" {
+		selector = fmt.Sprintf("%s=%s", selector, ecnetName)
 	}
 
 	return clientSet.CoreV1().Namespaces().List(ctx, metav1.ListOptions{

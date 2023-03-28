@@ -16,28 +16,6 @@ import (
 const upgradeDesc = `
 This command upgrades an ECNET control plane by upgrading the
 underlying Helm release.
-
-The mesh to upgrade is identified by its mesh name and namespace. If either were
-overridden from the default for the "ecnet install" command, the --mesh-name and
---ecnet-namespace flags need to be specified.
-
-Values from the current Helm release will NOT be carried over to the new
-release. Use --set to pass any overridden values from the old release to the new
-release.
-
-Note: edits to resources NOT made by Helm or the ECNET CLI may not persist after
-"ecnet mesh upgrade" is run.
-
-Note: edits made to chart values that impact the preset-ecnet-config will not
-apply to the ecnet-config, when "ecnet mesh upgrade" is run. This means configuration
-changes made to the ecnet-config resource will persist through an upgrade
-and any configuration changes needed can be done by patching this resource prior or
-post an upgrade.
-
-If any CustomResourceDefinitions (CRDs) are different between the installed
-chart and the upgraded chart, the CRDs will be updated to include the latest versions.
-Any corresponding custom resources that wish to reference the newer CRD version can
-be updated post upgrade.
 `
 
 const meshUpgradeExample = `
@@ -49,8 +27,8 @@ ecnet mesh upgrade --ecnet-namespace ecnet-system
 type meshUpgradeCmd struct {
 	out io.Writer
 
-	meshName string
-	chart    *chart.Chart
+	ecnetName string
+	chart     *chart.Chart
 
 	setOptions []string
 }
@@ -81,7 +59,7 @@ func newMeshUpgradeCmd(config *helm.Configuration, out io.Writer) *cobra.Command
 
 	f := cmd.Flags()
 
-	f.StringVar(&upg.meshName, "mesh-name", defaultMeshName, "Name of the mesh to upgrade")
+	f.StringVar(&upg.ecnetName, "ecnet-name", defaultEcnetName, "Name of the mesh to upgrade")
 	f.StringVar(&chartPath, "ecnet-chart-path", "", "path to ecnet chart to override default chart")
 	f.StringArrayVar(&upg.setOptions, "set", nil, "Set arbitrary chart values (can specify multiple or separate values with commas: key1=val1,key2=val2)")
 
@@ -107,11 +85,11 @@ func (u *meshUpgradeCmd) run(config *helm.Configuration) error {
 	upgradeClient.Wait = true
 	upgradeClient.Timeout = 5 * time.Minute
 	upgradeClient.ResetValues = true
-	if _, err = upgradeClient.Run(u.meshName, u.chart, values); err != nil {
+	if _, err = upgradeClient.Run(u.ecnetName, u.chart, values); err != nil {
 		return err
 	}
 
-	fmt.Fprintf(u.out, "ECNET successfully upgraded mesh [%s] in namespace [%s]\n", u.meshName, settings.Namespace())
+	fmt.Fprintf(u.out, "ECNET successfully upgraded mesh [%s] in namespace [%s]\n", u.ecnetName, settings.Namespace())
 	return nil
 }
 

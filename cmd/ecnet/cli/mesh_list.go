@@ -84,7 +84,7 @@ func (l *meshListCmd) run() error {
 	_ = w.Flush()
 
 	fmt.Fprintf(l.out, "\nTo list the ECNET controller pods for a mesh, please run the following command passing in the mesh's namespace\n")
-	fmt.Fprintf(l.out, "\tkubectl get pods -n <ecnet-mesh-namespace> -l app=ecnet-bridge\n")
+	fmt.Fprintf(l.out, "\tkubectl get pods -n <ecnet-ecnet-namespace> -l app=ecnet-bridge\n")
 
 	return nil
 }

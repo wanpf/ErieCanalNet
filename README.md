@@ -21,10 +21,10 @@ cp ./${system}-${arch}/ecnet /usr/local/bin/
 
 ```bash
 export ecnet_namespace=ecnet-system
-export ecnet_mesh_name=ecnet
+export ecnet_name=ecnet
 export dns_svc_ip="$(kubectl get svc -n kube-system -l k8s-app=kube-dns -o jsonpath='{.items[0].spec.clusterIP}')"
 ecnet install \
-    --mesh-name "$ecnet_mesh_name" \
+    --ecnet-name "$ecnet_name" \
     --ecnet-namespace "$ecnet_namespace" \
     --set=ecnet.ecnetBridge.cni.hostCniBridgeEth=cni0 \
     --set=ecnet.image.registry=cybwan \

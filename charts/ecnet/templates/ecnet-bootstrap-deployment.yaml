@@ -6,7 +6,7 @@ metadata:
   labels:
     {{- include "ecnet.labels" . | nindent 4 }}
     app: ecnet-bootstrap
-    meshName: {{ .Values.ecnet.meshName }}
+    ecnetName: {{ .Values.ecnet.ecnetName }}
 spec:
   replicas: {{ .Values.ecnet.ecnetBootstrap.replicaCount }}
   selector:

@@ -47,5 +47,5 @@ var (
 // type should only be passed around as a pointer
 type InformerCollection struct {
 	informers map[InformerKey]cache.SharedIndexInformer
-	meshName  string
+	ecnetName string
 }
