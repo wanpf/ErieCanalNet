@@ -7,7 +7,7 @@ metadata:
     {{- include "ecnet.labels" . | nindent 4 }}
     app: ecnet-controller
     ecnetName: {{ .Values.ecnet.ecnetName }}
-    {{ if .Values.ecnet.enforceSingleMesh }}enforceSingleMesh: "true"{{ end }}
+    {{ if .Values.ecnet.enforceSingleEcnet }}enforceSingleEcnet: "true"{{ end }}
 spec:
   {{- if not .Values.ecnet.ecnetController.autoScale.enable }}
   replicas: {{ .Values.ecnet.ecnetController.replicaCount }}

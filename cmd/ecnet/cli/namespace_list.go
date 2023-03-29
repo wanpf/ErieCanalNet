@@ -14,7 +14,7 @@ import (
 )
 
 const namespaceListDescription = `
-This command will list namespace information for all meshes. It is possible to filter by a given mesh.
+This command will list namespace information for all ecnets. It is possible to filter by a given ecnet.
 `
 
 type namespaceListCmd struct {
@@ -30,7 +30,7 @@ func newNamespaceList(out io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "list",
-		Short: "list namespaces enlisted in meshes",
+		Short: "list namespaces in ecnets",
 		Long:  namespaceListDescription,
 		Args:  cobra.MaximumNArgs(1),
 		RunE: func(_ *cobra.Command, args []string) error {
@@ -54,29 +54,29 @@ func newNamespaceList(out io.Writer) *cobra.Command {
 
 	//add ecnet name flag
 	f := cmd.Flags()
-	f.StringVar(&namespaceList.ecnetName, "ecnet-name", "", "Name of service mesh to list namespaces")
+	f.StringVar(&namespaceList.ecnetName, "ecnet-name", "", "Name of ecnet to list namespaces")
 
 	return cmd
 }
 
 func (l *namespaceListCmd) run() error {
-	namespaces, err := selectNamespacesMonitoredByMesh(l.ecnetName, l.clientSet)
+	namespaces, err := selectNamespacesMonitoredByEcnet(l.ecnetName, l.clientSet)
 	if err != nil {
 		return fmt.Errorf("Could not list namespaces related to ecnet [%s]: %w", l.ecnetName, err)
 	}
 
 	if len(namespaces.Items) == 0 {
 		if l.ecnetName != "" {
-			fmt.Fprintf(l.out, "No namespaces in mesh [%s]\n", l.ecnetName)
+			fmt.Fprintf(l.out, "No namespaces in ecnet [%s]\n", l.ecnetName)
 			return nil
 		}
 
-		fmt.Fprintf(l.out, "No namespaces in any mesh\n")
+		fmt.Fprintf(l.out, "No namespaces in any ecnet\n")
 		return nil
 	}
 
 	w := newTabWriter(l.out)
-	fmt.Fprintln(w, "NAMESPACE\tMESH\tSIDECAR-INJECTION")
+	fmt.Fprintln(w, "NAMESPACE\tECNET\tSIDECAR-INJECTION")
 	for _, ns := range namespaces.Items {
 		ecnetName := ns.ObjectMeta.Labels[constants.ECNETKubeResourceMonitorAnnotation]
 		sidecarInjectionEnabled, ok := ns.ObjectMeta.Annotations[constants.SidecarInjectionAnnotation]
@@ -94,7 +94,7 @@ func (l *namespaceListCmd) run() error {
 	return nil
 }
 
-func selectNamespacesMonitoredByMesh(ecnetName string, clientSet kubernetes.Interface) (*v1.NamespaceList, error) {
+func selectNamespacesMonitoredByEcnet(ecnetName string, clientSet kubernetes.Interface) (*v1.NamespaceList, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 

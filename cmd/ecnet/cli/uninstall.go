@@ -20,7 +20,7 @@ func newUninstallCmd(config *action.Configuration, in io.Reader, out io.Writer) 
 		Long:    uninstallDescription,
 		Args:    cobra.NoArgs,
 	}
-	cmd.AddCommand(newUninstallMeshCmd(config, in, out))
+	cmd.AddCommand(newUninstallCniCmd(config, in, out))
 
 	return cmd
 }

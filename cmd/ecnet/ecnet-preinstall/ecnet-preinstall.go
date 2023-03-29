@@ -24,13 +24,13 @@ func main() {
 	log.Info().Msgf("Starting ecnet-preinstall %s; %s; %s", version.Version, version.GitCommit, version.BuildDate)
 
 	var verbosity string
-	var enforceSingleMesh bool
+	var enforceSingleEcnet bool
 	var namespace string
 
 	flags := pflag.NewFlagSet("ecnet-preinstall", pflag.ExitOnError)
 	flags.StringVarP(&verbosity, "verbosity", "v", "info", "Set log verbosity level")
-	flags.BoolVar(&enforceSingleMesh, "enforce-single-mesh", true, "Enforce only deploying one mesh in the cluster")
-	flags.StringVar(&namespace, "namespace", "", "The namespace where the new mesh is to be installed")
+	flags.BoolVar(&enforceSingleEcnet, "enforce-single-ecnet", true, "Enforce only deploying one ecnet in the cluster")
+	flags.StringVar(&namespace, "namespace", "", "The namespace where the new ecnet is to be installed")
 
 	err := flags.Parse(os.Args)
 	if err != nil {
@@ -52,8 +52,8 @@ func main() {
 	}
 
 	checks := []func() error{
-		singleMeshOK(clientset, enforceSingleMesh),
-		namespaceHasNoMesh(clientset, namespace),
+		singleEcnetOK(clientset, enforceSingleEcnet),
+		namespaceHasNoEcnet(clientset, namespace),
 	}
 
 	ok := true
@@ -69,7 +69,7 @@ func main() {
 	log.Info().Msg("checks OK")
 }
 
-func singleMeshOK(clientset kubernetes.Interface, enforceSingleMesh bool) func() error {
+func singleEcnetOK(clientset kubernetes.Interface, enforceSingleEcnet bool) func() error {
 	return func() error {
 		deps, err := clientset.AppsV1().Deployments("").List(context.Background(), metav1.ListOptions{
 			LabelSelector: labels.SelectorFromSet(map[string]string{
@@ -80,29 +80,29 @@ func singleMeshOK(clientset kubernetes.Interface, enforceSingleMesh bool) func()
 			return fmt.Errorf("listing ECNET deployments: %w", err)
 		}
 
-		var existingMeshes []string
-		var existingSingleMeshes []string
+		var existingEcnets []string
+		var existingSingleEcnets []string
 		for _, dep := range deps.Items {
-			mesh := fmt.Sprintf("namespace: %s, name: %s", dep.Namespace, dep.Labels["ecnetName"])
-			existingMeshes = append(existingMeshes, mesh)
-			if dep.Labels["enforceSingleMesh"] == "true" {
-				existingSingleMeshes = append(existingSingleMeshes, mesh)
+			ecn := fmt.Sprintf("namespace: %s, name: %s", dep.Namespace, dep.Labels["ecnetName"])
+			existingEcnets = append(existingEcnets, ecn)
+			if dep.Labels["enforceSingleEcnet"] == "true" {
+				existingSingleEcnets = append(existingSingleEcnets, ecn)
 			}
 		}
 
-		if len(existingSingleMeshes) > 0 {
-			return fmt.Errorf("Mesh(es) %s already enforce it is the only mesh in the cluster, cannot install new meshes", strings.Join(existingSingleMeshes, ", "))
+		if len(existingSingleEcnets) > 0 {
+			return fmt.Errorf("Ecnet(s) %s already enforce it is the only ecnet in the cluster, cannot install new ecnets", strings.Join(existingSingleEcnets, ", "))
 		}
 
-		if enforceSingleMesh && len(existingMeshes) > 0 {
-			return fmt.Errorf("Mesh(es) %s already exist so a new mesh enforcing it is the only one cannot be installed", strings.Join(existingMeshes, ", "))
+		if enforceSingleEcnet && len(existingEcnets) > 0 {
+			return fmt.Errorf("Ecnet(s) %s already exist so a new ecnet enforcing it is the only one cannot be installed", strings.Join(existingEcnets, ", "))
 		}
 
 		return nil
 	}
 }
 
-func namespaceHasNoMesh(clientset kubernetes.Interface, namespace string) func() error {
+func namespaceHasNoEcnet(clientset kubernetes.Interface, namespace string) func() error {
 	return func() error {
 		deps, err := clientset.AppsV1().Deployments(namespace).List(context.TODO(), metav1.ListOptions{
 			LabelSelector: labels.SelectorFromSet(map[string]string{
@@ -117,7 +117,7 @@ func namespaceHasNoMesh(clientset kubernetes.Interface, namespace string) func()
 			ecnetNames = append(ecnetNames, dep.Labels["ecnetName"])
 		}
 		if len(ecnetNames) > 0 {
-			return fmt.Errorf("Namespace %s already contains meshes %v", namespace, ecnetNames)
+			return fmt.Errorf("Namespace %s already contains ecnet %v", namespace, ecnetNames)
 		}
 		return nil
 	}

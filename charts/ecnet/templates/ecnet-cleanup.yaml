@@ -80,7 +80,6 @@ spec:
             - >
              kubectl replace -f /ecnet-crds;
              kubectl delete --ignore-not-found ecnetconfig -n '{{ include "ecnet.namespace" . }}' ecnet-config;
-             kubectl delete --ignore-not-found secret -n '{{ include "ecnet.namespace" . }}' {{ .Values.ecnet.caBundleSecretName }};
 {{- if .Values.ecnet.imagePullSecrets }}
       imagePullSecrets:
 {{ toYaml .Values.ecnet.imagePullSecrets | indent 8 }}

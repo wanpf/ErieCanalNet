@@ -50,17 +50,17 @@ func confirm(stdin io.Reader, stdout io.Writer, s string, tries int) (bool, erro
 	return false, nil
 }
 
-// getPrettyPrintedMeshInfoList returns a pretty printed list of meshes.
-func getPrettyPrintedMeshInfoList(meshInfoList []meshInfo) string {
+// getPrettyPrintedEcnetInfoList returns a pretty printed list of meshes.
+func getPrettyPrintedEcnetInfoList(ecnetInfoList []ecnetInfo) string {
 	s := "\nECNET NAME\tECNET NAMESPACE\tVERSION\tADDED NAMESPACES\n"
 
-	for _, meshInfo := range meshInfoList {
+	for _, netInfo := range ecnetInfoList {
 		m := fmt.Sprintf(
 			"%s\t%s\t%s\t%s\n",
-			meshInfo.name,
-			meshInfo.namespace,
-			meshInfo.version,
-			strings.Join(meshInfo.monitoredNamespaces, ","),
+			netInfo.name,
+			netInfo.namespace,
+			netInfo.version,
+			strings.Join(netInfo.monitoredNamespaces, ","),
 		)
 		s += m
 	}
@@ -68,44 +68,44 @@ func getPrettyPrintedMeshInfoList(meshInfoList []meshInfo) string {
 	return s
 }
 
-// getMeshInfoList returns a list of meshes (including the info of each mesh) within the cluster
-func getMeshInfoList(restConfig *rest.Config, clientSet kubernetes.Interface) ([]meshInfo, error) {
-	var meshInfoList []meshInfo
+// getEcnetInfoList returns a list of meshes (including the info of each mesh) within the cluster
+func getEcnetInfoList(restConfig *rest.Config, clientSet kubernetes.Interface) ([]ecnetInfo, error) {
+	var ecnetInfoList []ecnetInfo
 
 	ecnetControllerDeployments, err := getControllerDeployments(clientSet)
 	if err != nil {
-		return meshInfoList, fmt.Errorf("Could not list deployments %w", err)
+		return ecnetInfoList, fmt.Errorf("Could not list deployments %w", err)
 	}
 	if len(ecnetControllerDeployments.Items) == 0 {
-		return meshInfoList, nil
+		return ecnetInfoList, nil
 	}
 
 	for _, ecnetControllerDeployment := range ecnetControllerDeployments.Items {
 		ecnetName := ecnetControllerDeployment.ObjectMeta.Labels["ecnetName"]
 		ecnetNamespace := ecnetControllerDeployment.ObjectMeta.Namespace
 
-		meshVersion := ecnetControllerDeployment.ObjectMeta.Labels[constants.ECNETAppVersionLabelKey]
-		if meshVersion == "" {
-			meshVersion = "Unknown"
+		ecnetVersion := ecnetControllerDeployment.ObjectMeta.Labels[constants.ECNETAppVersionLabelKey]
+		if ecnetVersion == "" {
+			ecnetVersion = "Unknown"
 		}
 
-		var meshMonitoredNamespaces []string
-		nsList, err := selectNamespacesMonitoredByMesh(ecnetName, clientSet)
+		var ecnetMonitoredNamespaces []string
+		nsList, err := selectNamespacesMonitoredByEcnet(ecnetName, clientSet)
 		if err == nil && len(nsList.Items) > 0 {
 			for _, ns := range nsList.Items {
-				meshMonitoredNamespaces = append(meshMonitoredNamespaces, ns.Name)
+				ecnetMonitoredNamespaces = append(ecnetMonitoredNamespaces, ns.Name)
 			}
 		}
 
-		meshInfoList = append(meshInfoList, meshInfo{
+		ecnetInfoList = append(ecnetInfoList, ecnetInfo{
 			name:                ecnetName,
 			namespace:           ecnetNamespace,
-			version:             meshVersion,
-			monitoredNamespaces: meshMonitoredNamespaces,
+			version:             ecnetVersion,
+			monitoredNamespaces: ecnetMonitoredNamespaces,
 		})
 	}
 
-	return meshInfoList, nil
+	return ecnetInfoList, nil
 }
 
 // getControllerDeployments returns a list of Deployments corresponding to ecnet-controller
@@ -128,16 +128,16 @@ func getControllerPods(clientSet kubernetes.Interface, namespace string) (*corev
 	return podClient.List(context.TODO(), metav1.ListOptions{LabelSelector: listOptions.LabelSelector})
 }
 
-// getPrettyPrintedMeshSmiInfoList returns a pretty printed list
+// getPrettyPrintedCniInfoList returns a pretty printed list
 // of meshes with supported smi versions
-func getPrettyPrintedMeshSmiInfoList(meshSmiInfoList []meshSmiInfo) string {
+func getPrettyPrintedCniInfoList(cniInfoList []cniInfo) string {
 	s := "\nECNET NAME\tECNET NAMESPACE\n"
 
-	for _, mesh := range meshSmiInfoList {
+	for _, cni := range cniInfoList {
 		m := fmt.Sprintf(
 			"%s\t%s\n",
-			mesh.name,
-			mesh.namespace,
+			cni.name,
+			cni.namespace,
 		)
 		s += m
 	}
@@ -145,38 +145,17 @@ func getPrettyPrintedMeshSmiInfoList(meshSmiInfoList []meshSmiInfo) string {
 	return s
 }
 
-// getSupportedSmiInfoForMeshList returns a meshSmiInfo list showing
+// getSupportedCniInfoForEcnetList returns a cniInfo list showing
 // the supported smi versions for each ecnet mesh in the mesh list
-func getSupportedSmiInfoForMeshList(meshInfoList []meshInfo, clientSet kubernetes.Interface, config *rest.Config, localPort uint16) []meshSmiInfo {
-	var meshSmiInfoList []meshSmiInfo
+func getSupportedCniInfoForEcnetList(ecnetInfoList []ecnetInfo, clientSet kubernetes.Interface, config *rest.Config, localPort uint16) []cniInfo {
+	var cniInfoList []cniInfo
 
-	for _, mesh := range meshInfoList {
-		meshSmiInfoList = append(meshSmiInfoList, meshSmiInfo{
-			name:      mesh.name,
-			namespace: mesh.namespace,
+	for _, ecnet := range ecnetInfoList {
+		cniInfoList = append(cniInfoList, cniInfo{
+			name:      ecnet.name,
+			namespace: ecnet.namespace,
 		})
 	}
 
-	return meshSmiInfoList
-}
-
-func annotateErrorMessageWithEcnetNamespace(errMsgFormat string, args ...interface{}) error {
-	ecnetNamespaceErrorMsg := fmt.Sprintf(
-		"Note: The command failed when run in the ECNET namespace [%s].\n"+
-			"Use the global flag --ecnet-namespace if [%s] is not the intended ECNET namespace.",
-		settings.Namespace(), settings.Namespace())
-
-	return annotateErrorMessageWithActionableMessage(ecnetNamespaceErrorMsg, errMsgFormat, args...)
-}
-
-func annotateErrorMessageWithActionableMessage(actionableMessage string, errMsgFormat string, args ...interface{}) error {
-	if !strings.HasSuffix(errMsgFormat, "\n") {
-		errMsgFormat += "\n"
-	}
-
-	if !strings.HasSuffix(errMsgFormat, "\n\n") {
-		errMsgFormat += "\n"
-	}
-
-	return fmt.Errorf(errMsgFormat+actionableMessage, args...)
+	return cniInfoList
 }

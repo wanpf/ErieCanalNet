@@ -70,7 +70,7 @@ spec:
           command: ['/ecnet-preinstall']
           args:
             - --verbosity={{ .Values.ecnet.controllerLogLevel }}
-            - --enforce-single-mesh={{ .Values.ecnet.enforceSingleMesh }}
+            - --enforce-single-ecnet={{ .Values.ecnet.enforceSingleEcnet }}
             - --namespace={{ include "ecnet.namespace" . }}
 {{- if .Values.ecnet.imagePullSecrets }}
       imagePullSecrets:

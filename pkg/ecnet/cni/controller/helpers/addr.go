@@ -3,10 +3,11 @@ package helpers
 import (
 	"encoding/binary"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"net"
 	"strings"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/config"
 )

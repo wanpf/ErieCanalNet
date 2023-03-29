@@ -11,37 +11,37 @@ import (
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/constants"
 )
 
-const meshListDescription = `
+const cniListDescription = `
 This command will list all the ecnet control planes running in a Kubernetes cluster and controller pods.`
 
-type meshListCmd struct {
+type cniListCmd struct {
 	out       io.Writer
 	config    *rest.Config
 	clientSet kubernetes.Interface
 	localPort uint16
 }
 
-type meshInfo struct {
+type ecnetInfo struct {
 	name                string
 	namespace           string
 	version             string
 	monitoredNamespaces []string
 }
 
-type meshSmiInfo struct {
+type cniInfo struct {
 	name      string
 	namespace string
 }
 
-func newMeshList(out io.Writer) *cobra.Command {
-	listCmd := &meshListCmd{
+func newCniList(out io.Writer) *cobra.Command {
+	listCmd := &cniListCmd{
 		out: out,
 	}
 
 	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "list control planes in k8s cluster",
-		Long:  meshListDescription,
+		Long:  cniListDescription,
 		Args:  cobra.ExactArgs(0),
 		RunE: func(_ *cobra.Command, args []string) error {
 			config, err := settings.RESTClientGetter().ToRESTConfig()
@@ -64,26 +64,26 @@ func newMeshList(out io.Writer) *cobra.Command {
 	return cmd
 }
 
-func (l *meshListCmd) run() error {
-	meshInfoList, err := getMeshInfoList(l.config, l.clientSet)
+func (l *cniListCmd) run() error {
+	ecnetInfoList, err := getEcnetInfoList(l.config, l.clientSet)
 	if err != nil {
-		fmt.Fprintf(l.out, "Unable to list meshes within the cluster.\n")
+		fmt.Fprintf(l.out, "Unable to list ecnets within the cluster.\n")
 		return err
 	}
-	if len(meshInfoList) == 0 {
-		fmt.Fprintf(l.out, "No ecnet mesh control planes found\n")
+	if len(ecnetInfoList) == 0 {
+		fmt.Fprintf(l.out, "No ecnet control planes found\n")
 		return nil
 	}
 
 	w := newTabWriter(l.out)
-	fmt.Fprint(w, getPrettyPrintedMeshInfoList(meshInfoList))
+	fmt.Fprint(w, getPrettyPrintedEcnetInfoList(ecnetInfoList))
 	_ = w.Flush()
 
-	meshSmiInfoList := getSupportedSmiInfoForMeshList(meshInfoList, l.clientSet, l.config, l.localPort)
-	fmt.Fprint(w, getPrettyPrintedMeshSmiInfoList(meshSmiInfoList))
+	cniInfoList := getSupportedCniInfoForEcnetList(ecnetInfoList, l.clientSet, l.config, l.localPort)
+	fmt.Fprint(w, getPrettyPrintedCniInfoList(cniInfoList))
 	_ = w.Flush()
 
-	fmt.Fprintf(l.out, "\nTo list the ECNET controller pods for a mesh, please run the following command passing in the mesh's namespace\n")
+	fmt.Fprintf(l.out, "\nTo list the ECNET controller pods, please run the following command passing in the ecnet's namespace\n")
 	fmt.Fprintf(l.out, "\tkubectl get pods -n <ecnet-ecnet-namespace> -l app=ecnet-bridge\n")
 
 	return nil

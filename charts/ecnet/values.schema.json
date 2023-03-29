@@ -171,7 +171,7 @@
                 "ecnetName",
                 "proxyLogLevel",
                 "controllerLogLevel",
-                "enforceSingleMesh",
+                "enforceSingleEcnet",
                 "ecnetController",
                 "ecnetBridge",
                 "ecnetBootstrap"
@@ -682,10 +682,10 @@
                         "error"
                     ]
                 },
-                "enforceSingleMesh": {
-                    "$id": "#/properties/ecnet/properties/enforceSingleMesh",
+                "enforceSingleEcnet": {
+                    "$id": "#/properties/ecnet/properties/enforceSingleEcnet",
                     "type": "boolean",
-                    "title": "The enforceSingleMesh schema",
+                    "title": "The enforceSingleEcnet schema",
                     "description": "Enforce only running a single control plane within a cluster.",
                     "examples": [
                         false

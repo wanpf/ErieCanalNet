@@ -17,9 +17,6 @@ const (
 	// ECNETBootstrapName is the name of the ECNET Bootstrap.
 	ECNETBootstrapName = "ecnet-bootstrap"
 
-	// DefaultCABundleSecretName is the default name of the secret for the ECNET CA bundle
-	DefaultCABundleSecretName = "ecnet-ca-bundle" // #nosec G101: Potential hardcoded credentials
-
 	// RegexMatchAll is a regex pattern match for all
 	RegexMatchAll = ".*"
 

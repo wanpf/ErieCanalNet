@@ -18,13 +18,13 @@ This command upgrades an ECNET control plane by upgrading the
 underlying Helm release.
 `
 
-const meshUpgradeExample = `
-# Upgrade the mesh with the default name in the ecnet-system namespace, setting
+const cniUpgradeExample = `
+# Upgrade the ecnet with the default name in the ecnet-system namespace, setting
 # the image registry and tag to the defaults, and leaving all other values unchanged.
-ecnet mesh upgrade --ecnet-namespace ecnet-system
+ecnet cni upgrade --ecnet-namespace ecnet-system
 `
 
-type meshUpgradeCmd struct {
+type cniUpgradeCmd struct {
 	out io.Writer
 
 	ecnetName string
@@ -33,8 +33,8 @@ type meshUpgradeCmd struct {
 	setOptions []string
 }
 
-func newMeshUpgradeCmd(config *helm.Configuration, out io.Writer) *cobra.Command {
-	upg := &meshUpgradeCmd{
+func newCniUpgradeCmd(config *helm.Configuration, out io.Writer) *cobra.Command {
+	upg := &cniUpgradeCmd{
 		out: out,
 	}
 	var chartPath string
@@ -43,7 +43,7 @@ func newMeshUpgradeCmd(config *helm.Configuration, out io.Writer) *cobra.Command
 		Use:     "upgrade",
 		Short:   "upgrade ecnet control plane",
 		Long:    upgradeDesc,
-		Example: meshUpgradeExample,
+		Example: cniUpgradeExample,
 		RunE: func(_ *cobra.Command, _ []string) error {
 			if chartPath != "" {
 				var err error
@@ -59,14 +59,14 @@ func newMeshUpgradeCmd(config *helm.Configuration, out io.Writer) *cobra.Command
 
 	f := cmd.Flags()
 
-	f.StringVar(&upg.ecnetName, "ecnet-name", defaultEcnetName, "Name of the mesh to upgrade")
+	f.StringVar(&upg.ecnetName, "ecnet-name", defaultEcnetName, "Name of the ecnet to upgrade")
 	f.StringVar(&chartPath, "ecnet-chart-path", "", "path to ecnet chart to override default chart")
 	f.StringArrayVar(&upg.setOptions, "set", nil, "Set arbitrary chart values (can specify multiple or separate values with commas: key1=val1,key2=val2)")
 
 	return cmd
 }
 
-func (u *meshUpgradeCmd) run(config *helm.Configuration) error {
+func (u *cniUpgradeCmd) run(config *helm.Configuration) error {
 	if u.chart == nil {
 		var err error
 		u.chart, err = loader.LoadArchive(bytes.NewReader(chartTGZSource))
@@ -89,11 +89,11 @@ func (u *meshUpgradeCmd) run(config *helm.Configuration) error {
 		return err
 	}
 
-	fmt.Fprintf(u.out, "ECNET successfully upgraded mesh [%s] in namespace [%s]\n", u.ecnetName, settings.Namespace())
+	fmt.Fprintf(u.out, "ECNET successfully upgraded ecnet [%s] in namespace [%s]\n", u.ecnetName, settings.Namespace())
 	return nil
 }
 
-func (u *meshUpgradeCmd) resolveValues() (map[string]interface{}, error) {
+func (u *cniUpgradeCmd) resolveValues() (map[string]interface{}, error) {
 	vals := make(map[string]interface{})
 	for _, val := range u.setOptions {
 		if err := strvals.ParseInto(val, vals); err != nil {

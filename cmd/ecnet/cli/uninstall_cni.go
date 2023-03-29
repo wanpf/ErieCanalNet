@@ -19,18 +19,17 @@ import (
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/constants"
 )
 
-const uninstallMeshDescription = `
+const uninstallEcnetDescription = `
 This command will uninstall an instance of the ecnet control plane
 given the ecnet name and namespace.
 `
 
-type uninstallMeshCmd struct {
+type uninstallCniCmd struct {
 	out                        io.Writer
 	in                         io.Reader
 	config                     *rest.Config
 	ecnetName                  string
 	ecnetNamespace             string
-	caBundleSecretName         string
 	force                      bool
 	deleteNamespace            bool
 	client                     *action.Uninstall
@@ -41,16 +40,16 @@ type uninstallMeshCmd struct {
 	actionConfig               *action.Configuration
 }
 
-func newUninstallMeshCmd(config *action.Configuration, in io.Reader, out io.Writer) *cobra.Command {
-	uninstall := &uninstallMeshCmd{
+func newUninstallCniCmd(config *action.Configuration, in io.Reader, out io.Writer) *cobra.Command {
+	uninstall := &uninstallCniCmd{
 		out: out,
 		in:  in,
 	}
 
 	cmd := &cobra.Command{
-		Use:   "mesh",
+		Use:   "cni",
 		Short: "uninstall ecnet control plane instance",
-		Long:  uninstallMeshDescription,
+		Long:  uninstallEcnetDescription,
 		Args:  cobra.ExactArgs(0),
 		RunE: func(_ *cobra.Command, args []string) error {
 			uninstall.actionConfig = config
@@ -79,64 +78,63 @@ func newUninstallMeshCmd(config *action.Configuration, in io.Reader, out io.Writ
 	}
 
 	f := cmd.Flags()
-	f.StringVar(&uninstall.ecnetName, "ecnet-name", "", "Name of the service mesh")
+	f.StringVar(&uninstall.ecnetName, "ecnet-name", "", "Name of the ecnet")
 	f.BoolVarP(&uninstall.force, "force", "f", false, "Attempt to uninstall the ecnet control plane instance without prompting for confirmation.")
-	f.BoolVarP(&uninstall.deleteClusterWideResources, "delete-cluster-wide-resources", "a", false, "Cluster wide resources (such as ecnet CRDs, mutating webhook configurations, validating webhook configurations and ecnet secrets) are fully deleted from the cluster after control plane components are deleted.")
+	f.BoolVarP(&uninstall.deleteClusterWideResources, "delete-cluster-wide-resources", "a", false, "Cluster wide resources (such as ecnet CRDs) are fully deleted from the cluster after control plane components are deleted.")
 	f.BoolVar(&uninstall.deleteNamespace, "delete-namespace", false, "Attempt to delete the namespace after control plane components are deleted")
 	f.Uint16VarP(&uninstall.localPort, "local-port", "p", constants.ECNETHTTPServerPort, "Local port to use for port forwarding")
-	f.StringVar(&uninstall.caBundleSecretName, "ca-bundle-secret-name", constants.DefaultCABundleSecretName, "Name of the secret for the ECNET CA bundle")
 
 	return cmd
 }
 
-func (d *uninstallMeshCmd) run() error {
+func (d *uninstallCniCmd) run() error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	meshesToUninstall := []meshInfo{}
+	cniesToUninstall := []ecnetInfo{}
 
 	if !settings.IsManaged() {
-		meshInfoList, err := getMeshInfoList(d.config, d.clientSet)
+		ecnetInfoList, err := getEcnetInfoList(d.config, d.clientSet)
 		if err != nil {
-			return fmt.Errorf("unable to list meshes within the cluster: %w", err)
+			return fmt.Errorf("unable to list ecnets within the cluster: %w", err)
 		}
-		if len(meshInfoList) == 0 {
+		if len(ecnetInfoList) == 0 {
 			fmt.Fprintf(d.out, "No ECNET control planes found\n")
 			return nil
 		}
 
-		if d.meshSpecified() {
-			// Searches for the mesh specified by the ecnet-name flag if specified
-			specifiedMeshFound := d.findSpecifiedMesh(meshInfoList)
-			if !specifiedMeshFound {
+		if d.ecnetSpecified() {
+			// Searches for the ecnet specified by the ecnet-name flag if specified
+			specifiedEcnetFound := d.findSpecifiedEcnet(ecnetInfoList)
+			if !specifiedEcnetFound {
 				return nil
 			}
 		}
 
-		// Adds the mesh to be force uninstalled
+		// Adds the ecnet to be force uninstalled
 		if d.force {
-			// For force uninstall, if single mesh in cluster, set default to that mesh
-			if len(meshInfoList) == 1 {
-				d.ecnetName = meshInfoList[0].name
-				d.ecnetNamespace = meshInfoList[0].namespace
+			// For force uninstall, if single ecnet in cluster, set default to that ecnet
+			if len(ecnetInfoList) == 1 {
+				d.ecnetName = ecnetInfoList[0].name
+				d.ecnetNamespace = ecnetInfoList[0].namespace
 			}
-			forceMesh := meshInfo{name: d.ecnetName, namespace: d.ecnetNamespace}
-			meshesToUninstall = append(meshesToUninstall, forceMesh)
+			forceEcnet := ecnetInfo{name: d.ecnetName, namespace: d.ecnetNamespace}
+			cniesToUninstall = append(cniesToUninstall, forceEcnet)
 		} else {
-			// print a list of meshes within the cluster for a better user experience
-			err := d.printMeshes()
+			// print a list of ecnets within the cluster for a better user experience
+			err := d.printEcnets()
 			if err != nil {
 				return err
 			}
-			// Prompts user on whether to uninstall each ECNET mesh in the cluster
-			uninstallMeshes, err := d.promptMeshUninstall(meshInfoList, meshesToUninstall)
+			// Prompts user on whether to uninstall each ECNET in the cluster
+			uninstallEcnets, err := d.promptEcnetUninstall(ecnetInfoList, cniesToUninstall)
 			if err != nil {
 				return err
 			}
-			meshesToUninstall = append(meshesToUninstall, uninstallMeshes...)
+			cniesToUninstall = append(cniesToUninstall, uninstallEcnets...)
 		}
 
-		for _, m := range meshesToUninstall {
-			// Re-initializes uninstall config with the namespace of the mesh to be uninstalled
+		for _, m := range cniesToUninstall {
+			// Re-initializes uninstall config with the namespace of the ecnet to be uninstalled
 			err := d.actionConfig.Init(settings.RESTClientGetter(), m.namespace, "secret", debug)
 			if err != nil {
 				return err
@@ -175,41 +173,41 @@ func (d *uninstallMeshCmd) run() error {
 	return err
 }
 
-func (d *uninstallMeshCmd) meshSpecified() bool {
+func (d *uninstallCniCmd) ecnetSpecified() bool {
 	return d.ecnetName != ""
 }
 
-func (d *uninstallMeshCmd) findSpecifiedMesh(meshInfoList []meshInfo) bool {
-	specifiedMeshFound := d.findMesh(meshInfoList)
-	if !specifiedMeshFound {
-		fmt.Fprintf(d.out, "Did not find mesh [%s] in namespace [%s]\n", d.ecnetName, d.ecnetNamespace)
-		// print a list of meshes within the cluster for a better user experience
-		if err := d.printMeshes(); err != nil {
-			fmt.Fprintf(d.out, "Unable to list meshes in the cluster - [%v]", err)
+func (d *uninstallCniCmd) findSpecifiedEcnet(ecnetInfoList []ecnetInfo) bool {
+	specifiedEcnetFound := d.findEcnet(ecnetInfoList)
+	if !specifiedEcnetFound {
+		fmt.Fprintf(d.out, "Did not find ecnet [%s] in namespace [%s]\n", d.ecnetName, d.ecnetNamespace)
+		// print a list of ecnets within the cluster for a better user experience
+		if err := d.printEcnets(); err != nil {
+			fmt.Fprintf(d.out, "Unable to list ecnets in the cluster - [%v]", err)
 		}
 	}
 
-	return specifiedMeshFound
+	return specifiedEcnetFound
 }
 
-func (d *uninstallMeshCmd) promptMeshUninstall(meshInfoList, meshesToUninstall []meshInfo) ([]meshInfo, error) {
-	for _, mesh := range meshInfoList {
-		// Only prompt for specified mesh if `ecnet-name` is specified
-		if d.meshSpecified() && mesh.name != d.ecnetName {
+func (d *uninstallCniCmd) promptEcnetUninstall(ecnetInfoList, ecnetsToUninstall []ecnetInfo) ([]ecnetInfo, error) {
+	for _, ecni := range ecnetInfoList {
+		// Only prompt for specified ecnet if `ecnet-name` is specified
+		if d.ecnetSpecified() && ecni.name != d.ecnetName {
 			continue
 		}
-		confirm, err := confirm(d.in, d.out, fmt.Sprintf("\nUninstall ECNET [ecnet name: %s] in namespace [%s] and/or ECNET resources?", mesh.name, mesh.namespace), 3)
+		confirm, err := confirm(d.in, d.out, fmt.Sprintf("\nUninstall ECNET [ecnet name: %s] in namespace [%s] and/or ECNET resources?", ecni.name, ecni.namespace), 3)
 		if err != nil {
 			return nil, err
 		}
 		if confirm {
-			meshesToUninstall = append(meshesToUninstall, mesh)
+			ecnetsToUninstall = append(ecnetsToUninstall, ecni)
 		}
 	}
-	return meshesToUninstall, nil
+	return ecnetsToUninstall, nil
 }
 
-func (d *uninstallMeshCmd) deleteNs(ctx context.Context, ns string) error {
+func (d *uninstallCniCmd) deleteNs(ctx context.Context, ns string) error {
 	if !d.deleteNamespace {
 		return nil
 	}
@@ -224,16 +222,16 @@ func (d *uninstallMeshCmd) deleteNs(ctx context.Context, ns string) error {
 	return nil
 }
 
-func (d *uninstallMeshCmd) deleteClusterResources() error {
+func (d *uninstallCniCmd) deleteClusterResources() error {
 	if d.deleteClusterWideResources {
-		meshInfoList, err := getMeshInfoList(d.config, d.clientSet)
+		ecnetInfoList, err := getEcnetInfoList(d.config, d.clientSet)
 		if err != nil {
-			return fmt.Errorf("unable to list meshes within the cluster: %w", err)
+			return fmt.Errorf("unable to list ecnets within the cluster: %w", err)
 		}
-		if len(meshInfoList) != 0 {
-			fmt.Fprintf(d.out, "Deleting cluster resources will affect current mesh(es) in cluster:\n")
-			for _, m := range meshInfoList {
-				fmt.Fprintf(d.out, "[%s] mesh in namespace [%s]\n", m.name, m.namespace)
+		if len(ecnetInfoList) != 0 {
+			fmt.Fprintf(d.out, "Deleting cluster resources will affect current ecnet(s) in cluster:\n")
+			for _, m := range ecnetInfoList {
+				fmt.Fprintf(d.out, "[%s] ecnet in namespace [%s]\n", m.name, m.namespace)
 			}
 		}
 
@@ -246,7 +244,7 @@ func (d *uninstallMeshCmd) deleteClusterResources() error {
 }
 
 // uninstallClusterResources uninstalls all ecnet and smi-related cluster resources
-func (d *uninstallMeshCmd) uninstallClusterResources() []string {
+func (d *uninstallCniCmd) uninstallClusterResources() []string {
 	var failedDeletions []string
 	err := d.uninstallCustomResourceDefinitions()
 	if err != nil {
@@ -261,7 +259,7 @@ func (d *uninstallMeshCmd) uninstallClusterResources() []string {
 }
 
 // uninstallCustomResourceDefinitions uninstalls ecnet and smi-related crds from the cluster.
-func (d *uninstallMeshCmd) uninstallCustomResourceDefinitions() error {
+func (d *uninstallCniCmd) uninstallCustomResourceDefinitions() error {
 	crds := []string{
 		"ecnetconfigs.config.flomesh.io",
 	}
@@ -291,10 +289,8 @@ func (d *uninstallMeshCmd) uninstallCustomResourceDefinitions() error {
 }
 
 // uninstallSecrets uninstalls ecnet-related secrets from the cluster.
-func (d *uninstallMeshCmd) uninstallSecrets() error {
-	secrets := []string{
-		d.caBundleSecretName,
-	}
+func (d *uninstallCniCmd) uninstallSecrets() error {
+	secrets := []string{}
 
 	var failedDeletions []string
 	for _, secret := range secrets {
@@ -306,11 +302,7 @@ func (d *uninstallMeshCmd) uninstallSecrets() error {
 		}
 
 		if k8sApiErrors.IsNotFound(err) {
-			if secret == d.caBundleSecretName {
-				fmt.Fprintf(d.out, "Ignoring - did not find ECNET CA bundle secret %s in namespace %s. Use --ca-bundle-secret-name and --ecnet-namespace to delete a specific ecnet namespace's CA bundle secret if desired\n", secret, d.ecnetNamespace)
-			} else {
-				fmt.Fprintf(d.out, "Ignoring - did not find ECNET secret %s in namespace %s. Use --ecnet-namespace to delete a specific ecnet namespace's secret if desired\n", secret, d.ecnetNamespace)
-			}
+			fmt.Fprintf(d.out, "Ignoring - did not find ECNET secret %s in namespace %s. Use --ecnet-namespace to delete a specific ecnet namespace's secret if desired\n", secret, d.ecnetNamespace)
 		} else {
 			fmt.Fprintf(d.out, "Found but failed to delete the ECNET secret %s in namespace %s: %s\n", secret, d.ecnetNamespace, err.Error())
 			failedDeletions = append(failedDeletions, secret)
@@ -324,11 +316,11 @@ func (d *uninstallMeshCmd) uninstallSecrets() error {
 	return nil
 }
 
-// findMesh looks for specified `ecnet-name` mesh from the meshes in the cluster
-func (d *uninstallMeshCmd) findMesh(meshInfoList []meshInfo) bool {
+// findEcnet looks for specified `ecnet-name` ecnet from the ecnets in the cluster
+func (d *uninstallCniCmd) findEcnet(ecnetInfoList []ecnetInfo) bool {
 	found := false
-	for _, m := range meshInfoList {
-		if m.name == d.ecnetName {
+	for _, e := range ecnetInfoList {
+		if e.name == d.ecnetName {
 			found = true
 			break
 		}
@@ -336,11 +328,11 @@ func (d *uninstallMeshCmd) findMesh(meshInfoList []meshInfo) bool {
 	return found
 }
 
-// printMeshes prints list of meshes within the cluster for a better user experience
-func (d *uninstallMeshCmd) printMeshes() error {
-	fmt.Fprintf(d.out, "List of meshes present in the cluster:\n")
+// printEcnets prints list of ecnets within the cluster for a better user experience
+func (d *uninstallCniCmd) printEcnets() error {
+	fmt.Fprintf(d.out, "List of ecnets present in the cluster:\n")
 
-	listCmd := &meshListCmd{
+	listCmd := &cniListCmd{
 		out:       d.out,
 		config:    d.config,
 		clientSet: d.clientSet,
@@ -348,7 +340,7 @@ func (d *uninstallMeshCmd) printMeshes() error {
 	}
 
 	err := listCmd.run()
-	// Unable to list meshes in the cluster
+	// Unable to list ecnets in the cluster
 	if err != nil {
 		return err
 	}

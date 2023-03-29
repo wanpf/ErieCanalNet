@@ -18,7 +18,7 @@ import (
 )
 
 const versionHelp = `
-This command prints the ECNET CLI and remote mesh version information
+This command prints the ECNET CLI and remote ecnet version information
 `
 
 type versionCmd struct {
@@ -32,7 +32,7 @@ type versionCmd struct {
 }
 
 type remoteVersionGetter interface {
-	proxyGetMeshVersion(pod string, namespace string, clientset kubernetes.Interface) (*version.Info, error)
+	proxyGetEcnetVersion(pod string, namespace string, clientset kubernetes.Interface) (*version.Info, error)
 }
 
 type remoteVersion struct{}
@@ -54,7 +54,7 @@ func newVersionCmd(out io.Writer) *cobra.Command {
 	}
 	cmd := &cobra.Command{
 		Use:   "version",
-		Short: "ecnet cli and mesh version",
+		Short: "cli and ecnet version",
 		Long:  versionHelp,
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -74,14 +74,14 @@ func newVersionCmd(out io.Writer) *cobra.Command {
 				return err
 			}
 
-			meshInfoList, err := getMeshInfoList(versionCmd.config, versionCmd.clientset)
+			ecnetInfoList, err := getEcnetInfoList(versionCmd.config, versionCmd.clientset)
 			if err != nil {
 				return fmt.Errorf("unable to list meshes within the cluster: %w", err)
 			}
 
-			for _, m := range meshInfoList {
+			for _, m := range ecnetInfoList {
 				versionCmd.namespace = m.namespace
-				meshVer, err := versionCmd.getMeshVersion()
+				meshVer, err := versionCmd.getEcnetVersion()
 				if err != nil {
 					multiError = multierror.Append(multiError, fmt.Errorf("Failed to get mesh version for mesh %s in namespace %s: %w", m.name, m.namespace, err))
 				}
@@ -126,7 +126,7 @@ func (v *versionCmd) setKubeClientset() error {
 	return nil
 }
 
-func (v *versionCmd) getMeshVersion() (*remoteVersionInfo, error) {
+func (v *versionCmd) getEcnetVersion() (*remoteVersionInfo, error) {
 	var version *version.Info
 	var versionInfo *remoteVersionInfo
 
@@ -139,7 +139,7 @@ func (v *versionCmd) getMeshVersion() (*remoteVersionInfo, error) {
 	}
 
 	controllerPod := controllerPods.Items[0]
-	version, err = v.remoteVersion.proxyGetMeshVersion(controllerPod.Name, v.namespace, v.clientset)
+	version, err = v.remoteVersion.proxyGetEcnetVersion(controllerPod.Name, v.namespace, v.clientset)
 	if err != nil {
 		return nil, err
 	}
@@ -151,7 +151,7 @@ func (v *versionCmd) getMeshVersion() (*remoteVersionInfo, error) {
 	return versionInfo, nil
 }
 
-func (r *remoteVersion) proxyGetMeshVersion(pod string, namespace string, clientset kubernetes.Interface) (*version.Info, error) {
+func (r *remoteVersion) proxyGetEcnetVersion(pod string, namespace string, clientset kubernetes.Interface) (*version.Info, error) {
 	resp, err := clientset.CoreV1().Pods(namespace).ProxyGet("", pod, strconv.Itoa(constants.ECNETHTTPServerPort), constants.VersionPath, nil).DoRaw(context.TODO())
 	if err != nil {
 		return nil, fmt.Errorf("Error retrieving mesh version from pod [%s] in namespace [%s]: %w", pod, namespace, err)

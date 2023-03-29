@@ -16,10 +16,7 @@ import (
 
 const namespaceIgnoreDescription = `
 This command will prevent a namespace or a set of namespaces from
-participating in the mesh. Automatic sidecar injection on pods
-belonging to the given namespace or set of namespaces will be prevented.
-The command will not remove previously injected sidecars on pods belonging
-to the given namespaces.
+participating in the ecnet.
 `
 
 type namespaceIgnoreCmd struct {
@@ -35,7 +32,7 @@ func newNamespaceIgnore(out io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "ignore NAMESPACE ...",
-		Short: "ignore namespace from participating in the mesh",
+		Short: "ignore namespace from participating in the ecnet",
 		Long:  namespaceIgnoreDescription,
 		Args:  cobra.MinimumNArgs(1),
 		RunE: func(_ *cobra.Command, args []string) error {

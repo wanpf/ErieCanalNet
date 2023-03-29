@@ -25,6 +25,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/config"
+	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/file"
 )
 
 // K8sArgs is the valid CNI_ARGS used for Kubernetes
@@ -42,30 +43,31 @@ func ignore(_ *Config, _ *K8sArgs) bool {
 }
 
 // CmdAdd is the implementation of the cmdAdd interface of CNI plugin
-func CmdAdd(args *skel.CmdArgs) (err error) {
+func CmdAdd(args *skel.CmdArgs) error {
 	conf, err := parseConfig(args.StdinData)
 	if err != nil {
 		log.Errorf("ecnet-cni cmdAdd failed to parse config %v %v", string(args.StdinData), err)
-		return err
-	}
-	k8sArgs := K8sArgs{}
-	if err := types.LoadArgs(args.Args, &k8sArgs); err != nil {
-		return err
-	}
-
-	if !ignore(conf, &k8sArgs) {
-		httpc := http.Client{
-			Transport: &http.Transport{
-				DialContext: func(_ context.Context, _, _ string) (net.Conn, error) {
-					return net.Dial("unix", "/var/run/ecnet-cni.sock")
-				},
-			},
-		}
-		bs, _ := json.Marshal(args)
-		body := bytes.NewReader(bs)
-		_, err = httpc.Post("http://ecnet-cni"+config.CNICreatePodURL, "application/json", body)
-		if err != nil {
-			return err
+	} else {
+		k8sArgs := K8sArgs{}
+		if err = types.LoadArgs(args.Args, &k8sArgs); err != nil {
+			log.Errorf("ecnet-cni cmdAdd failed to load args %v %v", string(args.StdinData), err)
+		} else {
+			if !ignore(conf, &k8sArgs) {
+				if file.Exists("/var/run/ecnet-cni.sock") {
+					httpc := http.Client{
+						Transport: &http.Transport{
+							DialContext: func(_ context.Context, _, _ string) (net.Conn, error) {
+								return net.Dial("unix", "/var/run/ecnet-cni.sock")
+							},
+						},
+					}
+					bs, _ := json.Marshal(args)
+					body := bytes.NewReader(bs)
+					if _, err = httpc.Post("http://ecnet-cni"+config.CNICreatePodURL, "application/json", body); err != nil {
+						log.Errorf("ecnet-cni cmdAdd failed to post args %v %v", string(args.StdinData), err)
+					}
+				}
+			}
 		}
 	}
 
@@ -82,12 +84,16 @@ func CmdAdd(args *skel.CmdArgs) (err error) {
 }
 
 // CmdCheck is the implementation of the cmdCheck interface of CNI plugin
-func CmdCheck(*skel.CmdArgs) (err error) {
-	return err
+func CmdCheck(*skel.CmdArgs) error {
+	return nil
 }
 
 // CmdDelete is the implementation of the cmdDelete interface of CNI plugin
-func CmdDelete(args *skel.CmdArgs) (err error) {
+func CmdDelete(args *skel.CmdArgs) error {
+	if !file.Exists("/var/run/ecnet-cni.sock") {
+		return nil
+	}
+
 	httpc := http.Client{
 		Transport: &http.Transport{
 			DialContext: func(_ context.Context, _, _ string) (net.Conn, error) {
@@ -97,6 +103,7 @@ func CmdDelete(args *skel.CmdArgs) (err error) {
 	}
 	bs, _ := json.Marshal(args)
 	body := bytes.NewReader(bs)
-	_, err = httpc.Post("http://ecnet-cni"+config.CNIDeletePodURL, "application/json", body)
-	return err
+	_, err := httpc.Post("http://ecnet-cni"+config.CNIDeletePodURL, "application/json", body)
+	log.Errorf("ecnet-cni cmdDelete failed to parse config %v %v", string(args.StdinData), err)
+	return nil
 }

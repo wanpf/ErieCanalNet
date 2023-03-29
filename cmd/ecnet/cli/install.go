@@ -27,9 +27,9 @@ Example:
   $ ecnet install --ecnet-namespace hello-world
 `
 const (
-	defaultChartPath         = ""
-	defaultEcnetName         = "ecnet"
-	defaultEnforceSingleMesh = true
+	defaultChartPath          = ""
+	defaultEcnetName          = "ecnet"
+	defaultEnforceSingleEcnet = true
 )
 
 // chartTGZSource is the `helm package`d representation of the default Helm chart.
@@ -47,9 +47,9 @@ type installCmd struct {
 	chartRequested *chart.Chart
 	setOptions     []string
 	atomic         bool
-	// Toggle this to enforce only one mesh in this cluster
-	enforceSingleMesh bool
-	disableSpinner    bool
+	// Toggle this to enforce only one ecnet in this cluster
+	enforceSingleEcnet bool
+	disableSpinner     bool
 }
 
 func newInstallCmd(config *helm.Configuration, out io.Writer) *cobra.Command {
@@ -79,7 +79,7 @@ func newInstallCmd(config *helm.Configuration, out io.Writer) *cobra.Command {
 	f := cmd.Flags()
 	f.StringVar(&inst.chartPath, "ecnet-chart-path", defaultChartPath, "path to ecnet chart to override default chart")
 	f.StringVar(&inst.ecnetName, "ecnet-name", defaultEcnetName, "name for the new control plane instance")
-	f.BoolVar(&inst.enforceSingleMesh, "enforce-single-mesh", defaultEnforceSingleMesh, "Enforce only deploying one mesh in the cluster")
+	f.BoolVar(&inst.enforceSingleEcnet, "enforce-single-ecnet", defaultEnforceSingleEcnet, "Enforce only deploying one ecnet in the cluster")
 	f.DurationVar(&inst.timeout, "timeout", 5*time.Minute, "Time to wait for installation and resources in a ready state, zero means no timeout")
 	f.StringArrayVar(&inst.setOptions, "set", nil, "Set arbitrary chart values (can specify multiple or separate values with commas: key1=val1,key2=val2)")
 	f.BoolVar(&inst.atomic, "atomic", false, "Automatically clean up resources if installation fails")
@@ -162,7 +162,7 @@ func (i *installCmd) resolveValues() (map[string]interface{}, error) {
 
 	valuesConfig := []string{
 		fmt.Sprintf("ecnet.ecnetName=%s", i.ecnetName),
-		fmt.Sprintf("ecnet.enforceSingleMesh=%t", i.enforceSingleMesh),
+		fmt.Sprintf("ecnet.enforceSingleEcnet=%t", i.enforceSingleEcnet),
 	}
 
 	if err := parseVal(valuesConfig, finalValues); err != nil {

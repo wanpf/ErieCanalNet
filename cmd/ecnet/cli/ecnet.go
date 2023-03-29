@@ -37,7 +37,7 @@ func newRootCmd(config *action.Configuration, stdin io.Reader, stdout io.Writer,
 
 	// Add subcommands here
 	cmd.AddCommand(
-		newMeshCmd(config, stdin, stdout),
+		newCniCmd(config, stdin, stdout),
 		newEnvCmd(stdout, stderr),
 		newNamespaceCmd(stdout),
 		newVersionCmd(stdout),
@@ -48,7 +48,6 @@ func newRootCmd(config *action.Configuration, stdin io.Reader, stdout io.Writer,
 	if !settings.IsManaged() {
 		cmd.AddCommand(
 			newInstallCmd(config, stdout),
-			newDashboardCmd(config, stdout),
 		)
 	}
 

@@ -174,8 +174,8 @@ ecnet:
   # -- Sets the resync interval for regular proxy broadcast updates, set to 0s to not enforce any resync
   configResyncInterval: "90s"
 
-  # -- Enforce only deploying one mesh in the cluster
-  enforceSingleMesh: true
+  # -- Enforce only deploying one ecnet in the cluster
+  enforceSingleEcnet: true
 
   # -- Namespace to deploy ECNET in. If not specified, the Helm release namespace is used.
   ecnetNamespace: ""

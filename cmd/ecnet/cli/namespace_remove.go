@@ -14,8 +14,8 @@ import (
 )
 
 const namespaceRemoveDescription = `
-This command will remove a namespace from the mesh. All
-services in this namespace will be removed from the mesh.
+This command will remove a namespace from the ecnet. All
+services in this namespace will be removed from the ecnet.
 `
 
 type namespaceRemoveCmd struct {
@@ -32,7 +32,7 @@ func newNamespaceRemove(out io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "remove <NAMESPACE>",
-		Short: "remove namespace from mesh",
+		Short: "remove namespace from ecnet",
 		Long:  namespaceRemoveDescription,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(_ *cobra.Command, args []string) error {
@@ -53,7 +53,7 @@ func newNamespaceRemove(out io.Writer) *cobra.Command {
 
 	//add ecnet name flag
 	f := cmd.Flags()
-	f.StringVar(&namespaceRemove.ecnetName, "ecnet-name", "ecnet", "Name of the service mesh")
+	f.StringVar(&namespaceRemove.ecnetName, "ecnet-name", "ecnet", "Name of the ecnet")
 
 	return cmd
 }
@@ -92,15 +92,15 @@ func (r *namespaceRemoveCmd) run() error {
 			_, err = r.clientSet.CoreV1().Namespaces().Patch(ctx, r.namespace, types.StrategicMergePatchType, []byte(patch), metav1.PatchOptions{}, "")
 
 			if err != nil {
-				return fmt.Errorf("Could not remove namespace [%s] from mesh [%s]: %w", r.namespace, r.ecnetName, err)
+				return fmt.Errorf("Could not remove namespace [%s] from ecnet [%s]: %w", r.namespace, r.ecnetName, err)
 			}
 
-			fmt.Fprintf(r.out, "Namespace [%s] successfully removed from mesh [%s]\n", r.namespace, r.ecnetName)
+			fmt.Fprintf(r.out, "Namespace [%s] successfully removed from ecnet [%s]\n", r.namespace, r.ecnetName)
 		} else {
-			return fmt.Errorf("Namespace belongs to mesh [%s], not mesh [%s]. Please specify the correct mesh", val, r.ecnetName)
+			return fmt.Errorf("Namespace belongs to ecnet [%s], not ecnet [%s]. Please specify the correct ecnet", val, r.ecnetName)
 		}
 	} else {
-		fmt.Fprintf(r.out, "Namespace [%s] already does not belong to any mesh\n", r.namespace)
+		fmt.Fprintf(r.out, "Namespace [%s] already does not belong to any ecnet\n", r.namespace)
 		return nil
 	}
 

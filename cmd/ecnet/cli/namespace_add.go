@@ -17,7 +17,7 @@ import (
 const trueValue = "true"
 
 const namespaceAddDescription = `
-This command adds a namespace or set of namespaces to the mesh so that the ecnet
+This command adds a namespace or set of namespaces to the ecnet so that the ecnet
 control plane with the given ecnet name can observe resources within that namespace
 or set of namespaces.
 `
@@ -76,7 +76,7 @@ func (a *namespaceAddCmd) run() error {
 			return err
 		}
 		if !exists {
-			return fmt.Errorf("mesh [%s] does not exist, please specify another mesh using --ecnet-name or create a new mesh", a.ecnetName)
+			return fmt.Errorf("ecnet [%s] does not exist, please specify another ecnet using --ecnet-name or create a new ecnet", a.ecnetName)
 		}
 
 		deploymentsClient := a.clientSet.AppsV1().Deployments(ns)
@@ -89,18 +89,18 @@ func (a *namespaceAddCmd) run() error {
 
 		// if ecnet-controller is installed in this namespace then don't add that to mesh
 		if len(list.Items) != 0 {
-			_, _ = fmt.Fprintf(a.out, "Namespace [%s] already has [%s] installed and cannot be added to mesh [%s]\n", ns, constants.ECNETControllerName, a.ecnetName)
+			_, _ = fmt.Fprintf(a.out, "Namespace [%s] already has [%s] installed and cannot be added to ecnet [%s]\n", ns, constants.ECNETControllerName, a.ecnetName)
 			continue
 		}
 
 		// if the namespace is already a part of the mesh then don't add it again
 		namespace, err := a.clientSet.CoreV1().Namespaces().Get(ctx, ns, metav1.GetOptions{})
 		if err != nil {
-			return fmt.Errorf("Could not add namespace [%s] to mesh [%s]: %w", ns, a.ecnetName, err)
+			return fmt.Errorf("Could not add namespace [%s] to ecnet [%s]: %w", ns, a.ecnetName, err)
 		}
 		ecnetName := namespace.Labels[constants.ECNETKubeResourceMonitorAnnotation]
 		if a.ecnetName == ecnetName {
-			_, _ = fmt.Fprintf(a.out, "Namespace [%s] has already been added to mesh [%s]\n", ns, a.ecnetName)
+			_, _ = fmt.Fprintf(a.out, "Namespace [%s] has already been added to ecnet [%s]\n", ns, a.ecnetName)
 			continue
 		}
 
@@ -142,10 +142,10 @@ func (a *namespaceAddCmd) run() error {
 
 		_, err = a.clientSet.CoreV1().Namespaces().Patch(ctx, ns, types.StrategicMergePatchType, []byte(patch), metav1.PatchOptions{}, "")
 		if err != nil {
-			return fmt.Errorf("Could not add namespace [%s] to mesh [%s]: %w", ns, a.ecnetName, err)
+			return fmt.Errorf("Could not add namespace [%s] to ecnet [%s]: %w", ns, a.ecnetName, err)
 		}
 
-		_, _ = fmt.Fprintf(a.out, "Namespace [%s] successfully added to mesh [%s]\n", ns, a.ecnetName)
+		_, _ = fmt.Fprintf(a.out, "Namespace [%s] successfully added to ecnet [%s]\n", ns, a.ecnetName)
 	}
 
 	return nil

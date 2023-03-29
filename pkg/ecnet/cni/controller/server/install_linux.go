@@ -31,6 +31,7 @@ import (
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/config"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/file"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/util"
+	"github.com/flomesh-io/ErieCanal/pkg/ecnet/version"
 )
 
 const (
@@ -197,7 +198,7 @@ func insertCNIConfig(cniConfig, existingCNIConfig []byte) ([]byte, error) {
 
 		newMap = map[string]interface{}{
 			"name":       "k8s-pod-network",
-			"cniVersion": "0.3.1",
+			"cniVersion": version.Version,
 			"plugins":    plugins,
 		}
 	} else {
