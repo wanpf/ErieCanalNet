@@ -281,7 +281,18 @@ static inline int process_tcp_egress_packet(struct __sk_buff *skb,
 #endif
 
         bpf_map_update_elem(&ecnet_svc_nat, &p, &origin, BPF_NOEXIST);
-    }
+    } else {
+         struct pair p;
+         memset(&p, 0, sizeof(p));
+         p.dip = iph->saddr;
+         p.sip = bridge_ip;
+         p.dport = tcph->source;
+         p.sport = bridge_port;
+         struct origin_info *origin = bpf_map_lookup_elem(&ecnet_svc_nat, &p);
+         if (!origin) {
+             return TC_ACT_OK;
+         }
+     }
 
     __u32 tcp_csum_off = TCP_CSUM_OFF;
     //__u32 ip_csum_off = IP_CSUM_OFF;
