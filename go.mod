@@ -20,8 +20,6 @@ require (
 	github.com/jstemmer/go-junit-report v1.0.0
 	github.com/mitchellh/gox v1.0.1
 	github.com/norwoodj/helm-docs v1.11.0
-	github.com/onsi/ginkgo v1.16.5 // indirect
-	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/prometheus/client_golang v1.14.0 // indirect
 	github.com/prometheus/common v0.37.0 // indirect
 	github.com/rs/zerolog v1.18.0
@@ -57,12 +55,10 @@ require (
 	github.com/briandowns/spinner v1.19.0
 	github.com/cilium/ebpf v0.10.0
 	github.com/containernetworking/cni v1.1.1
-	github.com/containernetworking/plugins v1.1.1
 	github.com/florianl/go-tc v0.4.2
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/pkg/errors v0.9.1
-	github.com/sirupsen/logrus v1.9.0
 	k8s.io/kubectl v0.26.0
 )
 
@@ -244,6 +240,7 @@ require (
 	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/shazow/go-diff v0.0.0-20160112020656-b6b7b6733b8c // indirect
 	github.com/shopspring/decimal v1.2.0 // indirect
+	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/sivchari/containedctx v1.0.2 // indirect
 	github.com/sivchari/nosnakecase v1.7.0 // indirect
 	github.com/sivchari/tenv v1.7.1 // indirect

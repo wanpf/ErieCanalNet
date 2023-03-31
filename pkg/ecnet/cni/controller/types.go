@@ -4,5 +4,5 @@ package controller
 import "github.com/flomesh-io/ErieCanal/pkg/ecnet/logger"
 
 var (
-	log = logger.New("ecnet-bridge-controller")
+	log = logger.New("bridge-ctrl")
 )

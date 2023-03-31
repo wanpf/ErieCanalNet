@@ -1,15 +1,3 @@
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package plugin
 
 import (
@@ -22,10 +10,9 @@ import (
 	"github.com/containernetworking/cni/pkg/skel"
 	"github.com/containernetworking/cni/pkg/types"
 	cniv1 "github.com/containernetworking/cni/pkg/types/100"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/config"
-	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/file"
+	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/util"
 )
 
 // K8sArgs is the valid CNI_ARGS used for Kubernetes
@@ -46,25 +33,25 @@ func ignore(_ *Config, _ *K8sArgs) bool {
 func CmdAdd(args *skel.CmdArgs) error {
 	conf, err := parseConfig(args.StdinData)
 	if err != nil {
-		log.Errorf("ecnet-cni cmdAdd failed to parse config %v %v", string(args.StdinData), err)
+		log.Error().Msgf("ecnet-cni cmdAdd failed to parse config %v %v", string(args.StdinData), err)
 	} else {
 		k8sArgs := K8sArgs{}
 		if err = types.LoadArgs(args.Args, &k8sArgs); err != nil {
-			log.Errorf("ecnet-cni cmdAdd failed to load args %v %v", string(args.StdinData), err)
+			log.Error().Msgf("ecnet-cni cmdAdd failed to load args %v %v", string(args.StdinData), err)
 		} else {
 			if !ignore(conf, &k8sArgs) {
-				if file.Exists("/var/run/ecnet-cni.sock") {
+				if util.Exists(config.CNISock) {
 					httpc := http.Client{
 						Transport: &http.Transport{
 							DialContext: func(_ context.Context, _, _ string) (net.Conn, error) {
-								return net.Dial("unix", "/var/run/ecnet-cni.sock")
+								return net.Dial("unix", config.CNISock)
 							},
 						},
 					}
 					bs, _ := json.Marshal(args)
 					body := bytes.NewReader(bs)
 					if _, err = httpc.Post("http://ecnet-cni"+config.CNICreatePodURL, "application/json", body); err != nil {
-						log.Errorf("ecnet-cni cmdAdd failed to post args %v %v", string(args.StdinData), err)
+						log.Error().Msgf("ecnet-cni cmdAdd failed to post args %v %v", string(args.StdinData), err)
 					}
 				}
 			}
@@ -90,20 +77,20 @@ func CmdCheck(*skel.CmdArgs) error {
 
 // CmdDelete is the implementation of the cmdDelete interface of CNI plugin
 func CmdDelete(args *skel.CmdArgs) error {
-	if !file.Exists("/var/run/ecnet-cni.sock") {
+	if !util.Exists(config.CNISock) {
 		return nil
 	}
 
 	httpc := http.Client{
 		Transport: &http.Transport{
 			DialContext: func(_ context.Context, _, _ string) (net.Conn, error) {
-				return net.Dial("unix", "/var/run/ecnet-cni.sock")
+				return net.Dial("unix", config.CNISock)
 			},
 		},
 	}
 	bs, _ := json.Marshal(args)
 	body := bytes.NewReader(bs)
 	_, err := httpc.Post("http://ecnet-cni"+config.CNIDeletePodURL, "application/json", body)
-	log.Errorf("ecnet-cni cmdDelete failed to parse config %v %v", string(args.StdinData), err)
+	log.Error().Msgf("ecnet-cni cmdDelete failed to parse config %v %v", string(args.StdinData), err)
 	return nil
 }

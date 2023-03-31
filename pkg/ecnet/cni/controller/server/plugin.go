@@ -1,15 +1,3 @@
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package server
 
 import (
@@ -25,20 +13,17 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
-	"unsafe"
 
 	"github.com/cilium/ebpf"
 	"github.com/containernetworking/cni/pkg/skel"
 	"github.com/containernetworking/cni/pkg/types"
-	"github.com/containernetworking/plugins/pkg/ns"
 	"github.com/florianl/go-tc"
 	"github.com/florianl/go-tc/core"
-	log "github.com/sirupsen/logrus"
 	"golang.org/x/sys/unix"
 
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/config"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/controller/helpers"
-	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/file"
+	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/ns"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/plugin"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/util"
 )
@@ -62,7 +47,7 @@ func (s *server) CmdAdd(args *skel.CmdArgs) (err error) {
 			err = fmt.Errorf(msg)
 		}
 		if err != nil {
-			log.Errorf("ecnet-cni cmdAdd error: %v", err)
+			log.Error().Msgf("ecnet-cni cmdAdd error: %v", err)
 		}
 	}()
 	k8sArgs := plugin.K8sArgs{}
@@ -71,7 +56,7 @@ func (s *server) CmdAdd(args *skel.CmdArgs) (err error) {
 	}
 	netns, err := ns.GetNS("/host" + args.Netns)
 	if err != nil {
-		log.Errorf("get ns %s error", args.Netns)
+		log.Error().Msgf("get ns %s error", args.Netns)
 		return err
 	}
 
@@ -90,7 +75,7 @@ func (s *server) CmdAdd(args *skel.CmdArgs) (err error) {
 		return fmt.Errorf("device not found for %s", args.Netns)
 	})
 	if err != nil {
-		log.Errorf("CmdAdd failed for %s: %v", args.Netns, err)
+		log.Error().Msgf("CmdAdd failed for %s: %v", args.Netns, err)
 		return err
 	}
 	return err
@@ -102,7 +87,7 @@ func (s *server) CmdDelete(args *skel.CmdArgs) (err error) {
 		return err
 	}
 	netns := "/host" + args.Netns
-	inode, err := file.Inode(netns)
+	inode, err := util.Inode(netns)
 	if err != nil {
 		return err
 	}
@@ -120,41 +105,6 @@ func (s *server) CmdDelete(args *skel.CmdArgs) (err error) {
 	return m.Delete(key)
 }
 
-func (s *server) listenConfig(addr net.Addr, netns string) net.ListenConfig {
-	return net.ListenConfig{
-		Control: func(network, address string, conn syscall.RawConn) error {
-			var operr error
-			if err := conn.Control(func(fd uintptr) {
-				m, err := ebpf.LoadPinnedMap(path.Join(s.bpfMountPath, "ecnet_mark_fib"), &ebpf.LoadPinOptions{})
-				if err != nil {
-					operr = err
-					return
-				}
-				var ip unsafe.Pointer
-				switch v := addr.(type) { // todo instead of hash
-				case *net.IPNet: // nolint: typecheck
-					ip, err = util.IP2Pointer(v.IP.String())
-				case *net.IPAddr: // nolint: typecheck
-					ip, err = util.IP2Pointer(v.String())
-				}
-				if err != nil {
-					operr = err
-					return
-				}
-				key := getMarkKeyOfNetns(netns)
-				operr = m.Update(key, ip, ebpf.UpdateAny)
-				if operr != nil {
-					return
-				}
-				operr = syscall.SetsockoptInt(int(fd), unix.SOL_SOCKET, unix.SO_MARK, int(key))
-			}); err != nil {
-				return err
-			}
-			return operr
-		},
-	}
-}
-
 func (s *server) checkAndRepairPodPrograms() error {
 	hostProc, err := os.ReadDir(config.HostProc)
 	if err != nil {
@@ -165,13 +115,13 @@ func (s *server) checkAndRepairPodPrograms() error {
 			pid := f.Name()
 			if skipListening(s.serviceMeshMode, pid) {
 				// ignore non-injected pods
-				log.Debugf("skip listening for pid(%s)", pid)
+				log.Debug().Msgf("skip listening for pid(%s)", pid)
 				continue
 			}
 			np := fmt.Sprintf("%s/%s/ns/net", config.HostProc, pid)
 			netns, err := ns.GetNS(np)
 			if err != nil {
-				log.Errorf("Failed to get ns for %s, error: %v", np, err)
+				log.Error().Msgf("Failed to get ns for %s, error: %v", np, err)
 				continue
 			}
 			if err = netns.Do(func(_ ns.NetNS) error {
@@ -181,7 +131,7 @@ func (s *server) checkAndRepairPodPrograms() error {
 					if (iface.Flags&net.FlagLoopback) == 0 && (iface.Flags&net.FlagUp) != 0 {
 						err := s.attachTC(netns.Path(), iface.Name)
 						if err != nil {
-							log.Errorf("attach tc for %s of %s error: %v", iface.Name, netns.Path(), err)
+							log.Error().Msgf("attach tc for %s of %s error: %v", iface.Name, netns.Path(), err)
 						}
 						return err
 					}
@@ -236,28 +186,28 @@ func stringPtr(v string) *string {
 
 func (s *server) attachTC(netns, dev string) error {
 	// already in netns
-	inode, err := file.Inode(netns)
+	inode, err := util.Inode(netns)
 	if err != nil {
 		return err
 	}
 	iface, err := net.InterfaceByName(dev)
 	if err != nil {
-		log.Errorf("get iface error: %v", err)
+		log.Error().Msgf("get iface error: %v", err)
 		return err
 	}
 	rtnl, err := tc.Open(&tc.Config{})
 	if err != nil {
-		log.Errorf("open rtnl error: %v", err)
+		log.Error().Msgf("open rtnl error: %v", err)
 		return err
 	}
 	defer func() {
 		if err := rtnl.Close(); err != nil {
-			log.Errorf("could not close rtnetlink socket: %v\n", err)
+			log.Error().Msgf("could not close rtnetlink socket: %v\n", err)
 		}
 	}()
 	qdiscs, err := rtnl.Qdisc().Get()
 	if err != nil {
-		log.Errorf("get qdisc error: %v", err)
+		log.Error().Msgf("get qdisc error: %v", err)
 		return err
 	}
 	find := false
@@ -357,7 +307,7 @@ func (s *server) cleanUpTC() {
 	for _, q := range s.qdiscs {
 		netns, err := ns.GetNS(q.netns)
 		if err != nil {
-			log.Errorf("Failed to get ns for %s, error: %v", q.netns, err)
+			log.Error().Msgf("Failed to get ns for %s, error: %v", q.netns, err)
 			continue
 		}
 		if err = netns.Do(func(_ ns.NetNS) error {
@@ -371,7 +321,7 @@ func (s *server) cleanUpTC() {
 			}
 			defer func() {
 				if err := rtnl.Close(); err != nil {
-					log.Errorf("could not close rtnetlink socket: %v\n", err)
+					log.Error().Msgf("could not close rtnetlink socket: %v\n", err)
 				}
 			}()
 			if q.managedClsact {
@@ -387,7 +337,7 @@ func (s *server) cleanUpTC() {
 					},
 				})
 				if err != nil {
-					log.Errorf("error remove clsact: ns: %s, dev: %s, err: %v", q.netns, q.device, err)
+					log.Error().Msgf("error remove clsact: ns: %s, dev: %s, err: %v", q.netns, q.device, err)
 					// if remove clsact error, rollback to remove filter
 				} else {
 					return nil
@@ -418,7 +368,7 @@ func (s *server) cleanUpTC() {
 			}
 			return rtnl.Filter().Delete(&filter)
 		}); err != nil {
-			log.Errorf("Failed to clean up tc for %s, error: %v", q.netns, err)
+			log.Error().Msgf("Failed to clean up tc for %s, error: %v", q.netns, err)
 		}
 	}
 }

@@ -20,7 +20,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=/go/pkg \
     go build -v -ldflags "-s -w" -o ./dist/ecnet-cni ./cmd/ecnet/ecnet-bridge/ecnet-cni/ecnet-cni.go
 
-FROM flomesh/osm-edge-interceptor:base20.04
+FROM flomesh/ebpf:base20.04
 
 WORKDIR /ec
 

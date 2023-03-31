@@ -22,9 +22,15 @@ import (
 	"github.com/containernetworking/cni/pkg/version"
 
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/plugin"
+	"github.com/flomesh-io/ErieCanal/pkg/ecnet/logger"
+	ec "github.com/flomesh-io/ErieCanal/pkg/ecnet/version"
 )
+
+func init() {
+	_ = logger.SetLogLevel("warn")
+}
 
 func main() {
 	skel.PluginMain(plugin.CmdAdd, plugin.CmdCheck, plugin.CmdDelete, version.All,
-		fmt.Sprintf("ErieCanal-Bridge-CNI %v", "1.0.1"))
+		fmt.Sprintf("ErieCanal-Bridge-CNI %v", ec.Version))
 }

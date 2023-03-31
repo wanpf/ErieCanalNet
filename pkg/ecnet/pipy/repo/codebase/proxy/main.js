@@ -1,6 +1,7 @@
 ((
   config = pipy.solve('config.js'),
   probeScheme = config?.Spec?.Probes?.LivenessProbes?.[0]?.httpGet?.scheme,
+  _ = pipy.exec(['sh', '-c', 'while [ "$(ip addr show dev ' + (os.env.CNI_BRIDGE_ETH || 'cni0') + ' 2>&1 | grep inet > /dev/null; echo $?)" -ne 0 ]; do sleep 0.1; done;']),
   bridgeIP = pipy.exec('ip addr show dev ' + (os.env.CNI_BRIDGE_ETH || 'cni0')).toString().split('\n').find(s => s.trim().startsWith('inet'))?.trim?.()?.split?.(' ')?.[1]?.split?.('/')?.[0] || '0.0.0.0',
 ) => pipy()
 

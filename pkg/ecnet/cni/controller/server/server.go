@@ -18,13 +18,11 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"path"
 	"sync"
 	"syscall"
 	"time"
 
 	"github.com/gorilla/mux"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/config"
 )
@@ -55,7 +53,7 @@ type server struct {
 // the path this the unix path to listen.
 func NewServer(unixSockPath string, bpfMountPath string, cniReady, stop chan struct{}) Server {
 	if unixSockPath == "" {
-		unixSockPath = path.Join(config.HostVarRun, "ecnet-cni.sock")
+		unixSockPath = config.CNISock
 	}
 	if bpfMountPath == "" {
 		bpfMountPath = "/sys/fs/bpf"
@@ -72,11 +70,11 @@ func NewServer(unixSockPath string, bpfMountPath string, cniReady, stop chan str
 
 func (s *server) Start() error {
 	if err := os.RemoveAll(s.unixSockPath); err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err)
 	}
 	l, err := net.Listen("unix", s.unixSockPath)
 	if err != nil {
-		log.Fatal("listen error:", err)
+		log.Fatal().Msgf("listen error:%v", err)
 	}
 
 	r := mux.NewRouter()
@@ -111,7 +109,7 @@ func (s *server) Start() error {
 	// wait for cni to be ready
 	<-s.cniReady
 	if err = s.checkAndRepairPodPrograms(); err != nil {
-		log.Errorf("Failed to check existing pods: %v", err)
+		log.Error().Msgf("Failed to check existing pods: %v", err)
 	}
 	return nil
 }
@@ -120,11 +118,11 @@ func (s *server) installCNI() {
 	install := newInstaller()
 	go func() {
 		if err := install.Run(context.TODO(), s.cniReady); err != nil {
-			log.Error(err)
+			log.Error().Err(err)
 			close(s.cniReady)
 		}
 		if err := install.Cleanup(); err != nil {
-			log.Errorf("Failed to clean up CNI: %v", err)
+			log.Error().Msgf("Failed to clean up CNI: %v", err)
 		}
 	}()
 
@@ -133,13 +131,13 @@ func (s *server) installCNI() {
 		signal.Notify(ch, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT, syscall.SIGABRT)
 		<-ch
 		if err := install.Cleanup(); err != nil {
-			log.Errorf("Failed to clean up CNI: %v", err)
+			log.Error().Msgf("Failed to clean up CNI: %v", err)
 		}
 	}()
 }
 
 func (s *server) Stop() {
-	log.Infof("cni-server stop ...")
+	log.Info().Msg("cni-server stop ...")
 	s.cleanUpTC()
 	close(s.stop)
 }

@@ -7,8 +7,6 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/config"
 )
 
@@ -26,7 +24,7 @@ func GetBridgeIP() (ipAddr net.IP, ipInt uint32) {
 			break
 		}
 		if err != nil {
-			log.Warnf("fail retrieving cni bridge veth[%s]'s ipv4 addr:%v, and retring...", config.BridgeEth, err)
+			log.Warn().Msgf("fail retrieving cni bridge veth[%s]'s ipv4 addr:%v, and retring...", config.BridgeEth, err)
 			time.Sleep(time.Second * 5)
 		}
 	}
