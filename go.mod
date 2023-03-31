@@ -54,7 +54,7 @@ require (
 require (
 	github.com/briandowns/spinner v1.19.0
 	github.com/cilium/ebpf v0.10.0
-	github.com/containernetworking/cni v1.1.1
+	github.com/containernetworking/cni v1.1.2
 	github.com/florianl/go-tc v0.4.2
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/go-resty/resty/v2 v2.7.0
