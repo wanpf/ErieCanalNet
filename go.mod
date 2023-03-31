@@ -7,7 +7,7 @@ require (
 	github.com/axw/gocov v1.1.0
 	github.com/containerd/containerd v1.6.15 // indirect
 	github.com/cskr/pubsub v1.0.2
-	github.com/deckarep/golang-set v1.7.1
+	github.com/deckarep/golang-set v1.8.0
 	github.com/docker/docker v20.10.18+incompatible // indirect
 	github.com/fatih/color v1.15.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
