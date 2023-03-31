@@ -19,7 +19,7 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/go-version v1.6.0
 	github.com/jstemmer/go-junit-report v0.9.1
-	github.com/mitchellh/gox v0.4.0
+	github.com/mitchellh/gox v1.0.1
 	github.com/norwoodj/helm-docs v1.11.0
 	github.com/pkg/errors v0.9.1
 	github.com/rs/zerolog v1.29.0
