@@ -35,9 +35,8 @@ type qdisc struct {
 
 type server struct {
 	sync.Mutex
-	serviceMeshMode string
-	unixSockPath    string
-	bpfMountPath    string
+	unixSockPath string
+	bpfMountPath string
 	// qdiscs is for cleaning up all tc programs when exists
 	// key: netns(inode), value: qdisc info
 	qdiscs map[uint64]qdisc
