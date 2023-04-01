@@ -3,7 +3,7 @@ package config
 
 const (
 	// CNISock defines the sock file
-	CNISock = "/var/run/osm-cni.sock"
+	CNISock = "/var/run/ecnet-cni.sock"
 
 	// CNICreatePodURL is the route for cni plugin for creating pod
 	CNICreatePodURL = "/v1/cni/create-pod"

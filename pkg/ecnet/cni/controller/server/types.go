@@ -4,7 +4,7 @@ package server
 import "github.com/flomesh-io/ErieCanal/pkg/ecnet/logger"
 
 var (
-	log = logger.New("bridge-helpers")
+	log = logger.New("bridge-ctrl-server")
 )
 
 // Server CNI Server.
