@@ -1,8 +1,8 @@
 package config
 
 var (
-	// Debug indicates debug feature of/off
-	Debug = false
+	// KernelTracing indicates debug feature of/off
+	KernelTracing = false
 	// Skip indicates skip feature of/off
 	Skip = false
 	// DisableWatcher indicates DisableWatcher feature of/off

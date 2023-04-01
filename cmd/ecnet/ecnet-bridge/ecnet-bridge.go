@@ -21,7 +21,7 @@ var log = logger.New("ecent-bridge-cli")
 var rootCmd = &cobra.Command{
 	Use: "ecnet-bridge",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if err := helpers.LoadProgs(config.Debug); err != nil {
+		if err := helpers.LoadProgs(config.KernelTracing); err != nil {
 			return fmt.Errorf("failed to load ebpf programs: %v", err)
 		}
 
@@ -54,7 +54,7 @@ func main() {
 
 func init() {
 	// Get some flags from commands
-	rootCmd.PersistentFlags().BoolVarP(&config.Debug, "kernel-tracing", "d", false, "kernel tracing mode")
+	rootCmd.PersistentFlags().BoolVarP(&config.KernelTracing, "kernel-tracing", "d", false, "kernel tracing mode")
 	rootCmd.PersistentFlags().BoolVarP(&config.Skip, "skip", "s", false, "Skip init bpf")
 	rootCmd.PersistentFlags().BoolVarP(&config.DisableWatcher, "disableWatcher", "w", false, "disable Pod watcher")
 	rootCmd.PersistentFlags().BoolVarP(&config.IsKind, "kind", "k", false, "Enable when Kubernetes is running in Kind")

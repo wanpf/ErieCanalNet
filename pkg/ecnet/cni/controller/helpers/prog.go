@@ -9,14 +9,14 @@ import (
 )
 
 // LoadProgs load ebpf progs
-func LoadProgs(debug bool) error {
+func LoadProgs(kernelTracing bool) error {
 	if os.Getuid() != 0 {
 		return fmt.Errorf("root user in required for this process or container")
 	}
 	cmd := exec.Command("make", "load")
 	cmd.Env = os.Environ()
-	if debug {
-		cmd.Env = append(cmd.Env, "DEBUG=1")
+	if !kernelTracing {
+		cmd.Env = append(cmd.Env, "DEBUG=0")
 	}
 
 	if _, bridgeIP := GetBridgeIP(); bridgeIP > 0 {
