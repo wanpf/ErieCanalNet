@@ -33,7 +33,7 @@ var rootCmd = &cobra.Command{
 			return err
 		}
 		// todo: wait for stop
-		if err := controller.Run(config.DisableWatcher, config.Skip, cniReady, stop); err != nil {
+		if err := controller.Run(cniReady, stop); err != nil {
 			log.Fatal().Err(err)
 			return err
 		}
@@ -55,10 +55,7 @@ func main() {
 func init() {
 	// Get some flags from commands
 	rootCmd.PersistentFlags().BoolVarP(&config.KernelTracing, "kernel-tracing", "d", false, "kernel tracing mode")
-	rootCmd.PersistentFlags().BoolVarP(&config.Skip, "skip", "s", false, "Skip init bpf")
-	rootCmd.PersistentFlags().BoolVarP(&config.DisableWatcher, "disableWatcher", "w", false, "disable Pod watcher")
 	rootCmd.PersistentFlags().BoolVarP(&config.IsKind, "kind", "k", false, "Enable when Kubernetes is running in Kind")
-	_ = rootCmd.PersistentFlags().MarkDeprecated("ips-file", "no need to collect node IPs")
 	rootCmd.PersistentFlags().StringVar(&config.BridgeEth, "bridge-eth", "cni0", "bridge veth created by CNI")
 	rootCmd.PersistentFlags().StringVar(&config.HostProc, "host-proc", "/host/proc", "/proc mount path")
 	rootCmd.PersistentFlags().StringVar(&config.CNIBinDir, "cni-bin-dir", "/host/opt/cni/bin", "/opt/cni/bin mount path")

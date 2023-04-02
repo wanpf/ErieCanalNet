@@ -3,10 +3,6 @@ package config
 var (
 	// KernelTracing indicates debug feature of/off
 	KernelTracing = false
-	// Skip indicates skip feature of/off
-	Skip = false
-	// DisableWatcher indicates DisableWatcher feature of/off
-	DisableWatcher = false
 	// IsKind indicates Kubernetes running in Docker
 	IsKind = false
 	// BridgeEth indicates cni bridge dev

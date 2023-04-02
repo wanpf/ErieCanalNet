@@ -10,7 +10,7 @@ import (
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/controller/helpers"
 )
 
-func runLocalPodController(skip bool, client kubernetes.Interface, stop chan struct{}) error {
+func runLocalPodController(client kubernetes.Interface, stop chan struct{}) error {
 	var err error
 
 	if err = helpers.InitLoadPinnedMap(); err != nil {
@@ -24,13 +24,13 @@ func runLocalPodController(skip bool, client kubernetes.Interface, stop chan str
 	}
 
 	log.Info().Msg("Pod watcher Ready")
-	if err = helpers.AttachProgs(skip); err != nil {
+	if err = helpers.AttachProgs(); err != nil {
 		return fmt.Errorf("failed to attach ebpf programs: %v", err)
 	}
 	<-stop
 	w.shutdown()
 
-	if err = helpers.UnLoadProgs(skip); err != nil {
+	if err = helpers.UnLoadProgs(); err != nil {
 		return fmt.Errorf("unload failed: %v", err)
 	}
 	log.Info().Msg("Pod watcher Down")
@@ -56,9 +56,6 @@ func isInjectedSidecar(_ *v1.Pod) bool {
 }
 
 func addFunc(obj interface{}) {
-	if disableWatch {
-		return
-	}
 	pod, ok := obj.(*v1.Pod)
 	if !ok || len(pod.Status.PodIP) == 0 {
 		return
@@ -70,9 +67,6 @@ func addFunc(obj interface{}) {
 }
 
 func updateFunc(old, cur interface{}) {
-	if disableWatch {
-		return
-	}
 	oldPod, ok := old.(*v1.Pod)
 	if !ok {
 		return
@@ -88,9 +82,6 @@ func updateFunc(old, cur interface{}) {
 }
 
 func deleteFunc(obj interface{}) {
-	if disableWatch {
-		return
-	}
 	if pod, ok := obj.(*v1.Pod); ok {
 		log.Debug().Msgf("got pod delete %s/%s", pod.Namespace, pod.Name)
 	}

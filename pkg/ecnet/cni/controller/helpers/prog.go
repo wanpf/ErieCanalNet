@@ -35,10 +35,7 @@ func LoadProgs(kernelTracing bool) error {
 }
 
 // AttachProgs attach ebpf progs
-func AttachProgs(skip bool) error {
-	if skip {
-		return nil
-	}
+func AttachProgs() error {
 	if os.Getuid() != 0 {
 		return fmt.Errorf("root user in required for this process or container")
 	}
@@ -54,10 +51,7 @@ func AttachProgs(skip bool) error {
 }
 
 // UnLoadProgs unload ebpf progs
-func UnLoadProgs(skip bool) error {
-	if skip {
-		return nil
-	}
+func UnLoadProgs() error {
 	cmd := exec.Command("make", "-k", "clean")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
