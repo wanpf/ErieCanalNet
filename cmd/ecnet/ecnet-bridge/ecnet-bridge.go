@@ -13,9 +13,9 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/config"
-	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/controller"
+	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/controller/cniserver"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/controller/helpers"
-	cniserver "github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/controller/server"
+	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/controller/podwatcher"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/k8s/events"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/logger"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/version"
@@ -93,7 +93,7 @@ func main() {
 	if err = s.Start(); err != nil {
 		log.Fatal().Err(err)
 	}
-	if err = controller.Run(kubeClient, stop); err != nil {
+	if err = podwatcher.Run(kubeClient, stop); err != nil {
 		log.Fatal().Err(err)
 	}
 	log.Info().Msgf("Stopping ecnet-bridge %s; %s; %s", version.Version, version.GitCommit, version.BuildDate)

@@ -1,5 +1,5 @@
-// Package server implements ECNET CNI control server.
-package server
+// Package cniserver implements ECNET CNI control server.
+package cniserver
 
 import "github.com/flomesh-io/ErieCanal/pkg/ecnet/logger"
 

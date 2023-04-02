@@ -1,4 +1,4 @@
-package server
+package cniserver
 
 import (
 	"encoding/json"
