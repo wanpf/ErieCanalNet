@@ -15,8 +15,4 @@ var (
 	CNIConfigDir string
 	// HostVarRun defines HostVar volume
 	HostVarRun string
-	// KubeConfig defines kube config
-	KubeConfig string
-	// Context defines kube context
-	Context string
 )

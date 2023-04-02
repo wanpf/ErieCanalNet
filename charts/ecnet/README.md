@@ -72,54 +72,14 @@ The following table lists the configurable parameters of the ecnet chart and the
 | ecnet.controlPlaneTolerations | list | `[]` | Node tolerations applied to control plane pods. The specified tolerations allow pods to schedule onto nodes with matching taints. |
 | ecnet.controllerLogLevel | string | `"info"` | Controller log verbosity |
 | ecnet.curlImage | string | `"curlimages/curl"` | Curl image for control plane init container |
-| ecnet.ecnetBootstrap.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].key | string | `"kubernetes.io/os"` |  |
-| ecnet.ecnetBootstrap.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].operator | string | `"In"` |  |
-| ecnet.ecnetBootstrap.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].values[0] | string | `"linux"` |  |
-| ecnet.ecnetBootstrap.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[1].key | string | `"kubernetes.io/arch"` |  |
-| ecnet.ecnetBootstrap.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[1].operator | string | `"In"` |  |
-| ecnet.ecnetBootstrap.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[1].values[0] | string | `"amd64"` |  |
-| ecnet.ecnetBootstrap.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[1].values[1] | string | `"arm64"` |  |
-| ecnet.ecnetBootstrap.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].podAffinityTerm.labelSelector.matchExpressions[0].key | string | `"app"` |  |
-| ecnet.ecnetBootstrap.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].podAffinityTerm.labelSelector.matchExpressions[0].operator | string | `"In"` |  |
-| ecnet.ecnetBootstrap.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].podAffinityTerm.labelSelector.matchExpressions[0].values[0] | string | `"ecnet-bootstrap"` |  |
-| ecnet.ecnetBootstrap.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].podAffinityTerm.topologyKey | string | `"kubernetes.io/hostname"` |  |
-| ecnet.ecnetBootstrap.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].weight | int | `100` |  |
-| ecnet.ecnetBootstrap.nodeSelector | object | `{}` |  |
+| ecnet.ecnetBootstrap | object | `{"affinity":{"nodeAffinity":{"requiredDuringSchedulingIgnoredDuringExecution":{"nodeSelectorTerms":[{"matchExpressions":[{"key":"kubernetes.io/os","operator":"In","values":["linux"]},{"key":"kubernetes.io/arch","operator":"In","values":["amd64","arm64"]}]}]}},"podAntiAffinity":{"preferredDuringSchedulingIgnoredDuringExecution":[{"podAffinityTerm":{"labelSelector":{"matchExpressions":[{"key":"app","operator":"In","values":["ecnet-bootstrap"]}]},"topologyKey":"kubernetes.io/hostname"},"weight":100}]}},"nodeSelector":{},"podLabels":{},"replicaCount":1,"resource":{"limits":{"cpu":"0.5","memory":"128M"},"requests":{"cpu":"0.3","memory":"128M"}},"tolerations":[]}` | ECNET bootstrap parameters |
 | ecnet.ecnetBootstrap.podLabels | object | `{}` | ECNET bootstrap's pod labels |
 | ecnet.ecnetBootstrap.replicaCount | int | `1` | ECNET bootstrap's replica count |
 | ecnet.ecnetBootstrap.resource | object | `{"limits":{"cpu":"0.5","memory":"128M"},"requests":{"cpu":"0.3","memory":"128M"}}` | ECNET bootstrap's container resource parameters |
 | ecnet.ecnetBootstrap.tolerations | list | `[]` | Node tolerations applied to control plane pods. The specified tolerations allow pods to schedule onto nodes with matching taints. |
-| ecnet.ecnetBridge.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].key | string | `"kubernetes.io/os"` |  |
-| ecnet.ecnetBridge.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].operator | string | `"In"` |  |
-| ecnet.ecnetBridge.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].values[0] | string | `"linux"` |  |
-| ecnet.ecnetBridge.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[1].key | string | `"kubernetes.io/arch"` |  |
-| ecnet.ecnetBridge.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[1].operator | string | `"In"` |  |
-| ecnet.ecnetBridge.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[1].values[0] | string | `"amd64"` |  |
-| ecnet.ecnetBridge.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[1].values[1] | string | `"arm64"` |  |
-| ecnet.ecnetBridge.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].podAffinityTerm.labelSelector.matchExpressions[0].key | string | `"app"` |  |
-| ecnet.ecnetBridge.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].podAffinityTerm.labelSelector.matchExpressions[0].operator | string | `"In"` |  |
-| ecnet.ecnetBridge.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].podAffinityTerm.labelSelector.matchExpressions[0].values[0] | string | `"ecnet-controller"` |  |
-| ecnet.ecnetBridge.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].podAffinityTerm.topologyKey | string | `"kubernetes.io/hostname"` |  |
-| ecnet.ecnetBridge.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].weight | int | `100` |  |
-| ecnet.ecnetBridge.cni.hostCniBridgeEth | string | `"cni0"` |  |
-| ecnet.ecnetBridge.kernelTracing | bool | `false` |  |
-| ecnet.ecnetBridge.resource.limits.cpu | string | `"1.5"` |  |
-| ecnet.ecnetBridge.resource.limits.memory | string | `"1G"` |  |
-| ecnet.ecnetBridge.resource.requests.cpu | string | `"0.5"` |  |
-| ecnet.ecnetBridge.resource.requests.memory | string | `"256M"` |  |
+| ecnet.ecnetBridge | object | `{"affinity":{"nodeAffinity":{"requiredDuringSchedulingIgnoredDuringExecution":{"nodeSelectorTerms":[{"matchExpressions":[{"key":"kubernetes.io/os","operator":"In","values":["linux"]},{"key":"kubernetes.io/arch","operator":"In","values":["amd64","arm64"]}]}]}},"podAntiAffinity":{"preferredDuringSchedulingIgnoredDuringExecution":[{"podAffinityTerm":{"labelSelector":{"matchExpressions":[{"key":"app","operator":"In","values":["ecnet-controller"]}]},"topologyKey":"kubernetes.io/hostname"},"weight":100}]}},"cni":{"hostCniBridgeEth":"cni0"},"kernelTracing":true,"kindMode":false,"resource":{"limits":{"cpu":"1.5","memory":"1G"},"requests":{"cpu":"0.5","memory":"256M"}},"tolerations":[]}` | ECNET bridge parameters |
 | ecnet.ecnetBridge.tolerations | list | `[]` | Node tolerations applied to control plane pods. The specified tolerations allow pods to schedule onto nodes with matching taints. |
-| ecnet.ecnetController.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].key | string | `"kubernetes.io/os"` |  |
-| ecnet.ecnetController.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].operator | string | `"In"` |  |
-| ecnet.ecnetController.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].values[0] | string | `"linux"` |  |
-| ecnet.ecnetController.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[1].key | string | `"kubernetes.io/arch"` |  |
-| ecnet.ecnetController.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[1].operator | string | `"In"` |  |
-| ecnet.ecnetController.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[1].values[0] | string | `"amd64"` |  |
-| ecnet.ecnetController.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[1].values[1] | string | `"arm64"` |  |
-| ecnet.ecnetController.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].podAffinityTerm.labelSelector.matchExpressions[0].key | string | `"app"` |  |
-| ecnet.ecnetController.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].podAffinityTerm.labelSelector.matchExpressions[0].operator | string | `"In"` |  |
-| ecnet.ecnetController.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].podAffinityTerm.labelSelector.matchExpressions[0].values[0] | string | `"ecnet-controller"` |  |
-| ecnet.ecnetController.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].podAffinityTerm.topologyKey | string | `"kubernetes.io/hostname"` |  |
-| ecnet.ecnetController.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].weight | int | `100` |  |
+| ecnet.ecnetController | object | `{"affinity":{"nodeAffinity":{"requiredDuringSchedulingIgnoredDuringExecution":{"nodeSelectorTerms":[{"matchExpressions":[{"key":"kubernetes.io/os","operator":"In","values":["linux"]},{"key":"kubernetes.io/arch","operator":"In","values":["amd64","arm64"]}]}]}},"podAntiAffinity":{"preferredDuringSchedulingIgnoredDuringExecution":[{"podAffinityTerm":{"labelSelector":{"matchExpressions":[{"key":"app","operator":"In","values":["ecnet-controller"]}]},"topologyKey":"kubernetes.io/hostname"},"weight":100}]}},"autoScale":{"cpu":{"targetAverageUtilization":80},"enable":false,"maxReplicas":5,"memory":{"targetAverageUtilization":80},"minReplicas":1},"podLabels":{},"replicaCount":1,"resource":{"limits":{"cpu":"1.5","memory":"1G"},"requests":{"cpu":"0.5","memory":"128M"}},"tolerations":[]}` | ECNET controller parameters |
 | ecnet.ecnetController.autoScale | object | `{"cpu":{"targetAverageUtilization":80},"enable":false,"maxReplicas":5,"memory":{"targetAverageUtilization":80},"minReplicas":1}` | Auto scale configuration |
 | ecnet.ecnetController.autoScale.cpu.targetAverageUtilization | int | `80` | Average target CPU utilization (%) |
 | ecnet.ecnetController.autoScale.enable | bool | `false` | Enable Autoscale |
@@ -128,14 +88,11 @@ The following table lists the configurable parameters of the ecnet chart and the
 | ecnet.ecnetController.autoScale.minReplicas | int | `1` | Minimum replicas for autoscale |
 | ecnet.ecnetController.podLabels | object | `{}` | ECNET controller's pod labels |
 | ecnet.ecnetController.replicaCount | int | `1` | ECNET controller's replica count (ignored when autoscale.enable is true) |
-| ecnet.ecnetController.resource.limits.cpu | string | `"1.5"` |  |
-| ecnet.ecnetController.resource.limits.memory | string | `"1G"` |  |
-| ecnet.ecnetController.resource.requests.cpu | string | `"0.5"` |  |
-| ecnet.ecnetController.resource.requests.memory | string | `"128M"` |  |
 | ecnet.ecnetController.tolerations | list | `[]` | Node tolerations applied to control plane pods. The specified tolerations allow pods to schedule onto nodes with matching taints. |
 | ecnet.ecnetName | string | `"ecnet"` | Identifier for the instance of an ecnet within a cluster |
 | ecnet.ecnetNamespace | string | `""` | Namespace to deploy ECNET in. If not specified, the Helm release namespace is used. |
-| ecnet.enforceSingleMesh | bool | `true` | Enforce only deploying one mesh in the cluster |
+| ecnet.enforceSingleEcnet | bool | `true` | Enforce only deploying one ecnet in the cluster |
+| ecnet.image | object | `{"name":{"ecnetBootstrap":"ecnet-bootstrap","ecnetBridge":"ecnet-bridge","ecnetBridgeInit":"ecnet-bridge-init","ecnetCRDs":"ecnet-crds","ecnetController":"ecnet-controller","ecnetPreinstall":"ecnet-preinstall"},"pullPolicy":"IfNotPresent","registry":"flomesh","tag":"1.0.1"}` | ECNET control plane image parameters |
 | ecnet.image.name | object | `{"ecnetBootstrap":"ecnet-bootstrap","ecnetBridge":"ecnet-bridge","ecnetBridgeInit":"ecnet-bridge-init","ecnetCRDs":"ecnet-crds","ecnetController":"ecnet-controller","ecnetPreinstall":"ecnet-preinstall"}` | Image name defaults |
 | ecnet.image.name.ecnetBootstrap | string | `"ecnet-bootstrap"` | ecnet-bootstrap's image name |
 | ecnet.image.name.ecnetBridge | string | `"ecnet-bridge"` | ecnet-bridge's image name |
@@ -198,14 +155,7 @@ The following table lists the configurable parameters of the ecnet chart and the
 | ecnet.pluginChains.outbound-tcp[1].priority | int | `110` |  |
 | ecnet.pluginChains.outbound-tcp[2].plugin | string | `"modules/outbound-tcp-default"` |  |
 | ecnet.pluginChains.outbound-tcp[2].priority | int | `100` |  |
-| ecnet.preinstall.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].key | string | `"kubernetes.io/os"` |  |
-| ecnet.preinstall.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].operator | string | `"In"` |  |
-| ecnet.preinstall.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].values[0] | string | `"linux"` |  |
-| ecnet.preinstall.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[1].key | string | `"kubernetes.io/arch"` |  |
-| ecnet.preinstall.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[1].operator | string | `"In"` |  |
-| ecnet.preinstall.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[1].values[0] | string | `"amd64"` |  |
-| ecnet.preinstall.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[1].values[1] | string | `"arm64"` |  |
-| ecnet.preinstall.nodeSelector | object | `{}` |  |
+| ecnet.preinstall | object | `{"affinity":{"nodeAffinity":{"requiredDuringSchedulingIgnoredDuringExecution":{"nodeSelectorTerms":[{"matchExpressions":[{"key":"kubernetes.io/os","operator":"In","values":["linux"]},{"key":"kubernetes.io/arch","operator":"In","values":["amd64","arm64"]}]}]}}},"nodeSelector":{},"tolerations":[]}` | ECNET's preinstall hook parameters |
 | ecnet.preinstall.tolerations | list | `[]` | Node tolerations applied to control plane pods. The specified tolerations allow pods to schedule onto nodes with matching taints. |
 | ecnet.proxyImage | string | `"flomesh/pipy-nightly:latest"` | Proxy image for Linux node workloads |
 | ecnet.proxyLogLevel | string | `"error"` | Log level for the proxy. Non developers should generally never set this value. In production environments the LogLevel should be set to `error` |

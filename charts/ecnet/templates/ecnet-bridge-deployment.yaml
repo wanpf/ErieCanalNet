@@ -98,9 +98,12 @@ spec:
         - name: bridge
           image: "{{ include "ecnetBridge.image" . }}"
           imagePullPolicy: {{ .Values.ecnet.image.pullPolicy }}
+          command: ['/ec/ecnet-bridge']
           args: [
-            "/ec/ecnet-bridge",
+            "--verbosity", "{{.Values.ecnet.controllerLogLevel}}",
+            "--ecnet-version", "{{ .Chart.AppVersion }}",
             "--bridge-eth={{ .Values.ecnet.ecnetBridge.cni.hostCniBridgeEth }}",
+            "--kind={{ .Values.ecnet.ecnetBridge.kindMode }}",
             "--kernel-tracing={{ .Values.ecnet.ecnetBridge.kernelTracing }}",
           ]
           lifecycle:
