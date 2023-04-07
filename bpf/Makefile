@@ -4,7 +4,6 @@ CFLAGS=-O2 -g  -Wall -target bpf -I/usr/include/$(shell uname -m)-linux-gnu
 
 BPF_FS=/sys/fs/bpf
 PIN_OBJECT_NS_PATH=/sys/fs/bpf
-PIN_TC_GLOBAL_NS_PATH=/sys/fs/bpf/tc/globals
 PROG_MOUNT_PATH=/sys/fs/bpf
 
 MACROS:=
@@ -52,7 +51,6 @@ $(BPF_FS):
 
 init-bpffs:
 	mountpoint -q ${BPF_FS} || mount -t bpf bpf ${BPF_FS}
-	[ -d ${PIN_TC_GLOBAL_NS_PATH} ] || sudo mkdir -p ${PIN_TC_GLOBAL_NS_PATH}
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(MACROS) -c $< -o $@
@@ -67,19 +65,19 @@ compile-clean:
 
 # Map
 load-map-ecnet_dns_nat:
-	[ -f $(PIN_TC_GLOBAL_NS_PATH)/ecnet_dns_nat ] || sudo bpftool map create $(PIN_TC_GLOBAL_NS_PATH)/ecnet_dns_nat type lru_hash key 12 value 8 entries 1024 name ecnet_dns_nat
+	[ -f $(PIN_OBJECT_NS_PATH)/ecnet_dns_nat ] || sudo bpftool map create $(PIN_OBJECT_NS_PATH)/ecnet_dns_nat type lru_hash key 12 value 8 entries 1024 name ecnet_dns_nat
 
 load-map-ecnet_svc_nat:
-	[ -f $(PIN_TC_GLOBAL_NS_PATH)/ecnet_svc_nat ] || sudo bpftool map create $(PIN_TC_GLOBAL_NS_PATH)/ecnet_svc_nat type lru_hash key 12 value 8 entries 65535 name ecnet_svc_nat
+	[ -f $(PIN_OBJECT_NS_PATH)/ecnet_svc_nat ] || sudo bpftool map create $(PIN_OBJECT_NS_PATH)/ecnet_svc_nat type lru_hash key 12 value 8 entries 65535 name ecnet_svc_nat
 
 clean-maps:
 	sudo rm -f \
-		$(PIN_TC_GLOBAL_NS_PATH)/ecnet_dns_nat \
-		$(PIN_TC_GLOBAL_NS_PATH)/ecnet_svc_nat
+		$(PIN_OBJECT_NS_PATH)/ecnet_dns_nat \
+		$(PIN_OBJECT_NS_PATH)/ecnet_svc_nat
 
 load-get_sockopts: load-map-ecnet_svc_nat load-map-ecnet_dns_nat
 	sudo bpftool -m prog load ecnet_cni_opts.o $(PROG_MOUNT_PATH)/get_sockopts \
-		map name ecnet_svc_nat pinned $(PIN_TC_GLOBAL_NS_PATH)/ecnet_svc_nat
+		map name ecnet_svc_nat pinned $(PIN_OBJECT_NS_PATH)/ecnet_svc_nat
 
 attach-get_sockopts:
 	sudo bpftool cgroup attach $(CGROUP2_PATH) getsockopt pinned $(PROG_MOUNT_PATH)/get_sockopts

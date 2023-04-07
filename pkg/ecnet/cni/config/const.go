@@ -11,7 +11,7 @@ const (
 	CNIDeletePodURL = "/v1/cni/delete-pod"
 
 	// ECNetDNSNatEbpfMap is the mount point of ecnet_dns_nat map
-	ECNetDNSNatEbpfMap = "/sys/fs/bpf/tc/globals/ecnet_dns_nat"
+	ECNetDNSNatEbpfMap = "/sys/fs/bpf/ecnet_dns_nat"
 	// ECNetSVCNatEbpfMap is the mount point of ecnet_svc_nat map
-	ECNetSVCNatEbpfMap = "/sys/fs/bpf/tc/globals/ecnet_svc_nat"
+	ECNetSVCNatEbpfMap = "/sys/fs/bpf/ecnet_svc_nat"
 )

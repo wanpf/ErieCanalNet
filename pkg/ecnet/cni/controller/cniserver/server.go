@@ -74,9 +74,10 @@ func (s *server) Start() error {
 		HandlerFunc(s.PodDeleted)
 
 	ss := http.Server{
-		Handler:      r,
-		WriteTimeout: 15 * time.Second,
-		ReadTimeout:  15 * time.Second,
+		Handler:           r,
+		WriteTimeout:      10 * time.Second,
+		ReadTimeout:       10 * time.Second,
+		ReadHeaderTimeout: 10 * time.Second,
 	}
 	go func() {
 		go ss.Serve(l) // nolint: errcheck

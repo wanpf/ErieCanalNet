@@ -26,7 +26,6 @@ struct bpf_elf_map __section("maps") ecnet_dns_nat = {
     .size_key = sizeof(struct pair),
     .size_value = sizeof(struct origin_info),
     .max_elem = 1024,
-    .pinning = PIN_GLOBAL_NS,
 };
 
 struct bpf_elf_map __section("maps") ecnet_svc_nat = {
@@ -34,5 +33,4 @@ struct bpf_elf_map __section("maps") ecnet_svc_nat = {
     .size_key = sizeof(struct pair),
     .size_value = sizeof(struct origin_info),
     .max_elem = 65535,
-    .pinning = PIN_GLOBAL_NS,
 };
