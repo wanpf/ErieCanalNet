@@ -62,26 +62,26 @@ compile-clean:
 	[ -f ecnet_connect.c ] && sudo rm -f $(TARGETS)
 
 # Map
-load-map-ecnet_sess_dst:
-	[ -f $(PROG_MOUNT_PATH)/ecnet_sess_dst ] || sudo bpftool map create $(PROG_MOUNT_PATH)/ecnet_sess_dst type lru_hash key 8 value 8 entries 65535 name ecnet_sess_dst
+load-map-ecnet_sess_dest:
+	[ -f $(PROG_MOUNT_PATH)/ecnet_sess_dest ] || sudo bpftool map create $(PROG_MOUNT_PATH)/ecnet_sess_dest type lru_hash key 8 value 8 entries 65535 name ecnet_sess_dest
 
-load-map-ecnet_pair_dst:
-	[ -f $(PROG_MOUNT_PATH)/ecnet_pair_dst ] || sudo bpftool map create $(PROG_MOUNT_PATH)/ecnet_pair_dst type lru_hash key 12 value 8 entries 65535 name ecnet_pair_dst
+load-map-ecnet_pair_dest:
+	[ -f $(PROG_MOUNT_PATH)/ecnet_pair_dest ] || sudo bpftool map create $(PROG_MOUNT_PATH)/ecnet_pair_dest type lru_hash key 12 value 8 entries 65535 name ecnet_pair_dest
 
 load-map-ecnet_sock_pair:
 	[ -f $(PROG_MOUNT_PATH)/ecnet_sock_pair ] || sudo bpftool map create $(PROG_MOUNT_PATH)/ecnet_sock_pair type sockhash key 12 value 4 entries 65535 name ecnet_sock_pair
 
 clean-maps:
 	sudo rm -f \
-		$(PROG_MOUNT_PATH)/ecnet_sess_dst \
-		$(PROG_MOUNT_PATH)/ecnet_pair_dst \
+		$(PROG_MOUNT_PATH)/ecnet_sess_dest \
+		$(PROG_MOUNT_PATH)/ecnet_pair_dest \
 		$(PROG_MOUNT_PATH)/ecnet_sock_pair \
 		$(PROG_MOUNT_PATH)/sockops \
 		$(PROG_MOUNT_PATH)/sockopt
 
-load-connect: load-map-ecnet_sess_dst
+load-connect: load-map-ecnet_sess_dest
 	sudo bpftool -m prog loadall ecnet_connect.o $(PROG_MOUNT_PATH)/connect \
-		map name ecnet_sess_dst pinned $(PROG_MOUNT_PATH)/ecnet_sess_dst
+		map name ecnet_sess_dest pinned $(PROG_MOUNT_PATH)/ecnet_sess_dest
 
 attach-connect:
 	sudo bpftool cgroup attach $(CGROUP2_PATH) connect4 pinned $(PROG_MOUNT_PATH)/connect/cgroup_connect4
@@ -90,9 +90,9 @@ clean-connect:
 	sudo bpftool cgroup detach $(CGROUP2_PATH) connect4 pinned $(PROG_MOUNT_PATH)/connect/cgroup_connect4
 	sudo rm -rf $(PROG_MOUNT_PATH)/connect
 
-load-sendmsg: load-map-ecnet_sess_dst
+load-sendmsg: load-map-ecnet_sess_dest
 	sudo bpftool -m prog loadall ecnet_sendmsg.o $(PROG_MOUNT_PATH)/sendmsg \
-		map name ecnet_sess_dst pinned $(PROG_MOUNT_PATH)/ecnet_sess_dst
+		map name ecnet_sess_dest pinned $(PROG_MOUNT_PATH)/ecnet_sess_dest
 
 attach-sendmsg:
 	sudo bpftool cgroup attach $(CGROUP2_PATH) sendmsg4 pinned $(PROG_MOUNT_PATH)/sendmsg/cgroup_sendmsg4
@@ -101,9 +101,9 @@ clean-sendmsg:
 	sudo bpftool cgroup detach $(CGROUP2_PATH) sendmsg4 pinned $(PROG_MOUNT_PATH)/sendmsg/cgroup_sendmsg4
 	sudo rm -rf $(PROG_MOUNT_PATH)/sendmsg
 
-load-recvmsg: load-map-ecnet_sess_dst
+load-recvmsg: load-map-ecnet_sess_dest
 	sudo bpftool -m prog loadall ecnet_recvmsg.o $(PROG_MOUNT_PATH)/recvmsg \
-		map name ecnet_sess_dst pinned $(PROG_MOUNT_PATH)/ecnet_sess_dst
+		map name ecnet_sess_dest pinned $(PROG_MOUNT_PATH)/ecnet_sess_dest
 
 attach-recvmsg:
 	sudo bpftool cgroup attach $(CGROUP2_PATH) recvmsg4 pinned $(PROG_MOUNT_PATH)/recvmsg/cgroup_recvmsg4
@@ -123,9 +123,9 @@ clean-redirmsg:
 	sudo bpftool prog detach pinned $(PROG_MOUNT_PATH)/redirmsg msg_verdict pinned $(PROG_MOUNT_PATH)/ecnet_sock_pair
 	sudo rm $(PROG_MOUNT_PATH)/redirmsg
 
-load-sockopt: load-map-ecnet_pair_dst
+load-sockopt: load-map-ecnet_pair_dest
 	sudo bpftool -m prog load ecnet_sockopt.o $(PROG_MOUNT_PATH)/sockopt \
-		map name ecnet_pair_dst pinned $(PROG_MOUNT_PATH)/ecnet_pair_dst
+		map name ecnet_pair_dest pinned $(PROG_MOUNT_PATH)/ecnet_pair_dest
 
 attach-sockopt:
 	sudo bpftool cgroup attach $(CGROUP2_PATH) getsockopt pinned $(PROG_MOUNT_PATH)/sockopt
@@ -134,10 +134,10 @@ clean-sockopt:
 	sudo bpftool cgroup detach $(CGROUP2_PATH) getsockopt pinned $(PROG_MOUNT_PATH)/sockopt
 	sudo rm $(PROG_MOUNT_PATH)/sockopt
 
-load-sockops: load-map-ecnet_sess_dst load-map-ecnet_pair_dst load-map-ecnet_sock_pair
+load-sockops: load-map-ecnet_sess_dest load-map-ecnet_pair_dest load-map-ecnet_sock_pair
 	sudo bpftool -m prog load ecnet_sockops.o $(PROG_MOUNT_PATH)/sockops \
-	map name ecnet_sess_dst pinned $(PROG_MOUNT_PATH)/ecnet_sess_dst \
-	map name ecnet_pair_dst pinned $(PROG_MOUNT_PATH)/ecnet_pair_dst \
+	map name ecnet_sess_dest pinned $(PROG_MOUNT_PATH)/ecnet_sess_dest \
+	map name ecnet_pair_dest pinned $(PROG_MOUNT_PATH)/ecnet_pair_dest \
 	map name ecnet_sock_pair pinned $(PROG_MOUNT_PATH)/ecnet_sock_pair
 
 attach-sockops:

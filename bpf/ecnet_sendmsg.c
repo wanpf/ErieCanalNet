@@ -20,7 +20,7 @@ __section("cgroup/sendmsg4") int ecnet_sendmsg4(struct bpf_sock_addr *ctx)
         return 1;
     }
 
-#ifdef DEBUG_DNS
+#ifdef DEBUG
     debugf("ecnet_sendmsg4 [DNS Query]: DST IP: %pI4 PORT: %d UID: %d", &dst_ip,
            bpf_ntohs(ctx->user_port), uid);
 #endif
@@ -30,14 +30,14 @@ __section("cgroup/sendmsg4") int ecnet_sendmsg4(struct bpf_sock_addr *ctx)
     memset(&origin, 0, sizeof(origin));
     origin.ip = ctx->user_ip4;
     origin.port = ctx->user_port;
-    if (bpf_map_update_elem(&ecnet_sess_dst, &cookie, &origin, BPF_ANY)) {
-        printk("update origin cookie failed: %d", cookie);
+    if (bpf_map_update_elem(&ecnet_sess_dest, &cookie, &origin, BPF_ANY)) {
+        printk("ecnet_sendmsg4 update origin cookie failed: %d", cookie);
     }
 
     __u32 bridge_ip = bpf_htonl(BRIDGE_IP);
     __u16 bridge_port = bpf_htons(DNS_PROXY_PORT);
 
-#ifdef DEBUG_DNS
+#ifdef DEBUG
     debugf("ecnet_sendmsg4 [DNS Query]: BDG ip: %pI4 port: %d uid: %d",
            &bridge_ip, bpf_ntohs(bridge_port), uid);
 #endif

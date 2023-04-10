@@ -6,7 +6,7 @@
 #define MAX_OPS_BUFF_LENGTH 4096
 #define SO_ORIGINAL_DST 80
 
-__section("cgroup/getsockopt") int ecnet_sockopt(struct bpf_sockopt *ctx)
+__section("cgroup/getsockopt") int ecnet_sockopt4(struct bpf_sockopt *ctx)
 {
     // currently, eBPF can not deal with optlen more than 4096 bytes, so, we
     // should limit this.
@@ -27,11 +27,11 @@ __section("cgroup/getsockopt") int ecnet_sockopt(struct bpf_sockopt *ctx)
     case 2: // ipv4
         p.dip = ctx->sk->src_ip4;
         p.sip = ctx->sk->dst_ip4;
-        origin = bpf_map_lookup_elem(&ecnet_pair_dst, &p);
+        origin = bpf_map_lookup_elem(&ecnet_pair_dest, &p);
 #ifdef DEBUG
-        debugf("ecnet_sockopt\tget ecnet_pair_dst\tpair.dip:dport = %pI4:%d:%d",
+        debugf("ecnet_sockopt4 ecnet_pair_dest get pair.dip:dport = %pI4:%d:%d",
                &p.dip, p.dport, bpf_ntohs(p.dport));
-        debugf("ecnet_sockopt\tget ecnet_pair_dst\tpair.sip:sport = %pI4:%d:%d",
+        debugf("ecnet_sockopt4 ecnet_pair_dest get pair.sip:sport = %pI4:%d:%d",
                &p.sip, p.sport, bpf_ntohs(p.sport));
 #endif
         if (origin) {
@@ -39,7 +39,7 @@ __section("cgroup/getsockopt") int ecnet_sockopt(struct bpf_sockopt *ctx)
             ctx->optlen = (__s32)sizeof(struct sockaddr_in);
             if ((void *)((struct sockaddr_in *)ctx->optval + 1) >
                 ctx->optval_end) {
-                printk("ecnet_sockopt optname: %d: invalid getsockopt optval",
+                printk("ecnet_sockopt4 optname: %d: invalid getsockopt optval",
                        ctx->optname);
                 return 1;
             }

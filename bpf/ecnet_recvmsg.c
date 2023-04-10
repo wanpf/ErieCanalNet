@@ -20,7 +20,7 @@ __section("cgroup/recvmsg4") int ecnet_recvmsg4(struct bpf_sock_addr *ctx)
         return 1;
     }
 
-#ifdef DEBUG_DNS
+#ifdef DEBUG
     __u32 usr_ip4 = ctx->user_ip4;
     debugf("ecnet_recvmsg4 [DNS Reply]: USR IP: %pI4 PORT: %d uid: %d",
            &usr_ip4, bpf_ntohs(ctx->user_port), uid);
@@ -28,12 +28,12 @@ __section("cgroup/recvmsg4") int ecnet_recvmsg4(struct bpf_sock_addr *ctx)
 
     __u64 cookie = bpf_get_socket_cookie_addr(ctx);
     struct origin_info *origin =
-        (struct origin_info *)bpf_map_lookup_elem(&ecnet_sess_dst, &cookie);
+        (struct origin_info *)bpf_map_lookup_elem(&ecnet_sess_dest, &cookie);
     if (origin) {
         ctx->user_port = origin->port;
         ctx->user_ip4 = origin->ip;
 
-#ifdef DEBUG_DNS
+#ifdef DEBUG
         debugf(
             "ecnet_recvmsg4 [DNS Reply]: successfully deal DNS redirect query");
 #endif

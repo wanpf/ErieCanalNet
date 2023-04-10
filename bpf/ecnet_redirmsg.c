@@ -17,11 +17,9 @@ __section("sk_msg") int ecnet_redirmsg(struct sk_msg_md *msg)
         break;
     }
 
-#ifdef
-    debugf("ecnet_redirmsg\tecnet_sock_pair\t\tpair.dip:dport = %pI4:%d:%d",
-           &p.dip, p.dport, bpf_ntohs(p.dport));
-    debugf("ecnet_redirmsg\tecnet_sock_pair\t\tpair.sip:sport = %pI4:%d:%d",
-           &p.sip, p.sport, bpf_ntohs(p.sport));
+#ifdef DEBUG
+    debugf("ecnet_redirmsg ecnet_sock_pair hah pair.dip:dport = %pI4:%d", &p.dip, bpf_ntohs(p.dport));
+    debugf("ecnet_redirmsg ecnet_sock_pair hah pair.sip:sport = %pI4:%d", &p.sip, bpf_ntohs(p.sport));
 #endif
 
     long ret = bpf_msg_redirect_hash(msg, &ecnet_sock_pair, &p, BPF_F_INGRESS);

@@ -1,5 +1,5 @@
 load:
-	[ -f bpf/ecnet_cni_tc.c ] && make -C bpf load
+	[ -f bpf/ecnet_connect.c ] && make -C bpf load
 attach:
 	make -C bpf attach
 clean:

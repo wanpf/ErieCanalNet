@@ -15,14 +15,14 @@ struct origin_info {
     __u16 _pad;
 };
 
-struct bpf_elf_map __section("maps") ecnet_sess_dst = {
+struct bpf_elf_map __section("maps") ecnet_sess_dest = {
     .type = BPF_MAP_TYPE_LRU_HASH,
     .size_key = sizeof(__u64),
     .size_value = sizeof(struct origin_info),
     .max_elem = 65535,
 };
 
-struct bpf_elf_map __section("maps") ecnet_pair_dst = {
+struct bpf_elf_map __section("maps") ecnet_pair_dest = {
     .type = BPF_MAP_TYPE_LRU_HASH,
     .size_key = sizeof(struct pair),
     .size_value = sizeof(struct origin_info),

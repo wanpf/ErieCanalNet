@@ -4,7 +4,7 @@
 #include <linux/bpf.h>
 #include <linux/in.h>
 
-static inline int ecnet_udp_connect4(struct bpf_sock_addr *ctx)
+static inline int ecnet_udp_con4(struct bpf_sock_addr *ctx)
 {
     if (bpf_htons(ctx->user_port) != DNS_CAPTURE_PORT) {
         return 1;
@@ -23,11 +23,11 @@ static inline int ecnet_udp_connect4(struct bpf_sock_addr *ctx)
 
     __u64 cookie = bpf_get_socket_cookie_addr(ctx);
 
-#ifdef DEBUG_DNS
+#ifdef DEBUG
     __u64 cgrp_id = bpf_get_current_cgroup_id();
-    debugf("ecnet_udp_connect4 [DNS Query]: DST IP: %pI4 PORT: %d", &dst_ip,
+    debugf("ecnet_udp_con4 [DNS Query]: DST IP: %pI4 PORT: %d", &dst_ip,
            bpf_ntohs(ctx->user_port));
-    debugf("ecnet_udp_connect4 [DNS Query]: CKI: %d CGID: %d UID: %d", cookie,
+    debugf("ecnet_udp_con4 [DNS Query]: CKI: %d CGID: %d UID: %d", cookie,
            cgrp_id, uid);
 #endif
 
@@ -36,17 +36,17 @@ static inline int ecnet_udp_connect4(struct bpf_sock_addr *ctx)
     origin.ip = ctx->user_ip4;
     origin.port = ctx->user_port;
 
-    if (bpf_map_update_elem(&ecnet_sess_dst, &cookie, &origin, BPF_ANY)) {
+    if (bpf_map_update_elem(&ecnet_sess_dest, &cookie, &origin, BPF_ANY)) {
         printk(
-            "ecnet_udp_connect4 [DNS Query]: Update origin cookie failed: %d",
+            "ecnet_udp_con4 [DNS Query]: Update origin cookie failed: %d",
             cookie);
     }
 
     __u32 bridge_ip = bpf_htonl(BRIDGE_IP);
     __u16 bridge_port = bpf_htons(DNS_PROXY_PORT);
 
-#ifdef DEBUG_DNS
-    debugf("ecnet_udp_connect4 [DNS Query]: BRI IP: %pI4 PORT: %d UID: %d",
+#ifdef DEBUG
+    debugf("ecnet_udp_con4 [DNS Query]: BRI IP: %pI4 PORT: %d UID: %d",
            &bridge_ip, bpf_ntohs(bridge_port), uid);
 #endif
 
@@ -55,7 +55,7 @@ static inline int ecnet_udp_connect4(struct bpf_sock_addr *ctx)
     return 1;
 }
 
-static inline int ecnet_tcp_connect4(struct bpf_sock_addr *ctx)
+static inline int ecnet_tcp_con4(struct bpf_sock_addr *ctx)
 {
     if (bpf_htons(ctx->user_port) == ECNET_PROXY_PORT) {
         return 1;
@@ -77,13 +77,11 @@ static inline int ecnet_tcp_connect4(struct bpf_sock_addr *ctx)
         return 1;
     }
 
-#ifdef
     __u64 cookie = bpf_get_socket_cookie_addr(ctx);
-    __u64 cgrp_id = bpf_get_current_cgroup_id();
-    debugf("ecnet_tcp_connect4 : DST IP: %pI4 PORT: %d", &dst_ip,
+#ifdef DEBUG
+    debugf("ecnet_tcp_con4 DST IP: %pI4 PORT: %d", &dst_ip,
            bpf_ntohs(ctx->user_port));
-    debugf("ecnet_tcp_connect4 : CKI: %d CGID: %d UID: %d", cookie, cgrp_id,
-           uid);
+    debugf("ecnet_tcp_con4 CKI: %d UID: %d", cookie, uid);
 #endif
 
     // redirect it to node proxy.
@@ -92,16 +90,15 @@ static inline int ecnet_tcp_connect4(struct bpf_sock_addr *ctx)
     origin.ip = dst_ip;
     origin.port = ctx->user_port;
 
-#ifdef
-    debugf("ecnet_tcp_connect4\tset ecnet_sess_dst\tkey:cookie = %d", cookie);
-    debugf("ecnet_tcp_connect4\tset ecnet_sess_dst\tval:origin.ip:port = "
-           "%pI4:%d:%d",
-           &origin.ip, origin.port, bpf_ntohs(origin.port));
+#ifdef DEBUG
+    debugf("ecnet_tcp_con4 ecnet_sess_dest set key:cookie = %d", cookie);
+    debugf("ecnet_tcp_con4 ecnet_sess_dest set val:origin.ip:port = %pI4:%d",
+           &origin.ip, bpf_ntohs(origin.port));
 #endif
 
     // origin.flags = 1;
-    if (bpf_map_update_elem(&ecnet_sess_dst, &cookie, &origin, BPF_ANY)) {
-        printk("write ecnet_sess_dst failed");
+    if (bpf_map_update_elem(&ecnet_sess_dest, &cookie, &origin, BPF_ANY)) {
+        printk("ecnet_tcp_con4 write ecnet_sess_dest failed");
         return 0;
     }
 
@@ -114,9 +111,9 @@ __section("cgroup/connect4") int ecnet_sock_connect4(struct bpf_sock_addr *ctx)
 {
     switch (ctx->protocol) {
     case IPPROTO_TCP:
-        return ecnet_tcp_connect4(ctx);
+        return ecnet_tcp_con4(ctx);
     case IPPROTO_UDP:
-        return ecnet_udp_connect4(ctx);
+        return ecnet_udp_con4(ctx);
     default:
         return 1;
     }
