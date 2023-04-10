@@ -297,15 +297,6 @@
                             "examples": [
                                 false
                             ]
-                        },
-                        "kindMode": {
-                            "$id": "#/properties/ecnet/properties/ecnetBridge/properties/kindMode",
-                            "type": "boolean",
-                            "title": "running kind cluster",
-                            "description": "Indicates whether running kind cluster.",
-                            "examples": [
-                                false
-                            ]
                         }
                     },
                     "additionalProperties": false

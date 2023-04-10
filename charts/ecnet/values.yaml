@@ -120,7 +120,6 @@ ecnet:
   # -- ECNET bridge parameters
   ecnetBridge:
     kernelTracing: true
-    kindMode: false
     cni:
       hostCniBridgeEth: cni0
     resource:

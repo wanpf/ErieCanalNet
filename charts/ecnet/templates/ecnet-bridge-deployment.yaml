@@ -95,6 +95,8 @@ spec:
           env:
             - name: CNI_BRIDGE_ETH
               value: {{ .Values.ecnet.ecnetBridge.cni.hostCniBridgeEth }}
+          securityContext:
+            runAsUser: 1600
         - name: bridge
           image: "{{ include "ecnetBridge.image" . }}"
           imagePullPolicy: {{ .Values.ecnet.image.pullPolicy }}
@@ -103,7 +105,6 @@ spec:
             "--verbosity", "{{.Values.ecnet.controllerLogLevel}}",
             "--ecnet-version", "{{ .Chart.AppVersion }}",
             "--bridge-eth={{ .Values.ecnet.ecnetBridge.cni.hostCniBridgeEth }}",
-            "--kind={{ .Values.ecnet.ecnetBridge.kindMode }}",
             "--kernel-tracing={{ .Values.ecnet.ecnetBridge.kernelTracing }}",
           ]
           lifecycle:
@@ -122,38 +123,10 @@ spec:
               memory: "{{.Values.ecnet.ecnetBridge.resource.requests.memory}}"
           securityContext:
             privileged: true
-          volumeMounts:
-            - mountPath: /sys/fs/cgroup
-              name: sys-fs-cgroup
-            - mountPath: /host/opt/cni/bin
-              name: cni-bin-dir
-            - mountPath: /host/etc/cni/net.d
-              name: cni-config-dir
-            - mountPath: /host/proc
-              name: host-proc
-            - mountPath: /host/var/run
-              name: host-var-run
-              mountPropagation: Bidirectional
       tolerations:
         - key: CriticalAddonsOnly
           operator: Exists
         - operator: Exists
-      volumes:
-        - hostPath:
-            path: /sys/fs/cgroup
-          name: sys-fs-cgroup
-        - hostPath:
-            path: /proc
-          name: host-proc
-        - hostPath:
-            path: /opt/cni/bin
-          name: cni-bin-dir
-        - hostPath:
-            path: /etc/cni/net.d
-          name: cni-config-dir
-        - hostPath:
-            path: /var/run
-          name: host-var-run
     {{- if .Values.ecnet.imagePullSecrets }}
       imagePullSecrets:
 {{ toYaml .Values.ecnet.imagePullSecrets | indent 8 }}

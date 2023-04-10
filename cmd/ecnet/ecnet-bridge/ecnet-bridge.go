@@ -3,17 +3,14 @@ package main
 
 import (
 	"flag"
-	"os"
-	"path"
-
 	"github.com/spf13/pflag"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/clientcmd"
+	"os"
 
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/config"
-	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/controller/cniserver"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/controller/helpers"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/cni/controller/podwatcher"
 	"github.com/flomesh-io/ErieCanal/pkg/ecnet/k8s/events"
@@ -39,12 +36,8 @@ func init() {
 
 	// Get some flags from commands
 	flags.BoolVarP(&config.KernelTracing, "kernel-tracing", "d", false, "kernel tracing mode")
-	flags.BoolVarP(&config.IsKind, "kind", "k", false, "Enable when Kubernetes is running in Kind")
 	flags.StringVar(&config.BridgeEth, "bridge-eth", "cni0", "bridge veth created by CNI")
 	flags.StringVar(&config.HostProc, "host-proc", "/host/proc", "/proc mount path")
-	flags.StringVar(&config.CNIBinDir, "cni-bin-dir", "/host/opt/cni/bin", "/opt/cni/bin mount path")
-	flags.StringVar(&config.CNIConfigDir, "cni-config-dir", "/host/etc/cni/net.d", "/etc/cni/net.d mount path")
-	flags.StringVar(&config.HostVarRun, "host-var-run", "/host/var/run", "/var/run mount path")
 
 	_ = clientgoscheme.AddToScheme(scheme)
 }
@@ -88,11 +81,6 @@ func main() {
 	}
 
 	stop := make(chan struct{}, 1)
-	cniReady := make(chan struct{}, 1)
-	s := cniserver.NewServer(path.Join("/host", config.CNISock), "/sys/fs/bpf", cniReady, stop)
-	if err = s.Start(); err != nil {
-		log.Fatal().Err(err)
-	}
 	if err = podwatcher.Run(kubeClient, stop); err != nil {
 		log.Fatal().Err(err)
 	}

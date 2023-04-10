@@ -198,3 +198,15 @@ access-control-allow-origin: *
 access-control-allow-credentials: true
 ```
 
+
+
+
+
+```
+make compile-clean compile 
+make load-connect load-sendmsg load-recvmsg load-redirmsg load-sockops
+make attach-connect attach-sendmsg attach-recvmsg attach-redirmsg attach-sockops
+make clean-connect clean-sendmsg clean-recvmsg clean-redirmsg clean-sockops clean-maps
+curl -I pipy-ok.pipy:8080
+```
+
