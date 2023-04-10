@@ -22,11 +22,13 @@ __section("sk_msg") int ecnet_redirmsg(struct sk_msg_md *msg)
            &p.dip, bpf_ntohs(p.dport));
     debugf("ecnet_redirmsg ecnet_sock_pair hah pair.sip:sport = %pI4:%d",
            &p.sip, bpf_ntohs(p.sport));
-#endif
-
     long ret = bpf_msg_redirect_hash(msg, &ecnet_sock_pair, &p, BPF_F_INGRESS);
     if (ret)
         printk("redirect %d bytes with eBPF successfully", msg->size);
+#else
+    bpf_msg_redirect_hash(msg, &ecnet_sock_pair, &p, BPF_F_INGRESS);
+#endif
+
     return 1;
 }
 
