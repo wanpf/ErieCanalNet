@@ -15,24 +15,23 @@ struct origin_info {
     __u16 _pad;
 };
 
-struct service_info {
-    __u32 ip;
-    __u16 port;
-    __u16 _pad;
-};
-
-struct bpf_elf_map __section("maps") ecnet_dns_nat = {
+struct bpf_elf_map __section("maps") ecnet_sess_dst = {
     .type = BPF_MAP_TYPE_LRU_HASH,
-    .size_key = sizeof(struct pair),
+    .size_key = sizeof(__u64),
     .size_value = sizeof(struct origin_info),
-    .max_elem = 1024,
-    .pinning = PIN_GLOBAL_NS,
+    .max_elem = 65535,
 };
 
-struct bpf_elf_map __section("maps") ecnet_svc_nat = {
+struct bpf_elf_map __section("maps") ecnet_pair_dst = {
     .type = BPF_MAP_TYPE_LRU_HASH,
     .size_key = sizeof(struct pair),
     .size_value = sizeof(struct origin_info),
     .max_elem = 65535,
-    .pinning = PIN_GLOBAL_NS,
+};
+
+struct bpf_elf_map __section("maps") ecnet_sock_pair = {
+    .type = BPF_MAP_TYPE_SOCKHASH,
+    .size_key = sizeof(struct pair),
+    .size_value = sizeof(__u32),
+    .max_elem = 65535,
 };

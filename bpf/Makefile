@@ -3,13 +3,11 @@ CC=clang
 CFLAGS=-O2 -g  -Wall -target bpf -I/usr/include/$(shell uname -m)-linux-gnu
 
 BPF_FS=/sys/fs/bpf
-PIN_OBJECT_NS_PATH=/sys/fs/bpf
-PIN_TC_GLOBAL_NS_PATH=/sys/fs/bpf/tc/globals
 PROG_MOUNT_PATH=/sys/fs/bpf
 
 MACROS:=
 DEBUG ?= 1
-BRIDGE_IP ?= 183763456
+BRIDGE_IP ?= 183763201 #10.244.1.1
 
 # see https://stackoverflow.com/questions/15063298/how-to-check-kernel-version-in-makefile
 KVER = $(shell uname -r)
@@ -45,14 +43,12 @@ ifeq ($(CGROUP2_PATH),)
 $(error It looks like your system does not have cgroupv2 enabled, or the automatic recognition fails. Please enable cgroupv2, or specify the path of cgroupv2 manually via CGROUP2_PATH parameter.)
 endif
 
-TARGETS=ecnet_cni_tc.o ecnet_cni_opts.o
-
+TARGETS=ecnet_connect.o ecnet_recvmsg.o ecnet_sendmsg.o ecnet_redirmsg.o ecnet_sockops.o ecnet_sockopt.o
 $(BPF_FS):
 	mountpoint -q $@ || mount -t bpf bpf $@
 
 init-bpffs:
 	mountpoint -q ${BPF_FS} || mount -t bpf bpf ${BPF_FS}
-	[ -d ${PIN_TC_GLOBAL_NS_PATH} ] || sudo mkdir -p ${PIN_TC_GLOBAL_NS_PATH}
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(MACROS) -c $< -o $@
@@ -63,81 +59,106 @@ generate-compilation-database:
 compile: $(TARGETS)
 
 compile-clean:
-	[ -f ecnet_cni_tc.c ] && sudo rm -f $(TARGETS)
+	[ -f ecnet_connect.c ] && sudo rm -f $(TARGETS)
 
 # Map
-load-map-ecnet_dns_nat:
-	[ -f $(PIN_TC_GLOBAL_NS_PATH)/ecnet_dns_nat ] || sudo bpftool map create $(PIN_TC_GLOBAL_NS_PATH)/ecnet_dns_nat type lru_hash key 12 value 8 entries 1024 name ecnet_dns_nat
+load-map-ecnet_sess_dst:
+	[ -f $(PROG_MOUNT_PATH)/ecnet_sess_dst ] || sudo bpftool map create $(PROG_MOUNT_PATH)/ecnet_sess_dst type lru_hash key 8 value 8 entries 65535 name ecnet_sess_dst
 
-load-map-ecnet_svc_nat:
-	[ -f $(PIN_TC_GLOBAL_NS_PATH)/ecnet_svc_nat ] || sudo bpftool map create $(PIN_TC_GLOBAL_NS_PATH)/ecnet_svc_nat type lru_hash key 12 value 8 entries 65535 name ecnet_svc_nat
+load-map-ecnet_pair_dst:
+	[ -f $(PROG_MOUNT_PATH)/ecnet_pair_dst ] || sudo bpftool map create $(PROG_MOUNT_PATH)/ecnet_pair_dst type lru_hash key 12 value 8 entries 65535 name ecnet_pair_dst
+
+load-map-ecnet_sock_pair:
+	[ -f $(PROG_MOUNT_PATH)/ecnet_sock_pair ] || sudo bpftool map create $(PROG_MOUNT_PATH)/ecnet_sock_pair type sockhash key 12 value 4 entries 65535 name ecnet_sock_pair
 
 clean-maps:
 	sudo rm -f \
-		$(PIN_TC_GLOBAL_NS_PATH)/ecnet_dns_nat \
-		$(PIN_TC_GLOBAL_NS_PATH)/ecnet_svc_nat
+		$(PROG_MOUNT_PATH)/ecnet_sess_dst \
+		$(PROG_MOUNT_PATH)/ecnet_pair_dst \
+		$(PROG_MOUNT_PATH)/ecnet_sock_pair \
+		$(PROG_MOUNT_PATH)/sockops \
+		$(PROG_MOUNT_PATH)/sockopt
 
-load-get_sockopts: load-map-ecnet_svc_nat load-map-ecnet_dns_nat
-	sudo bpftool -m prog load ecnet_cni_opts.o $(PROG_MOUNT_PATH)/get_sockopts \
-		map name ecnet_svc_nat pinned $(PIN_TC_GLOBAL_NS_PATH)/ecnet_svc_nat
+load-connect: load-map-ecnet_sess_dst
+	sudo bpftool -m prog loadall ecnet_connect.o $(PROG_MOUNT_PATH)/connect \
+		map name ecnet_sess_dst pinned $(PROG_MOUNT_PATH)/ecnet_sess_dst
 
-attach-get_sockopts:
-	sudo bpftool cgroup attach $(CGROUP2_PATH) getsockopt pinned $(PROG_MOUNT_PATH)/get_sockopts
+attach-connect:
+	sudo bpftool cgroup attach $(CGROUP2_PATH) connect4 pinned $(PROG_MOUNT_PATH)/connect/cgroup_connect4
 
-clean-get_sockopts:
-	sudo bpftool cgroup detach $(CGROUP2_PATH) getsockopt pinned $(PROG_MOUNT_PATH)/get_sockopts
-	sudo rm $(PROG_MOUNT_PATH)/get_sockopts
+clean-connect:
+	sudo bpftool cgroup detach $(CGROUP2_PATH) connect4 pinned $(PROG_MOUNT_PATH)/connect/cgroup_connect4
+	sudo rm -rf $(PROG_MOUNT_PATH)/connect
 
-load: compile init-bpffs load-get_sockopts
+load-sendmsg: load-map-ecnet_sess_dst
+	sudo bpftool -m prog loadall ecnet_sendmsg.o $(PROG_MOUNT_PATH)/sendmsg \
+		map name ecnet_sess_dst pinned $(PROG_MOUNT_PATH)/ecnet_sess_dst
 
-attach: attach-get_sockopts
+attach-sendmsg:
+	sudo bpftool cgroup attach $(CGROUP2_PATH) sendmsg4 pinned $(PROG_MOUNT_PATH)/sendmsg/cgroup_sendmsg4
 
-clean: clean-get_sockopts clean-maps compile-clean
+clean-sendmsg:
+	sudo bpftool cgroup detach $(CGROUP2_PATH) sendmsg4 pinned $(PROG_MOUNT_PATH)/sendmsg/cgroup_sendmsg4
+	sudo rm -rf $(PROG_MOUNT_PATH)/sendmsg
+
+load-recvmsg: load-map-ecnet_sess_dst
+	sudo bpftool -m prog loadall ecnet_recvmsg.o $(PROG_MOUNT_PATH)/recvmsg \
+		map name ecnet_sess_dst pinned $(PROG_MOUNT_PATH)/ecnet_sess_dst
+
+attach-recvmsg:
+	sudo bpftool cgroup attach $(CGROUP2_PATH) recvmsg4 pinned $(PROG_MOUNT_PATH)/recvmsg/cgroup_recvmsg4
+
+clean-recvmsg:
+	sudo bpftool cgroup detach $(CGROUP2_PATH) recvmsg4 pinned $(PROG_MOUNT_PATH)/recvmsg/cgroup_recvmsg4
+	sudo rm -rf $(PROG_MOUNT_PATH)/recvmsg
+
+load-redirmsg: load-map-ecnet_sock_pair
+	sudo bpftool -m prog load ecnet_redirmsg.o $(PROG_MOUNT_PATH)/redirmsg \
+		map name ecnet_sock_pair pinned $(PROG_MOUNT_PATH)/ecnet_sock_pair
+
+attach-redirmsg:
+	sudo bpftool prog attach pinned $(PROG_MOUNT_PATH)/redirmsg msg_verdict pinned $(PROG_MOUNT_PATH)/ecnet_sock_pair
+
+clean-redirmsg:
+	sudo bpftool prog detach pinned $(PROG_MOUNT_PATH)/redirmsg msg_verdict pinned $(PROG_MOUNT_PATH)/ecnet_sock_pair
+	sudo rm $(PROG_MOUNT_PATH)/redirmsg
+
+load-sockopt: load-map-ecnet_pair_dst
+	sudo bpftool -m prog load ecnet_sockopt.o $(PROG_MOUNT_PATH)/sockopt \
+		map name ecnet_pair_dst pinned $(PROG_MOUNT_PATH)/ecnet_pair_dst
+
+attach-sockopt:
+	sudo bpftool cgroup attach $(CGROUP2_PATH) getsockopt pinned $(PROG_MOUNT_PATH)/sockopt
+
+clean-sockopt:
+	sudo bpftool cgroup detach $(CGROUP2_PATH) getsockopt pinned $(PROG_MOUNT_PATH)/sockopt
+	sudo rm $(PROG_MOUNT_PATH)/sockopt
+
+load-sockops: load-map-ecnet_sess_dst load-map-ecnet_pair_dst load-map-ecnet_sock_pair
+	sudo bpftool -m prog load ecnet_sockops.o $(PROG_MOUNT_PATH)/sockops \
+	map name ecnet_sess_dst pinned $(PROG_MOUNT_PATH)/ecnet_sess_dst \
+	map name ecnet_pair_dst pinned $(PROG_MOUNT_PATH)/ecnet_pair_dst \
+	map name ecnet_sock_pair pinned $(PROG_MOUNT_PATH)/ecnet_sock_pair
+
+attach-sockops:
+	sudo bpftool cgroup attach $(CGROUP2_PATH) sock_ops pinned $(PROG_MOUNT_PATH)/sockops
+
+clean-sockops:
+	sudo bpftool cgroup detach $(CGROUP2_PATH) sock_ops pinned $(PROG_MOUNT_PATH)/sockops
+	sudo rm -rf $(PROG_MOUNT_PATH)/sockops
+
+load: compile init-bpffs load-connect load-sendmsg load-recvmsg load-redirmsg load-sockopt load-sockops
+
+attach: attach-connect attach-sendmsg attach-recvmsg attach-redirmsg attach-sockopt attach-sockops
+
+clean: clean-connect clean-sendmsg clean-recvmsg clean-redirmsg clean-sockopt clean-sockops clean-maps compile-clean
 
 all: compile
 
-PROG_TC ?= /home/benne/CLionProjects/ErieCanalNet/bpf/ecnet_cni_tc.o
-
-test-init:
-	sudo ip netns add demo
-	sudo ip link add veth1 type veth peer name veth0
-	sudo ip link set veth0 netns demo
-	sudo ip addr add 10.244.2.0/24 dev veth1
-	sudo ip link set veth1 up
-	sudo ip netns exec demo ip addr add 10.244.2.1/24 dev veth0
-	sudo ip netns exec demo ip link set veth0 up
-	sudo ip netns exec demo ip link set lo up
-	sudo ip netns exec demo ip r add 0.0.0.0/0 via 10.244.2.0
-	sudo iptables -t nat -A POSTROUTING -s 10.244.2.0/24 -o ens33 -j MASQUERADE
-	sudo ip netns exec demo ifconfig
-	sudo sed -i 's/127.0.0.53/8.8.8.8/g' /etc/resolv.conf
-
-test-run:
-	sudo ip netns exec demo tc qdisc add dev veth0 clsact
-	sudo ip netns exec demo bash -c "tc filter add dev veth0 egress bpf direct-action obj $(PROG_TC) sec classifier_egress;tc filter add dev veth0 ingress bpf direct-action obj $(PROG_TC) sec classifier_ingress"
-
-curl:
-	sudo ip netns exec demo curl -I pipy-ok.pipy:8080
-
-dns:
-	sudo ip netns exec demo nslookup pipy-ok.pipy
-
-test-clean:
-	sudo ip netns exec demo tc filter delete dev veth0 egress
-	sudo ip netns exec demo tc filter delete dev veth0 ingress
-	sudo ip netns exec demo tc qdisc delete dev veth0 clsact
-
-test-log:
-	cat /sys/kernel/debug/tracing/trace_pipe|grep bpf_trace_printk
-
-
-CRACK_NS ?= demo
-
-crack-clean:
-	sudo ip netns exec $(CRACK_NS) tc filter delete dev eth0 egress
-	sudo ip netns exec $(CRACK_NS) tc filter delete dev eth0 ingress
-	sudo ip netns exec $(CRACK_NS) tc qdisc delete dev eth0 clsact
-
-crack-run:
-	sudo ip netns exec $(CRACK_NS) tc qdisc add dev eth0 clsact
-	sudo ip netns exec $(CRACK_NS) bash -c "tc filter add dev eth0 egress bpf direct-action obj $(PROG_TC) sec classifier_egress;tc filter add dev eth0 ingress bpf direct-action obj $(PROG_TC) sec classifier_ingress"
+clean-progs: compile-clean clean-maps
+	sudo rm -rf $(PROG_MOUNT_PATH)/connect
+	sudo rm -rf $(PROG_MOUNT_PATH)/sendmsg
+	sudo rm -rf $(PROG_MOUNT_PATH)/recvmsg
+	sudo rm -rf $(PROG_MOUNT_PATH)/redirmsg
+	sudo rm -rf $(PROG_MOUNT_PATH)/sockops
+	sudo rm -rf $(PROG_MOUNT_PATH)/sockopt
