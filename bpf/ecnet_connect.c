@@ -37,9 +37,8 @@ static inline int ecnet_udp_con4(struct bpf_sock_addr *ctx)
     origin.port = ctx->user_port;
 
     if (bpf_map_update_elem(&ecnet_sess_dest, &cookie, &origin, BPF_ANY)) {
-        printk(
-            "ecnet_udp_con4 [DNS Query]: Update origin cookie failed: %d",
-            cookie);
+        printk("ecnet_udp_con4 [DNS Query]: Update origin cookie failed: %d",
+               cookie);
     }
 
     __u32 bridge_ip = bpf_htonl(BRIDGE_IP);

@@ -33,15 +33,22 @@ static inline int ecnet_sockops4(struct bpf_sock_ops *skops)
         struct origin_info dd = *dst;
         bpf_map_update_elem(&ecnet_pair_dest, &p, &dd, BPF_ANY);
 #ifdef DEBUG
-        debugf("ecnet_sockops4 ecnet_pair_dest set key:pair.dip:dport = %pI4:%d", &p.dip, bpf_ntohs(p.dport));
-        debugf("ecnet_sockops4 ecnet_pair_dest set key:pair.sip:sport = %pI4:%d", &p.sip, bpf_ntohs(p.sport));
-        debugf("ecnet_sockops4 ecnet_pair_destset val:origin.ip:port = %pI4:%d", &dd.ip, bpf_ntohs(dd.port));
+        debugf(
+            "ecnet_sockops4 ecnet_pair_dest set key:pair.dip:dport = %pI4:%d",
+            &p.dip, bpf_ntohs(p.dport));
+        debugf(
+            "ecnet_sockops4 ecnet_pair_dest set key:pair.sip:sport = %pI4:%d",
+            &p.sip, bpf_ntohs(p.sport));
+        debugf("ecnet_sockops4 ecnet_pair_destset val:origin.ip:port = %pI4:%d",
+               &dd.ip, bpf_ntohs(dd.port));
 #endif
     }
     bpf_sock_hash_update(skops, &ecnet_sock_pair, &p, BPF_NOEXIST);
 #ifdef DEBUG
-    debugf("ecnet_sockops4 ecnet_sock_pair set key:pair.dip:dport = %pI4:%d", &p.dip, bpf_ntohs(p.dport));
-    debugf("ecnet_sockops4 ecnet_sock_pair set key:pair.sip:sport = %pI4:%d", &p.sip, bpf_ntohs(p.sport));
+    debugf("ecnet_sockops4 ecnet_sock_pair set key:pair.dip:dport = %pI4:%d",
+           &p.dip, bpf_ntohs(p.dport));
+    debugf("ecnet_sockops4 ecnet_sock_pair set key:pair.sip:sport = %pI4:%d",
+           &p.sip, bpf_ntohs(p.sport));
     debugf("ecnet_sockops4 ecnet_sock_pair set val:cookie = %d", cookie);
 #endif
     return 0;

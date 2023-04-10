@@ -34,8 +34,7 @@ __section("cgroup/recvmsg4") int ecnet_recvmsg4(struct bpf_sock_addr *ctx)
         ctx->user_ip4 = origin->ip;
 
 #ifdef DEBUG
-        debugf(
-            "ecnet_recvmsg4 [DNS Reply]: successfully deal DNS redirect query");
+        debugf("ecnet_recvmsg4 successfully deal DNS redirect query");
 #endif
     }
     return 1;
