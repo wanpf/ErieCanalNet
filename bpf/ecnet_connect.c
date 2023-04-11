@@ -25,9 +25,9 @@ static inline int ecnet_udp_con4(struct bpf_sock_addr *ctx)
 
 #ifdef DEBUG
     __u64 cgrp_id = bpf_get_current_cgroup_id();
-    debugf("ecnet_udp_con4 [DNS Query]: DST IP: %pI4 PORT: %d", &dst_ip,
+    debugf("ecnet_udp_con4 [DNS Query]: dst ip: %pI4 port: %d", &dst_ip,
            bpf_ntohs(ctx->user_port));
-    debugf("ecnet_udp_con4 [DNS Query]: CKI: %d CGID: %d UID: %d", cookie,
+    debugf("ecnet_udp_con4 [DNS Query]: cke: %d cgid: %d uid: %d", cookie,
            cgrp_id, uid);
 #endif
 
@@ -45,7 +45,7 @@ static inline int ecnet_udp_con4(struct bpf_sock_addr *ctx)
     __u16 bridge_port = bpf_htons(DNS_PROXY_PORT);
 
 #ifdef DEBUG
-    debugf("ecnet_udp_con4 [DNS Query]: BRI IP: %pI4 PORT: %d UID: %d",
+    debugf("ecnet_udp_con4 [DNS Query]: bri ip: %pI4 port: %d uid: %d",
            &bridge_ip, bpf_ntohs(bridge_port), uid);
 #endif
 
@@ -78,9 +78,9 @@ static inline int ecnet_tcp_con4(struct bpf_sock_addr *ctx)
 
     __u64 cookie = bpf_get_socket_cookie_addr(ctx);
 #ifdef DEBUG
-    debugf("ecnet_tcp_con4 DST IP: %pI4 PORT: %d", &dst_ip,
+    debugf("ecnet_tcp_con4 dst ip: %pI4 port: %d", &dst_ip,
            bpf_ntohs(ctx->user_port));
-    debugf("ecnet_tcp_con4 CKI: %d UID: %d", cookie, uid);
+    debugf("ecnet_tcp_con4 cke: %d uid: %d", cookie, uid);
 #endif
 
     // redirect it to node proxy.

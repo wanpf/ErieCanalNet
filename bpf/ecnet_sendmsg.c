@@ -21,7 +21,7 @@ __section("cgroup/sendmsg4") int ecnet_sendmsg4(struct bpf_sock_addr *ctx)
     }
 
 #ifdef DEBUG
-    debugf("ecnet_sendmsg4 [DNS Query]: DST IP: %pI4 PORT: %d UID: %d", &dst_ip,
+    debugf("ecnet_sendmsg4 [DNS Query]: dst ip: %pI4 port: %d uid: %d", &dst_ip,
            bpf_ntohs(ctx->user_port), uid);
 #endif
 
@@ -38,7 +38,7 @@ __section("cgroup/sendmsg4") int ecnet_sendmsg4(struct bpf_sock_addr *ctx)
     __u16 bridge_port = bpf_htons(DNS_PROXY_PORT);
 
 #ifdef DEBUG
-    debugf("ecnet_sendmsg4 [DNS Query]: BDG ip: %pI4 port: %d uid: %d",
+    debugf("ecnet_sendmsg4 [DNS Query]: bri ip: %pI4 port: %d uid: %d",
            &bridge_ip, bpf_ntohs(bridge_port), uid);
 #endif
 
