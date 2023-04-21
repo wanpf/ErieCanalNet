@@ -43,7 +43,7 @@ ifeq ($(CGROUP2_PATH),)
 $(error It looks like your system does not have cgroupv2 enabled, or the automatic recognition fails. Please enable cgroupv2, or specify the path of cgroupv2 manually via CGROUP2_PATH parameter.)
 endif
 
-TARGETS=ecnet_connect.o ecnet_recvmsg.o ecnet_sendmsg.o ecnet_redirmsg.o ecnet_sockops.o ecnet_sockopt.o
+TARGETS=ecnet_dnsproxy.o ecnet_connect.o ecnet_redirmsg.o ecnet_sockops.o ecnet_sockopt.o
 $(BPF_FS):
 	mountpoint -q $@ || mount -t bpf bpf $@
 
@@ -90,28 +90,6 @@ clean-connect:
 	sudo bpftool cgroup detach $(CGROUP2_PATH) connect4 pinned $(PROG_MOUNT_PATH)/connect/cgroup_connect4
 	sudo rm -rf $(PROG_MOUNT_PATH)/connect
 
-load-sendmsg: load-map-ecnet_sess_dest
-	sudo bpftool -m prog loadall ecnet_sendmsg.o $(PROG_MOUNT_PATH)/sendmsg \
-		map name ecnet_sess_dest pinned $(PROG_MOUNT_PATH)/ecnet_sess_dest
-
-attach-sendmsg:
-	sudo bpftool cgroup attach $(CGROUP2_PATH) sendmsg4 pinned $(PROG_MOUNT_PATH)/sendmsg/cgroup_sendmsg4
-
-clean-sendmsg:
-	sudo bpftool cgroup detach $(CGROUP2_PATH) sendmsg4 pinned $(PROG_MOUNT_PATH)/sendmsg/cgroup_sendmsg4
-	sudo rm -rf $(PROG_MOUNT_PATH)/sendmsg
-
-load-recvmsg: load-map-ecnet_sess_dest
-	sudo bpftool -m prog loadall ecnet_recvmsg.o $(PROG_MOUNT_PATH)/recvmsg \
-		map name ecnet_sess_dest pinned $(PROG_MOUNT_PATH)/ecnet_sess_dest
-
-attach-recvmsg:
-	sudo bpftool cgroup attach $(CGROUP2_PATH) recvmsg4 pinned $(PROG_MOUNT_PATH)/recvmsg/cgroup_recvmsg4
-
-clean-recvmsg:
-	sudo bpftool cgroup detach $(CGROUP2_PATH) recvmsg4 pinned $(PROG_MOUNT_PATH)/recvmsg/cgroup_recvmsg4
-	sudo rm -rf $(PROG_MOUNT_PATH)/recvmsg
-
 load-redirmsg: load-map-ecnet_sock_pair
 	sudo bpftool -m prog load ecnet_redirmsg.o $(PROG_MOUNT_PATH)/redirmsg \
 		map name ecnet_sock_pair pinned $(PROG_MOUNT_PATH)/ecnet_sock_pair
@@ -147,18 +125,16 @@ clean-sockops:
 	sudo bpftool cgroup detach $(CGROUP2_PATH) sock_ops pinned $(PROG_MOUNT_PATH)/sockops
 	sudo rm -rf $(PROG_MOUNT_PATH)/sockops
 
-load: compile init-bpffs load-connect load-sendmsg load-recvmsg load-redirmsg load-sockopt load-sockops
+load: compile init-bpffs load-connect load-redirmsg load-sockopt load-sockops
 
-attach: attach-connect attach-sendmsg attach-recvmsg attach-redirmsg attach-sockopt attach-sockops
+attach: attach-connect attach-redirmsg attach-sockopt attach-sockops
 
-clean: clean-connect clean-sendmsg clean-recvmsg clean-redirmsg clean-sockopt clean-sockops clean-maps compile-clean
+clean: clean-connect clean-redirmsg clean-sockopt clean-sockops clean-maps compile-clean
 
 all: compile
 
 clean-progs: compile-clean clean-maps
 	sudo rm -rf $(PROG_MOUNT_PATH)/connect
-	sudo rm -rf $(PROG_MOUNT_PATH)/sendmsg
-	sudo rm -rf $(PROG_MOUNT_PATH)/recvmsg
 	sudo rm -rf $(PROG_MOUNT_PATH)/redirmsg
 	sudo rm -rf $(PROG_MOUNT_PATH)/sockops
 	sudo rm -rf $(PROG_MOUNT_PATH)/sockopt

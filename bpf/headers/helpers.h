@@ -27,8 +27,6 @@
 #define __section(NAME) __attribute__((section(NAME), used))
 #endif
 
-#define PIN_GLOBAL_NS 2
-
 struct bpf_elf_map {
     __u32 type;
     __u32 size_key;
@@ -99,6 +97,9 @@ static long (*bpf_l4_csum_replace)(struct __sk_buff *skb, __u32 offset,
 static long (*bpf_l3_csum_replace)(struct __sk_buff *skb, __u32 offset,
                                    __u64 from, __u64 to, __u64 size) = (void *)
     BPF_FUNC_l3_csum_replace;
+
+static int (*bpf_csum_diff)(void *from, int from_size, void *to, int to_size,
+                            int seed) = (void *)BPF_FUNC_csum_diff;
 
 static int (*bpf_skb_load_bytes)(void *ctx, int off, void *to,
                                  int len) = (void *)BPF_FUNC_skb_load_bytes;
