@@ -42,7 +42,7 @@
 // Local DNS server
 //
 .branch(
-  true, (
+  Boolean(config?.Spec?.LocalDNSProxy), (
     $=>$
     .listen(bridgeIP + ':15053', { protocol: 'udp', transparent: true } )
     .chain(['dns-main.js'])
